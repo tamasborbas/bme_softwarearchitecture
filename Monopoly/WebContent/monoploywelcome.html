@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Log In</title>
+
+<!-- <link rel="stylesheet" href="style.css" /> -->
+<link rel="stylesheet" href="bootstrap.css" />
+<link rel="stylesheet" href="mystyle.css" />
+<script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="js/jquery.json-2.4.js"></script>
+<script type="text/javascript" src="js/json2.js"></script>
+
+<script type="text/javascript">
+
+	function alterContent() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"email" : "admin@gmail.com",
+			"password" : "admin"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/userapi/login"
+		});
+		
+// 		window.location.href = 'products.html';
+	}
+</script>
+
+
+</head>
+
+<body>
+	<div class="container-narrow">
+		
+		<ul class="nav nav-pills">
+			<li class="active"><a href="#">Log In</a></li>
+			<li><a href="register.html">Register</a></li>
+		</ul>
+
+		<form class="form-signin">
+
+			<h2 class="form-signin-heading">Please Log In</h2>
+
+			<input type="text" class="input-block-level" placeholder="Username"	id="userName" /> 
+			<input type="password" class="input-block-level"placeholder="Password" id="password" /> 
+			<button	 type="button" onclick="alterContent()" class="btn btn-large btn-block btn-primary">Login</button>
+			<dev id="elements"></dev>
+		</form>
+	</div>
+
+</body>
+</html>
