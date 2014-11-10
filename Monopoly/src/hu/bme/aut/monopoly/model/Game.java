@@ -1,5 +1,6 @@
 package hu.bme.aut.monopoly.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,12 +10,26 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 
 @Entity
-public class Game
+@XmlRootElement(name = "Game")
+@NamedQueries({
+
+        @NamedQuery(name = "Game.getActiveGamesByEmail", query = "SELECT g FROM Game g, User u, Player p WHERE u =:userPattern and p MEMBER OF u.gamePlayers and p MEMBER OF g.players and g.gameStatus like 'inProgress'"),
+
+        @NamedQuery(name = "Game.getGameById", query = "SELECT g FROM Game g WHERE g.id =:idPattern ") })
+public class Game implements Serializable
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     private int id;
@@ -23,9 +38,10 @@ public class Game
     private String name;
     private User ownerOfGame;
     private User actualPlayer;
-    private List<Participant> players = new ArrayList<Participant>();
+    private List<Player> players = new ArrayList<Player>();
     private List<Place> places = new ArrayList<Place>();
 
+    @XmlElement
     public GameStatus getGameStatus()
     {
         return gameStatus;
@@ -36,17 +52,19 @@ public class Game
         this.gameStatus = gameStatus;
     }
 
+    @XmlElement
     @OneToMany
-    public List<Participant> getPlayers()
+    public List<Player> getPlayers()
     {
         return players;
     }
 
-    public void setPlayers(List<? extends Participant> players)
+    public void setPlayers(List<Player> players)
     {
         this.players.addAll(players);
     }
 
+    @XmlElement
     @OneToMany
     public List<Place> getPlaces()
     {
@@ -58,11 +76,13 @@ public class Game
         this.places = places;
     }
 
+    @XmlElement
     public int getId()
     {
         return id;
     }
 
+    @XmlElement
     public String getName()
     {
         return name;
@@ -73,6 +93,7 @@ public class Game
         this.name = name;
     }
 
+    @XmlElement
     public User getOwnerOfGame()
     {
         return ownerOfGame;
@@ -83,6 +104,7 @@ public class Game
         this.ownerOfGame = ownerOfGame;
     }
 
+    @XmlElement
     public User getActualPlayer()
     {
         return actualPlayer;

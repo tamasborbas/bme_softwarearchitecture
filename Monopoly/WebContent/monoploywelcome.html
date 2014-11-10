@@ -29,7 +29,32 @@
 		    url: "/Monopoly/rest/userapi/login"
 		});
 		
+
+		
 // 		window.location.href = 'products.html';
+	}
+	
+	function getGames() {
+
+
+		var url = "/Monopoly/rest/gameapi/GetActiveGames";
+		$.ajax(url).done(function(data) {
+			
+			$(data).each(function(index, item) {
+			$("#elements").append(item.name);
+			
+			});
+		});
+	}
+	
+	function logout() {
+
+		var url = "/Monopoly/rest/userapi/Logout";
+		$.ajax(url).done(function() {
+			 window.location.replace("index.html");
+			
+		});
+
 	}
 </script>
 
@@ -51,6 +76,9 @@
 			<input type="text" class="input-block-level" placeholder="Username"	id="userName" /> 
 			<input type="password" class="input-block-level"placeholder="Password" id="password" /> 
 			<button	 type="button" onclick="alterContent()" class="btn btn-large btn-block btn-primary">Login</button>
+			<button	 type="button" onclick="getGames()" class="btn btn-large btn-block btn-primary">GetGames</button>
+			<button	 type="button" onclick="logout()" class="btn btn-large btn-block btn-primary">Logout</button>
+			
 			<dev id="elements"></dev>
 		</form>
 	</div>

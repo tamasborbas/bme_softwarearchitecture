@@ -1,5 +1,6 @@
 package hu.bme.aut.monopoly.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,11 +8,18 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 
 @Entity
-public class Step
+@XmlRootElement(name = "Step")
+public class Step implements Serializable
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     private int id;
@@ -21,6 +29,7 @@ public class Step
     private Place finishPlace;
     private List<HouseBuying> houseBuyings = new ArrayList<HouseBuying>();
 
+    @XmlElement
     public int getMoney()
     {
         return money;
@@ -31,6 +40,7 @@ public class Step
         this.money = money;
     }
 
+    @XmlElement
     public BuildingPlace getBuyedBuilding()
     {
         return buyedBuilding;
@@ -41,6 +51,7 @@ public class Step
         this.buyedBuilding = buyedBuilding;
     }
 
+    @XmlElement
     public BuildingPlace getSoldBuilding()
     {
         return soldBuilding;
@@ -51,6 +62,7 @@ public class Step
         this.soldBuilding = soldBuilding;
     }
 
+    @XmlElement
     public List<HouseBuying> getHouseBuyings()
     {
         return houseBuyings;
@@ -61,11 +73,13 @@ public class Step
         this.houseBuyings = houseBuyings;
     }
 
+    @XmlElement
     public int getId()
     {
         return id;
     }
 
+    @XmlElement
     public Place getFinishPlace()
     {
         return finishPlace;

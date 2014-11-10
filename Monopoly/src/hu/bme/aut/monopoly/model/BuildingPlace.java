@@ -1,15 +1,26 @@
 package hu.bme.aut.monopoly.model;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 
 @Entity
-public class BuildingPlace extends Place
+@XmlRootElement(name = "BuildingPlace")
+public class BuildingPlace extends Place implements Serializable
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private int houseNumber;
-    private Participant ownerPlayer;
+    private Player ownerPlayer;
     private Building building;
 
+    @XmlElement
     public int getHouseNumber()
     {
         return houseNumber;
@@ -20,16 +31,19 @@ public class BuildingPlace extends Place
         this.houseNumber = houseNumber;
     }
 
-    public Participant getOwnerPlayer()
+    @XmlElement
+    @ManyToOne
+    public Player getOwnerPlayer()
     {
         return ownerPlayer;
     }
 
-    public void setOwnerPlayer(Participant ownerPlayer)
+    public void setOwnerPlayer(Player ownerPlayer)
     {
         this.ownerPlayer = ownerPlayer;
     }
 
+    @XmlElement
     public Building getBuilding()
     {
         return building;

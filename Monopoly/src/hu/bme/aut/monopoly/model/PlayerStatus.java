@@ -1,6 +1,9 @@
 package hu.bme.aut.monopoly.model;
 
-public enum PlayerStatus
+import java.io.Serializable;
+
+
+public enum PlayerStatus implements Serializable
 {
     notAcceptedYet, refused, accepted, lost, win
 }

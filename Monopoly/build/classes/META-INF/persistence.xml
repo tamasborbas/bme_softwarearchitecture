@@ -7,15 +7,12 @@
 <!-- 		<class>hu.bme.aut.monopoly.model.test.Family</class> -->
 <!-- 		<class>hu.bme.aut.monopoly.model.test.Person</class> -->
 <!-- 		<class>hu.bme.aut.monopoly.model.test.Job</class> -->
-
-		<class>hu.bme.aut.monopoly.model.Player</class>
-		<class>hu.bme.aut.monopoly.model.Participant</class>
-		<class>hu.bme.aut.monopoly.model.Bank</class>
 		<class>hu.bme.aut.monopoly.model.Building</class>
 		<class>hu.bme.aut.monopoly.model.BuildingPlace</class>
 		<class>hu.bme.aut.monopoly.model.Game</class>
 		<class>hu.bme.aut.monopoly.model.HouseBuying</class>
 		<class>hu.bme.aut.monopoly.model.Place</class>
+		<class>hu.bme.aut.monopoly.model.Player</class>
 		<class>hu.bme.aut.monopoly.model.SimplePlace</class>
 		<class>hu.bme.aut.monopoly.model.StartPlace</class>
 		<class>hu.bme.aut.monopoly.model.Step</class>

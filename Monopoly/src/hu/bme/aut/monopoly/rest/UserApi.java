@@ -69,12 +69,15 @@ public class UserApi
         System.out.println(email + " - " + passwordHash);
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
+
         if (mem.getUserIsRegistered(email, passwordHash))
         {
             session.setAttribute("loggedInUser", email);
             try
             {
                 // TODO
+                // response.sendError(0);
+
                 response.sendRedirect("/Monopoly/monopolywelcome.html");
             } catch (IOException e)
             {
@@ -97,6 +100,28 @@ public class UserApi
         }
 
         mem.closeDB();
+        return response;
+    }
+
+    @Path("/Logout")
+    @GET
+    public HttpServletResponse logout(@Context
+    HttpServletRequest request, @Context
+    HttpServletResponse response)
+    {
+        System.out.println("logout");
+        HttpSession session = request.getSession(true);
+        session.invalidate();
+
+        System.out.println("logout");
+        try
+        {
+            response.sendRedirect("/Monopoly/index.html");
+        } catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         return response;
     }
 
@@ -164,17 +189,27 @@ public class UserApi
             try
             {
                 mem.initDB();
-                mem.addNewUser(email, passwordHash, name, UserType.user);
-                mem.closeDB();
+                if (mem.isUserEmailRegistered(email))
+                {
+                    // TODO mukodik?
+                    response.sendError(2);
+                } else if (mem.isUserNameRegistered(name))
+                {
+                    // TODO mukodik?
+                    response.sendError(1);
+                } else
+                {
+                    mem.addNewUser(email, passwordHash, name, UserType.user);
+                    mem.closeDB();
+                }
 
-                mem = new MonopolyEntityManager();
-                mem.initDB();
             } catch (Exception e)
             {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-
+            mem = new MonopolyEntityManager();
+            mem.initDB();
             if (mem.getUserIsRegistered(email, passwordHash))
             {
                 session.setAttribute("loggedInUser", email);

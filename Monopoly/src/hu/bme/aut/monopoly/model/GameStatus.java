@@ -1,6 +1,9 @@
 package hu.bme.aut.monopoly.model;
 
-public enum GameStatus
+import java.io.Serializable;
+
+
+public enum GameStatus implements Serializable
 {
     init, inProgress, finished
 }

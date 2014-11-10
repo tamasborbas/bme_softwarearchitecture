@@ -1,23 +1,33 @@
 package hu.bme.aut.monopoly.model;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 
 @Entity
-public class Building
+@XmlRootElement(name = "Building")
+public class Building implements Serializable
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     private int id;
     private String name;
     private int price;
     private int housePrice;
-    private int baneNightPayment;
+    private int baseNightPayment;
     private int perHousePayment;
 
+    @XmlElement
     public String getName()
     {
         return name;
@@ -28,6 +38,7 @@ public class Building
         this.name = name;
     }
 
+    @XmlElement
     public int getPrice()
     {
         return price;
@@ -38,6 +49,7 @@ public class Building
         this.price = price;
     }
 
+    @XmlElement
     public int getHousePrice()
     {
         return housePrice;
@@ -48,16 +60,18 @@ public class Building
         this.housePrice = housePrice;
     }
 
-    public int getBaneNightPayment()
+    @XmlElement
+    public int getBaseNightPayment()
     {
-        return baneNightPayment;
+        return baseNightPayment;
     }
 
-    public void setBaneNightPayment(int baneNightPayment)
+    public void setBaseNightPayment(int baneNightPayment)
     {
-        this.baneNightPayment = baneNightPayment;
+        this.baseNightPayment = baneNightPayment;
     }
 
+    @XmlElement
     public int getPerHousePayment()
     {
         return perHousePayment;
@@ -68,6 +82,7 @@ public class Building
         this.perHousePayment = perHousePayment;
     }
 
+    @XmlElement
     public int getId()
     {
         return id;

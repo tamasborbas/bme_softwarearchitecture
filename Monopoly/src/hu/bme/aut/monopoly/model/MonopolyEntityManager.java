@@ -34,6 +34,20 @@ public class MonopolyEntityManager
     public MonopolyEntityManager()
     {}
 
+    public void commit(Object o) throws Exception
+    {
+        em.getTransaction().begin();
+        try
+        {
+            em.persist(o);
+            em.getTransaction().commit();
+        } catch (Exception e)
+        {
+            em.getTransaction().rollback();
+            throw e;
+        }
+    }
+
     public boolean getUserIsRegistered(String email, String hash)
     {
 
@@ -66,20 +80,6 @@ public class MonopolyEntityManager
         }
     }
 
-    public void commit(Object o) throws Exception
-    {
-        em.getTransaction().begin();
-        try
-        {
-            em.persist(o);
-            em.getTransaction().commit();
-        } catch (Exception e)
-        {
-            em.getTransaction().rollback();
-            throw e;
-        }
-    }
-
     public void addNewUser(String email, String passwordHash, String name, UserType userType) throws Exception
     {
 
@@ -92,6 +92,65 @@ public class MonopolyEntityManager
         commit(u);
     }
 
+    public List<Game> getActiveGamesByEmail(String email)
+    {
+        User user = getUserByEmail(email);
+
+        Query q = em.createNamedQuery("Game.getActiveGamesByEmail");
+        q.setParameter("userPattern", user);
+        List<Game> result = q.getResultList();
+
+        return result;
+
+    }
+
+    public boolean isUserNameRegistered(String name)
+    {
+        Query q = em.createNamedQuery("User.getUserByName");
+        q.setParameter("namePattern", name);
+
+        List<User> result = q.getResultList();
+        if (result.size() == 0)
+        {
+            return false;
+        } else
+        {
+            return true;
+        }
+    }
+
+    public boolean isUserEmailRegistered(String email)
+    {
+        Query q = em.createNamedQuery("User.getUserByEmail");
+        q.setParameter("emailPattern", email);
+
+        List<User> result = q.getResultList();
+        if (result.size() == 0)
+        {
+            return false;
+        } else
+        {
+            return true;
+        }
+    }
+
+    public Game getGameById(int id)
+    {
+
+        Query q = em.createNamedQuery("Game.getGameById");
+        q.setParameter("idPattern", id);
+
+        List<Game> result = q.getResultList();
+        if (result.size() == 0)
+        {
+            return null;
+        } else
+        {
+            return result.get(0);
+        }
+    }
+
+    // TESTS
     public void listAndCreatePlayerTest()
     {
 
