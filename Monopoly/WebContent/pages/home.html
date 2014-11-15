@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Home of Minipoly</title>
+	<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="home.css" />
+	<link rel="stylesheet" href="home_active.css" />
+	<link rel="stylesheet" href="home_manage.css" />
+	<link rel="stylesheet" href="home_invitation.css" />
+	<script src="home.js"></script>
+<link rel="icon" type="image/x-icon" href="icon.png" />
+</head>
+<body>
+	
+	<div class="testbox" id="homebox">
+		<nav id="nav">
+			<ul>
+				<li class="selectedHeader" id="profiliconb" onclick="profilSel()">
+					<a href="#"><i class="fa fa-user"></i></a>
+				</li>
+				<li class="header" id="newgameiconb" onclick="createGameSel()">
+					<a href="#"><i class="fa fa-plus-square"> Create game</i></a>
+				</li>
+				<li class="header" id="actgameiconb" onclick="activeGamesSel()">
+					<a href="#"><i class="fa fa-gamepad"> Active games</i></a>
+				</li>
+				<li class="header" id="mygameiconb" onclick="myGamesSel()">
+					<a href="#"><i class="fa fa-cogs"> Manage games</i></a>
+				</li>
+				<li class="header" id="invitationsiconb" onclick="invitationsSel()">
+					<a href="#"><i class="fa fa-envelope"> Game invitations</i></a>
+				</li>
+				<li class="header" id="logouticonb" onclick="logoutSel()">
+					<a href="#"><i class="fa fa-sign-out"></i></a>
+				</li>
+			</ul>
+		</nav>
+		<br/>
+		<hr/>
+		<section class="visiblesec" id="profilsec">
+			<div>
+				<label class="icon" for="mail"><i class="fa fa-envelope-o"></i></label>
+				<input type="email" name="mail" id="mail" placeholder="Email" required="required" disabled="disabled" />
+			</div>
+			<div>
+				<label class="icon" for="name"><i class="fa fa-user"></i></label>
+				<input type="text" name="name" id="name" placeholder="UserName" required="required" disabled="disabled" />
+			</div>
+		</section>
+		<section id="actgamesec">
+			<section class="nactgame" onclick="openGame(id)">
+				<h3>GameName</h3>
+				<hr class="act" />
+				<section class="users">
+					<section class="user">User1;</section>
+					<section class="user">User1</section>
+					<section class="user">User1</section>
+					<section class="user">User1</section>
+					<section class="user">User1</section>
+				</section>
+			</section>
+		</section>
+		<section id="newgamesec">
+			<div class="creategame">
+				<div>
+					<label class="iconWithText" for="gname"><i class="fa fa-gamepad">  Game ID</i></label>
+					<input type="text" name="gname" id="gname" placeholder="Game Name" required="required" />
+				</div>
+				<div>
+					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 1</i></label>
+					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
+				</div>
+				<div>
+					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 2</i></label>
+					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
+				</div>
+				<div>
+					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 3</i></label>
+					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
+				</div>
+				<div>
+					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 4</i></label>
+					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
+				</div>
+				<div>
+					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 5</i></label>
+					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
+				</div>
+				<div>
+					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 6</i></label>
+					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
+				</div>
+				<div>
+					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 7</i></label>
+					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
+				</div>
+				<a href="#" class="button" id="logoutbtn" onclick="remind('rmail')">Create</a>
+			</div>
+		</section>
+		<section id="managesec">
+
+		</section>
+		<section id="invitationsec">
+			
+		</section>
+		<section id="logoutsec">
+			<a href="#" class="button" id="logoutbtn" onclick="remind('rmail')">Logout</a>
+		</section>
+	</div>
+	<footer>
+		Happy Games	<img alt="" src="logo_grey.png" />
+	</footer>
+</body>
+</html>

@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Login to Minipoly</title>
+	<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="login.css" />
+	<link rel="icon" type="image/x-icon" href="icon.png" />
+	<script src="login.js"></script>
+</head>
+<body>
+	
+	<div class="testbox" id="loginbox">
+		
+			<nav id="nav">
+				<ul>
+					<li class="selectedHeader" id="loginiconb" onclick="loginsel()">
+						<a href="#" id="loginicon"><i class="fa fa-sign-in"></i></a>
+					</li>
+					<li class="header" id="registrationiconb" onclick="registersel()">
+						<a href="#"><i class="fa fa-plus-circle"></i></a>
+					</li>
+					<li class="header" id="remindericonb" onclick="remindersel()">
+						<a href="#"><i class="fa fa-unlock-alt"></i></a>
+					</li>
+					<li class="header" id="space">
+						<a><i></i></a>
+					</li>
+				</ul>
+			</nav>
+		<br/>
+		<hr />
+		<section id="loginsec">
+			<form action="/">
+				<label class="icon" for="lname"><i class="fa fa-user"></i></label>
+				<input type="text" name="lname" id="lname" placeholder="UserName" required="required" />
+				<br />
+				<label class="icon" for="lpasswd"><i class="fa fa-shield"></i></label>
+				<input type="password" name="lpasswd" id="lpasswd" placeholder="Password" required="required" />
+				<br />
+				<a href="#" class="button" onclick="signIn('lname','lpasswd')">Sign In</a>
+			</form>
+		</section>
+		<section id="registrationsec">
+			<form action="/">
+				<label class="icon" for="mail"><i class="fa fa-envelope-o"></i></label>
+				<input type="email" name="mail" id="mail" placeholder="Email" required="required" />
+				<br />
+				<label class="icon" for="name"><i class="fa fa-user"></i></label>
+				<input type="text" name="name" id="name" placeholder="UserName" required="required" />
+				<br />
+				<label class="icon" for="passwd"><i class="fa fa-shield"></i></label>
+				<input type="password" name="passwd" id="passwd" placeholder="Password" required="required" />
+				<br />
+				<p>By clicking Sign up, you agree on our <a href="#">T&C</a>.</p>
+				<a href="Login.html" class="button">Sign up</a>
+			</form>
+		</section>
+		<section id="remindersec">
+			<form action="/">
+				<label class="icon" for="rmail"><i class="fa fa-envelope-o"></i></label>
+				<input type="email" name="rmail" id="rmail" placeholder="Email" required="required" />
+				<a href="#" class="button" onclick="remind('rmail')">Remind</a>
+			</form>
+		</section>
+	</div>
+
+	<footer>
+		Happy Games	<img alt="" src="logo_grey.png"/>
+	</footer>
+</body>
+</html>

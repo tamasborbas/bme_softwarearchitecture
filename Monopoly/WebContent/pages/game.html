@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="utf-8"/>
+    <title>Monopoly Game</title>
+	<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="game.css" />
+	<script src="game.js"></script>
+	<link rel="icon" type="image/x-icon" href="icon.png" />
+</head>
+<body>
+	<div class="testbox" id="gamebox">
+		<section class="basesec" id="gameboard">
+		<div class="container">
+			<section class="boardline" id="gameboardtop">
+				<section class="place" id="place15"></section>
+				<section class="place" id="place14"></section>
+				<section class="place" id="place13"></section>
+				<section class="place" id="place12"></section>
+				<section class="place" id="place11"></section>
+			</section>
+			<section class="boardline-middle">
+				<section class="boardline boardline-td" id="gameboardleft">
+					<section class="place" id="place10"></section>
+					<section class="place" id="place9"></section>
+					<section class="place" id="place8"></section>
+				</section>
+				<section class="dataviewer">
+					<section class="gamedataspec"></section>
+					<section class="buildingdataspec"></section>
+					<section class="playerdataspec"></section>
+				</section>
+				<section class="boardline boardline-td" id="gameboardright">
+					<section class="place" id="place7"></section>
+					<section class="place" id="place6"></section>
+					<section class="place" id="place5"></section>
+				</section>
+			</section>
+			<section class="boardline" id="gameboardbottom">
+				<section class="place" id="place4"></section>
+				<section class="place" id="place3"></section>
+				<section class="place" id="place2"></section>
+				<section class="place" id="place1"></section>
+				<section class="place" id="place0">
+					<label class="placedata placedata-name">Start</label>
+					<label class="placedata placedata-number">1</label> <br/>
+					<section class="playertokenstable">
+						<table class="playertokens">
+							<tr>
+								<td class="token" title="P1"></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td class="token" title="P7"></td>
+								<td></td>
+							</tr>
+						</table>
+					</section>
+				</section>
+			</section>
+		</div>
+		</section><section class="basesec" id="stepboard">
+		<div class="stepmain">
+			<section class="steph1 steph1-withbutton" id="rollsection">
+				<a class="button" onclick="roll()">Roll</a>
+			</section>
+			<section class="steph1-collapsed" id="rollresults">
+				<input id="place_text" type="text" disabled="disabled" value="Place:" />
+				<input id="roll_text" type="text" disabled="disabled" value="Roll result:" />
+			</section>
+			<section class="steph1-collapsed" id="paysection">
+				<a class="button" onclick="pay()">Pay</a>
+			</section>
+			<section class="steph1-collapsed" id="buysection">
+				<input id="buildingbuy_text" type="text" disabled="disabled" value="Do you want to buy the building?" />
+				<a class="button button-half" id="yesbuilding" onclick="buyb()">Lets do it!</a>
+				<a class="button button-half" id="nobuilding" onclick="nbuyb()">No, thanks.</a>
+			</section>
+			<section class="steph1-collapsed" id="sellbuildingsection">
+				<table class="steptables">
+					<thead>
+						<tr>
+							<th class="scolumn">Building</th>
+							<th class="scolumn">Price</th>
+							<th class="ticky">Sold</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="scolumn">b1</td>
+							<td class="scolumn">100</td>
+							<td class="ticky"><input type="checkbox" /></td>
+						</tr>
+					</tbody>
+				</table>
+				<input id="debit_text" type="text" disabled="disabled" value="You debit: 1000" />
+				<a class="button button-third" id="sellbuilding" onclick="sellb()">Sell buildings</a>
+			</section>
+			<section class="steph1-collapsed" id="boughtsection">
+				<input id="buildingbuy_text" type="text" disabled="disabled" value="You bought this building: " />
+			</section>
+			<section class="steph1-collapsed" id="buyhousesection">
+				<table class="steptables">
+					<thead>
+						<tr>
+							<th class="hcolumn">Building</th>
+							<th class="hcolumn">Price per house</th>
+							<th class="plusmin">Number</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="hcolumn">b1</td>
+							<td class="hcolumn">100</td>
+							<td class="plusmin"><i class="fa fa-minus-circle"></i><input class="mini" id="" type="text" disabled="disabled" value="1" /><i class="fa fa-plus-circle"></i></td>
+						</tr>
+					</tbody>
+				</table>
+				<input id="debit_text" type="text" disabled="disabled" value="Price of houses: 1000" />
+				<a class="button button-third" id="buyhouses" onclick="buyh()">Next</a>
+			</section>
+			<section class="steph1-collapsed" id="finishsection">
+				<a class="button" onclick="finish()">Finish turn</a>
+			</section>
+		</div>
+		</section><section class="basesec" id="playersboard">
+		<div class="container">
+			<section class="minibank">
+				<label class="playerid">BANK</label>
+			</section>
+			<section class="miniplayer">
+				<section class="playerid">
+					<label class="playerid">Hosszú Nevem</label>
+				</section>
+				<section class="playerdata">
+					<label class="playerdata">Money: 800</label>
+					<br />
+					<label class="playerdata">Place: 15</label>
+				</section>
+			</section>
+			<section class="miniplayer">
+				<section class="playerid">
+					<label class="playerid">Hosszú Nevem</label>
+				</section>
+				<section class="playerdata">
+					<label class="playerdata">Money: 800</label>
+					<br />
+					<label class="playerdata">Place: 15</label>
+				</section>
+			</section>
+			<section class="miniplayer">
+				<section class="playerid">
+					<label class="playerid">Hosszú Nevem</label>
+				</section>
+				<section class="playerdata">
+					<label class="playerdata">Money: 800</label>
+					<br />
+					<label class="playerdata">Place: 15</label>
+				</section>
+			</section>
+			<section class="miniplayer">
+				<section class="playerid">
+					<label class="playerid">Hosszú Nevem</label>
+				</section>
+				<section class="playerdata">
+					<label class="playerdata">Money: 800</label>
+					<br />
+					<label class="playerdata">Place: 15</label>
+				</section>
+			</section>
+			<section class="miniplayer">
+				<section class="playerid">
+					<label class="playerid">Hosszú Nevem</label>
+				</section>
+				<section class="playerdata">
+					<label class="playerdata">Money: 800</label>
+					<br />
+					<label class="playerdata">Place: 15</label>
+				</section>
+			</section>
+			<section class="miniplayer">
+				<section class="playerid">
+					<label class="playerid">Hosszú Nevem</label>
+				</section>
+				<section class="playerdata">
+					<label class="playerdata">Money: 800</label>
+					<br />
+					<label class="playerdata">Place: 15</label>
+				</section>
+			</section>
+			<section class="miniplayer">
+				<section class="out">Game over</section>
+				<section class="playerid">
+					<label class="playerid">Hosszú Nevem</label>
+				</section>
+				<section class="playerdata">
+					<label class="playerdata">Money: 800</label>
+					<br />
+					<label class="playerdata">Place: 15</label>
+				</section>
+			</section>
+			<section class="miniplayer">
+				<section class="playerid">
+					<label class="playerid">Méghosszabb Nevem</label>
+				</section>
+				<section class="playerdata">
+					<label class="playerdata">Money: 800</label>
+					<br />
+					<label class="playerdata">Place: 15</label>
+				</section>
+			</section>
+
+		</div>
+		</section>
+	</div>
+	<footer>
+		Happy Games	<img alt="" src="logo_grey.png" />
+	</footer>
+</body>
+</html>
