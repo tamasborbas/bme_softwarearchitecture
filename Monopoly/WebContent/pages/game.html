@@ -8,32 +8,78 @@
 	<script src="game.js"></script>
 	<link rel="icon" type="image/x-icon" href="icon.png" />
 </head>
-<body>
+<body onload="loadDatas()">
 	<div class="testbox" id="gamebox">
 		<section class="basesec" id="gameboard">
 		<div class="container">
 			<section class="boardline" id="gameboardtop">
-				<section class="place" id="place15"></section>
-				<section class="place" id="place14"></section>
-				<section class="place" id="place13"></section>
-				<section class="place" id="place12"></section>
+				<section class="place" id="place8"></section>
+				<section class="place" id="place9"></section>
+				<section class="place" id="place10"></section>
 				<section class="place" id="place11"></section>
+				<section class="place" id="place12"></section>
 			</section>
 			<section class="boardline-middle">
 				<section class="boardline boardline-td" id="gameboardleft">
-					<section class="place" id="place10"></section>
-					<section class="place" id="place9"></section>
-					<section class="place" id="place8"></section>
-				</section>
-				<section class="dataviewer">
-					<section class="gamedataspec"></section>
-					<section class="buildingdataspec"></section>
-					<section class="playerdataspec"></section>
-				</section>
-				<section class="boardline boardline-td" id="gameboardright">
 					<section class="place" id="place7"></section>
 					<section class="place" id="place6"></section>
 					<section class="place" id="place5"></section>
+				</section>
+				<section class="dataviewer">
+					<section class="dataspec dataspec-unvisible" id="gamedataspec">
+						<h2 id="gamename">Game Name</h2>
+						<hr class="datasep" />
+						<div>Owner: <span class="span-data" id="gd-owner">Owner Name</span></div>
+					</section>
+					<section class="dataspec" id="buildingdataspec">
+						<h2 id="buildingname">Building Name</h2>
+						<hr class="datasep" />
+						<div>
+							Price: <span class="span-data" id="bd-bprice">1000</span><br />
+							House price: <span class="span-data" id="bd-hprice">100</span><br />
+							<hr class="datasep" />
+							Basic sleep price: <span class="span-data" id="bd-bsprice">300</span><br />
+							Plus sleep price per house: <span class="span-data" id="bd-hsprice">50</span><br />
+							<hr class="datasep" />
+							Owner: <span class="span-data" id="bd-owner">Owner Name</span><br />
+							Number of houses: <span class="span-data" id="bd-houses">4</span><br />
+							Actual sleep price: <span class="span-data" id="bd-aprice">500</span><br />
+
+						</div>
+					</section>
+					<section class="dataspec dataspec-unvisible" id="playerdataspec">
+						<h2 id="playername">Player Name</h2>
+						<hr class="datasep" />
+						<div>
+							Status: <span class="span-data" id="pd-status">active</span><br />
+							Color: <section class="span-data" id="pd-color"></section><br />
+							Place: <span class="span-data" id="pd-place">1</span><br />
+							Money: <span class="span-data" id="pd-money">1000</span><br />
+							<hr class="datasep" />
+							<h3 class="pbuildingsheader">Owned buildings</h3>
+							<table class="pbuildings">
+								<thead>
+									<tr>
+										<th>Building name</th>
+										<th>Number of houses</th>
+										<th>Actual sleep price</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>Building name1</td>
+										<td class="value">0</td>
+										<td class="value value-last">200</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+				</section>
+				<section class="boardline boardline-td" id="gameboardright">
+					<section class="place" id="place13"></section>
+					<section class="place" id="place14"></section>
+					<section class="place" id="place15"></section>
 				</section>
 			</section>
 			<section class="boardline" id="gameboardbottom">
@@ -41,26 +87,7 @@
 				<section class="place" id="place3"></section>
 				<section class="place" id="place2"></section>
 				<section class="place" id="place1"></section>
-				<section class="place" id="place0">
-					<label class="placedata placedata-name">Start</label>
-					<label class="placedata placedata-number">1</label> <br/>
-					<section class="playertokenstable">
-						<table class="playertokens">
-							<tr>
-								<td class="token" title="P1"></td>
-								<td></td>
-								<td></td>
-								<td></td>
-							</tr>
-							<tr>
-								<td></td>
-								<td></td>
-								<td class="token" title="P7"></td>
-								<td></td>
-							</tr>
-						</table>
-					</section>
-				</section>
+				<section class="place" id="place0"></section>
 			</section>
 		</div>
 		</section><section class="basesec" id="stepboard">
@@ -128,90 +155,9 @@
 			</section>
 		</div>
 		</section><section class="basesec" id="playersboard">
-		<div class="container">
+		<div class="container" id="playersboardcontainer">
 			<section class="minibank">
 				<label class="playerid">BANK</label>
-			</section>
-			<section class="miniplayer">
-				<section class="playerid">
-					<label class="playerid">Hosszú Nevem</label>
-				</section>
-				<section class="playerdata">
-					<label class="playerdata">Money: 800</label>
-					<br />
-					<label class="playerdata">Place: 15</label>
-				</section>
-			</section>
-			<section class="miniplayer">
-				<section class="playerid">
-					<label class="playerid">Hosszú Nevem</label>
-				</section>
-				<section class="playerdata">
-					<label class="playerdata">Money: 800</label>
-					<br />
-					<label class="playerdata">Place: 15</label>
-				</section>
-			</section>
-			<section class="miniplayer">
-				<section class="playerid">
-					<label class="playerid">Hosszú Nevem</label>
-				</section>
-				<section class="playerdata">
-					<label class="playerdata">Money: 800</label>
-					<br />
-					<label class="playerdata">Place: 15</label>
-				</section>
-			</section>
-			<section class="miniplayer">
-				<section class="playerid">
-					<label class="playerid">Hosszú Nevem</label>
-				</section>
-				<section class="playerdata">
-					<label class="playerdata">Money: 800</label>
-					<br />
-					<label class="playerdata">Place: 15</label>
-				</section>
-			</section>
-			<section class="miniplayer">
-				<section class="playerid">
-					<label class="playerid">Hosszú Nevem</label>
-				</section>
-				<section class="playerdata">
-					<label class="playerdata">Money: 800</label>
-					<br />
-					<label class="playerdata">Place: 15</label>
-				</section>
-			</section>
-			<section class="miniplayer">
-				<section class="playerid">
-					<label class="playerid">Hosszú Nevem</label>
-				</section>
-				<section class="playerdata">
-					<label class="playerdata">Money: 800</label>
-					<br />
-					<label class="playerdata">Place: 15</label>
-				</section>
-			</section>
-			<section class="miniplayer">
-				<section class="out">Game over</section>
-				<section class="playerid">
-					<label class="playerid">Hosszú Nevem</label>
-				</section>
-				<section class="playerdata">
-					<label class="playerdata">Money: 800</label>
-					<br />
-					<label class="playerdata">Place: 15</label>
-				</section>
-			</section>
-			<section class="miniplayer">
-				<section class="playerid">
-					<label class="playerid">Méghosszabb Nevem</label>
-				</section>
-				<section class="playerdata">
-					<label class="playerdata">Money: 800</label>
-					<br />
-					<label class="playerdata">Place: 15</label>
-				</section>
 			</section>
 
 		</div>
