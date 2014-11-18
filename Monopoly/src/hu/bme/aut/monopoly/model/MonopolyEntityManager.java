@@ -104,6 +104,18 @@ public class MonopolyEntityManager
 
     }
 
+    public List<Game> getOwnedInitGamesByEmail(String email)
+    {
+        User user = getUserByEmail(email);
+
+        Query q = em.createNamedQuery("Game.getOwnedInitGamesByEmail");
+        q.setParameter("userPattern", user);
+        List<Game> result = q.getResultList();
+
+        return result;
+
+    }
+
     public boolean isUserNameRegistered(String name)
     {
         Query q = em.createNamedQuery("User.getUserByName");
@@ -117,6 +129,30 @@ public class MonopolyEntityManager
         {
             return true;
         }
+    }
+
+    public User getUserByName(String name)
+    {
+        Query q = em.createNamedQuery("User.getUserByName");
+        q.setParameter("namePattern", name);
+
+        List<User> result = q.getResultList();
+        if (result.size() == 0)
+        {
+            return null;
+        } else
+        {
+            return result.get(0);
+        }
+    }
+
+    public List<Game> getOwnedGamesByUser(User user)
+    {
+        Query q = em.createNamedQuery("Game.getOwnedGamesByUser");
+        q.setParameter("userPattern", user);
+        List<Game> result = q.getResultList();
+
+        return result;
     }
 
     public boolean isUserEmailRegistered(String email)
@@ -141,6 +177,81 @@ public class MonopolyEntityManager
         q.setParameter("idPattern", id);
 
         List<Game> result = q.getResultList();
+        if (result.size() == 0)
+        {
+            return null;
+        } else
+        {
+            return result.get(0);
+        }
+    }
+
+    public List<? extends Place> getPlacesByGameId(int id)
+    {
+
+        Query q = em.createNamedQuery("Game.getPlacesByGameId");
+        q.setParameter("idPattern", id);
+
+        List<? extends Place> result = q.getResultList();
+        return result;
+
+    }
+
+    public BuildingPlace getBuildingPlaceById(int id)
+    {
+
+        Query q = em.createNamedQuery("BuildigPlace.getBuildingPlaceById");
+        q.setParameter("idPattern", id);
+
+        List<BuildingPlace> result = q.getResultList();
+        if (result.size() == 0)
+        {
+            return null;
+        } else
+        {
+            return result.get(0);
+        }
+    }
+
+    public StartPlace getStartPlaceById(int id)
+    {
+
+        Query q = em.createNamedQuery("StartPlace.getStartPlaceById");
+        q.setParameter("idPattern", id);
+
+        List<StartPlace> result = q.getResultList();
+        if (result.size() == 0)
+        {
+            return null;
+        } else
+        {
+            return result.get(0);
+        }
+    }
+
+    public <T extends Place> T getPlaceById(int id)
+    {
+
+        Query q = em.createNamedQuery("Place.getPlaceById");
+        q.setParameter("idPattern", id);
+
+        List<T> result = q.getResultList();
+        if (result.size() == 0)
+        {
+            return null;
+        } else
+        {
+            return result.get(0);
+        }
+    }
+
+    public Player getPlayerById(int id)
+    {
+
+        Query q = em.createNamedQuery("Player.getPlayerById");
+        q.setParameter("idPattern", id);
+
+        List<Player> result = q.getResultList();
         if (result.size() == 0)
         {
             return null;

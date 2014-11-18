@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -18,6 +19,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
 @XmlRootElement(name = "Player")
+@NamedQuery(name = "Player.getPlayerById", query = "SELECT p FROM Player p WHERE p.id =:idPattern")
 public class Player implements Serializable
 {
 
@@ -68,6 +70,11 @@ public class Player implements Serializable
     public void setSteps(List<Step> steps)
     {
         this.steps = steps;
+    }
+
+    public void addStep(Step step)
+    {
+        this.steps.add(step);
     }
 
     @XmlElement

@@ -7,12 +7,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 
 @Entity
 @XmlRootElement(name = "Place")
+@NamedQuery(name = "Place.getPlaceById", query = "SELECT p FROM Place p WHERE p.id =:idPattern")
 public class Place implements Serializable
 {
     /**

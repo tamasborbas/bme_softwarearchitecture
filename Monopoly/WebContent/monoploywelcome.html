@@ -47,6 +47,179 @@
 		});
 	}
 	
+	function openGame() {
+
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"gameId" : "4"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/OpenGame",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+		
+// 		var url = "/Monopoly/rest/gameapi/OpenGame";
+// 		$.ajax(url).done(function(data) {
+			
+// 			$(data).each(function(index, item) {
+// 			$("#elements").append(item.name);
+			
+// 			});
+// 		});
+	}
+	
+	function getMyGames() {
+
+
+		var url = "/Monopoly/rest/gameapi/GetMyGames";
+		$.ajax(url).done(function(data) {
+			
+			$(data).each(function(index, item) {
+			$("#elements").append(item.name);
+			
+			});
+		});
+	}
+	
+	function getBuilding() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"buildingPlaceId" : "54"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/GetBuilding",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	function startGame() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"gameId" : "4"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/StartGame",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
+	function getInvitations() {
+		
+		$.ajax({
+		    type: "POST",		  
+		    url: "/Monopoly/rest/gameapi/GetInvitations",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
+	function acceptInvitation() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"gameId" : "3"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/AcceptInvitation",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
+	function refuseInvitation() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"gameId" : "3"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/RefuseInvitation",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
+	function createGame() {
+
+		var jsonObject = '{"gameName":"TestCreateGame","players":[{"player":"admin@gmail.com"},{"player":"xyz"},{ "player":"anna" }]}'
+		
+		
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/CreateGame",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
+	function getProfil() {
+	
+		$.ajax({
+		    type: "POST",
+		    url: "/Monopoly/rest/gameapi/GetProfil",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
+	function getPlaceData() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"placeId" : "54"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/GetPlaceData",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
 	function logout() {
 
 		var url = "/Monopoly/rest/userapi/Logout";
@@ -77,6 +250,17 @@
 			<input type="password" class="input-block-level"placeholder="Password" id="password" /> 
 			<button	 type="button" onclick="alterContent()" class="btn btn-large btn-block btn-primary">Login</button>
 			<button	 type="button" onclick="getGames()" class="btn btn-large btn-block btn-primary">GetGames</button>
+			<button	 type="button" onclick="openGame()" class="btn btn-large btn-block btn-primary">OpenGame</button>
+			<button	 type="button" onclick="getMyGames()" class="btn btn-large btn-block btn-primary">GetMyGames</button>
+			<button	 type="button" onclick="getBuilding()" class="btn btn-large btn-block btn-primary">GetBuilding</button>
+			<button	 type="button" onclick="startGame()" class="btn btn-large btn-block btn-primary">StartGame</button>
+			<button	 type="button" onclick="getInvitations()" class="btn btn-large btn-block btn-primary">GetInvitations</button>
+			<button	 type="button" onclick="acceptInvitation()" class="btn btn-large btn-block btn-primary">AcceptInvitation</button>
+			<button	 type="button" onclick="refuseInvitation()" class="btn btn-large btn-block btn-primary">RefuseInvitation</button>
+			<button	 type="button" onclick="createGame()" class="btn btn-large btn-block btn-primary">CreateGame</button>
+			<button	 type="button" onclick="getProfil()" class="btn btn-large btn-block btn-primary">GetProfil</button>
+			<button	 type="button" onclick="getPlaceData()" class="btn btn-large btn-block btn-primary">GetPlaceData</button>
+		
 			<button	 type="button" onclick="logout()" class="btn btn-large btn-block btn-primary">Logout</button>
 			
 			<dev id="elements"></dev>

@@ -21,9 +21,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "Game")
 @NamedQueries({
 
-        @NamedQuery(name = "Game.getActiveGamesByEmail", query = "SELECT g FROM Game g, User u, Player p WHERE u =:userPattern and p MEMBER OF u.gamePlayers and p MEMBER OF g.players and g.gameStatus like 'inProgress'"),
+        @NamedQuery(name = "Game.getActiveGamesByEmail", query = "SELECT g FROM Game g, User u, Player p WHERE u =:userPattern and p MEMBER OF g.players and p.user = u and  g.gameStatus like 'inProgress'"),
+        @NamedQuery(name = "Game.getOwnedInitGamesByEmail", query = "SELECT g FROM Game g, User u, Player p WHERE u =:userPattern and p MEMBER OF g.players and u.id = g.ownerOfGame.id and p.user = u and g.gameStatus like 'init'"),
+        @NamedQuery(name = "Game.getOwnedGamesByUser", query = "SELECT g FROM Game g, User u, Player p WHERE u =:userPattern and p MEMBER OF g.players and u.id = g.ownerOfGame.id and p.user = u"),
 
-        @NamedQuery(name = "Game.getGameById", query = "SELECT g FROM Game g WHERE g.id =:idPattern ") })
+        @NamedQuery(name = "Game.getGameById", query = "SELECT g FROM Game g WHERE g.id =:idPattern "),
+        @NamedQuery(name = "Game.getPlacesByGameId", query = "SELECT p FROM Game g, Place p WHERE g.id =:idPattern  and p MEMBER OF g.places") })
 public class Game implements Serializable
 {
     /**
@@ -37,7 +40,7 @@ public class Game implements Serializable
     private GameStatus gameStatus;
     private String name;
     private User ownerOfGame;
-    private User actualPlayer;
+    private Player actualPlayer;
     private List<Player> players = new ArrayList<Player>();
     private List<Place> places = new ArrayList<Place>();
 
@@ -71,9 +74,9 @@ public class Game implements Serializable
         return places;
     }
 
-    public void setPlaces(List<Place> places)
+    public void setPlaces(List<? extends Place> places)
     {
-        this.places = places;
+        this.places.addAll(places);
     }
 
     @XmlElement
@@ -105,12 +108,12 @@ public class Game implements Serializable
     }
 
     @XmlElement
-    public User getActualPlayer()
+    public Player getActualPlayer()
     {
         return actualPlayer;
     }
 
-    public void setActualPlayer(User actualPlayer)
+    public void setActualPlayer(Player actualPlayer)
     {
         this.actualPlayer = actualPlayer;
     }

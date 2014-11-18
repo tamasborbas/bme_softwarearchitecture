@@ -78,7 +78,7 @@ public class UserApi
                 // TODO
                 // response.sendError(0);
 
-                response.sendRedirect("/Monopoly/monopolywelcome.html");
+                response.sendRedirect("/Monopoly/home.html");
             } catch (IOException e)
             {
                 // TODO Auto-generated catch block
@@ -91,7 +91,7 @@ public class UserApi
             try
             {
                 // TODO
-                response.sendRedirect("/Monopoly/monopolywelcome.html");
+                response.sendRedirect("/Monopoly/login.html");
             } catch (IOException e)
             {
                 // TODO Auto-generated catch block
@@ -116,7 +116,7 @@ public class UserApi
         System.out.println("logout");
         try
         {
-            response.sendRedirect("/Monopoly/index.html");
+            response.sendRedirect("/Monopoly/login.html");
         } catch (IOException e)
         {
             // TODO Auto-generated catch block

@@ -4,12 +4,14 @@ import java.io.Serializable;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 
 @Entity
 @XmlRootElement(name = "BuildingPlace")
+@NamedQuery(name = "BuildigPlace.getBuildingPlaceById", query = "SELECT bp FROM BuildingPlace bp WHERE bp.id =:idPattern")
 public class BuildingPlace extends Place implements Serializable
 {
     /**
