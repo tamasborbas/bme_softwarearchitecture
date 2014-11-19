@@ -2,9 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Login to Minipoly</title>
-	<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="login.css" />
 	<link rel="icon" type="image/x-icon" href="icon.png" />
+	<script src="../js/jquery-1.9.1.min.js"></script>
+	<script src="../js/jquery.json-2.4.js"></script>
+	<script src="../js/json2.js"></script>
 	<script src="login.js"></script>
 </head>
 <body>
@@ -37,7 +40,7 @@
 				<label class="icon" for="lpasswd"><i class="fa fa-shield"></i></label>
 				<input type="password" name="lpasswd" id="lpasswd" placeholder="Password" required="required" />
 				<br />
-				<a href="#" class="button" onclick="signIn('lname','lpasswd')">Sign In</a>
+				<a href="#" class="button" onclick="signIn()">Sign In</a>
 			</form>
 		</section>
 		<section id="registrationsec">
@@ -52,7 +55,7 @@
 				<input type="password" name="passwd" id="passwd" placeholder="Password" required="required" />
 				<br />
 				<p>By clicking Sign up, you agree on our <a href="#">T&C</a>.</p>
-				<a href="Login.html" class="button">Sign up</a>
+				<a href="#" class="button" onclick="signUp('mail', 'name', 'passwd')">Sign up</a>
 			</form>
 		</section>
 		<section id="remindersec">
