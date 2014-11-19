@@ -122,10 +122,13 @@ input[type=text]{
 #place_text {
 	margin-right:1px;
 }
-#buildingbuy_text {
+#buildingbuy_text, #actmoney_text {
 	width: 398px;
 	margin-right:5px;
 	margin-bottom:5px;
+}
+a.button-withspace {
+	margin-bottom: 5px;
 }
 
 label.icon {
@@ -435,18 +438,43 @@ table.playertokens {
 	height: 48px;
 	border: none;
 }
+.playercolor0 {
+	background-color: rgb(0,130,4);
+}
+.playercolor1 {
+	background-color: rgb(255,153,0);
+}
+.playercolor2 {
+	background-color: rgb(0,255,8);
+}
+.playercolor3 {
+	background-color: rgb(255,0,0);
+}
+.playercolor4 {
+	background-color: rgb(255,0,220);
+}
+.playercolor5 {
+	background-color: rgb(0,203,206);
+}
+.playercolor6 {
+	background-color: rgb(183,73,0);
+}
+.playercolor7 {
+	background-color: rgb(255,255,0);
+}
 table.playertokens tr td.token {
 	width: 24px;
 	height:24px;
-	background-color:rgb(25, 20, 100);
 	-webkit-border-radius: 12px; 
 	-moz-border-radius: 12px; 
 	border-radius: 12px;
 }
+.transparentcolor {
+	background-color:rgba(0, 0, 0, 0.00);
+}
 table.playertokens tr td {
 	width: 24px;
 	height:24px;
-	background-color:rgba(0, 0, 0, 0.00);
 	border: none;
 }
 section.dataviewer {

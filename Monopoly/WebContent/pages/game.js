@@ -50,9 +50,11 @@ function createGameBoard() {
 			//console.log("Placeid:" + place.id + " | i:" + i);
 			var td1 = document.createElement('td');
 			td1.id = "place" + place.id + "player" + i;
+			td1.className = "transparentcolor";
 			tr1.appendChild(td1);
 			var td2 = document.createElement('td');
 			td2.id = "place" + place.id + "player" + (i+4);
+			td2.className = "transparentcolor";
 			tr2.appendChild(td2);
 			if (place.players.length > 0) {
 				for (var playeri in place.players) {
@@ -62,11 +64,11 @@ function createGameBoard() {
 					//console.log("Playerid:" + player.id + " | Playername:" + player.name);
 					if (player.id == i) {
 						//console.log("OK"+i);
-						td1.className = "token";
+						td1.className = ("token playercolor"+i);
 						td1.title = player.name;
 					} else if (player.id == (i + 4)) {
 						//console.log("OK"+(i+4));
-						td2.className = "token";
+						td2.className = ("token playercolor"+(i+4));
 						td2.title = player.name;
 					}
 				}
@@ -76,6 +78,9 @@ function createGameBoard() {
 }
 
 /******************************* Game Steps *******************************/
+function backToHome() {
+	window.location = "/Monopoly/pages/home.html";
+}
 function rollDie(sides) {
 	if (!sides) {
 		sides = 6;

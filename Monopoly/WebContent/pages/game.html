@@ -2,11 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta charset="utf-8"/>
-    <title>Monopoly Game</title>
-	<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <title>Happy Games Monopoly - Game</title>
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="game.css" />
 	<script src="game.js"></script>
 	<link rel="icon" type="image/x-icon" href="icon.png" />
+	<script src="../js/jquery-1.9.1.min.js"></script>
+	<script src="../js/jquery.json-2.4.js"></script>
+	<script src="../js/json2.js"></script>
 </head>
 <body onload="loadDatas()">
 	<div class="testbox" id="gamebox">
@@ -92,7 +95,11 @@
 		</div>
 		</section><section class="basesec" id="stepboard">
 		<div class="stepmain">
+			<section class="steph1" id="moneysection">
+				<input id="actmoney_text" type="text" disabled="disabled" value="Your money: 1000" />
+			</section>
 			<section class="steph1 steph1-withbutton" id="rollsection">
+				<a class="button button-withspace" onclick="backToHome()">Go Home</a>
 				<a class="button" onclick="roll()">Roll</a>
 			</section>
 			<section class="steph1-collapsed" id="rollresults">

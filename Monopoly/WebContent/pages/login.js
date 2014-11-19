@@ -16,7 +16,24 @@
 	$.ajax({
 	    type: "POST",
 	    data: JSON.stringify(jsonObject),
-	    url: "/Monopoly/rest/userapi/login"
+	    url: "/Monopoly/rest/userapi/login",
+	    success: function(data,textStatus,jqXHR) {
+	    	console.log("***************success***************");
+			console.log(data);
+			console.log(textStatus);
+			console.log(jqXHR);
+		},
+		error: function(jqXHR,textStatus,errorThrown ) {
+	    	console.log("***************error***************");
+			console.log(jqXHR);
+			console.log(textStatus);
+			console.log(errorThrown);
+		},
+		complete : function(jqXHR,textStatus) {
+	    	console.log("***************complete***************");
+			console.log(jqXHR);
+			console.log(textStatus);
+		}
 	});
 }
 function signUp(mailID, nameID, passwdID) {
