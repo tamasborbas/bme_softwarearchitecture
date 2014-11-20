@@ -936,37 +936,60 @@ public class GameApi
             {
                 mem.commit(step);
 
-                if (isBuildingBought && isPayed)
+                if (isBuildingBought)
                 {
-                    List<HouseBuying> houseBuyings = new ArrayList<HouseBuying>();
-                    int buildingId;
-                    int number;
-                    for (int i = 0; i < boughtHouseNumberForBuildings.length(); i++)
-                    {
-                        buildingId = boughtHouseNumberForBuildings.getJSONObject(i).getInt("buildingId");
-                        number = boughtHouseNumberForBuildings.getJSONObject(i).getInt("number");
+                    // megvásárolta az adott telket
 
-                        // LEELLENORIZNI H VAN_E ILYEN ID BUILDING
-                        BuildingPlace boughtBuildingPlace = mem.getBuildingPlaceById(buildingId);
+                } else if (isPayed) {
+                	// fizetett a telek gazdájának megfelelõ összeget
+                	
+                	if(isSold) {
+                		// eladott épületekkel szükséges mûveletek elvégzése (házak levétele a telekrõl, a telek tulajdonjogának törlése...)
+                	}
+                }
+                
+                // Külön kell végig menni a telkeire vett házakon
+                List<HouseBuying> houseBuyings = new ArrayList<HouseBuying>();
+                int buildingId;
+                int number;
+                for (int i = 0; i < boughtHouseNumberForBuildings.length(); i++)
+                {
+                    buildingId = boughtHouseNumberForBuildings.getJSONObject(i).getInt("buildingId");
+                    number = boughtHouseNumberForBuildings.getJSONObject(i).getInt("number");
 
-                        HouseBuying houseBuying = new HouseBuying();
-                        houseBuying.setBuyedHouseNumber(number);
-                        houseBuying.setForBuilding(boughtBuildingPlace);
-                        mem.commit(houseBuying);
-                        houseBuyings.add(houseBuying);
+                    // LEELLENORIZNI H VAN_E ILYEN ID BUILDING
+                    BuildingPlace boughtBuildingPlace = mem.getBuildingPlaceById(buildingId);
 
-                        step.setBuyedBuilding(boughtBuildingPlace);
-                        mem.commit(step);
-
-                        player.setMoney(player.getMoney() - boughtBuildingPlace.getBuilding().getPrice()
-                                * boughtBuildingPlace.getHouseNumber());
-                        mem.commit(player);
-
+                    HouseBuying houseBuying = new HouseBuying();
+                    houseBuying.setBuyedHouseNumber(number);
+                    houseBuying.setForBuilding(boughtBuildingPlace);
+                    mem.commit(houseBuying);
+                    houseBuyings.add(houseBuying);
+                    
+                    // Ez kimaradt, növelni kell a házak számát az adott telken
+                    int newSumHouseNumber = boughtBuildingPlace.getHouseNumber()+number;
+                    if(newSumHouseNumber>5) {
+                    	// csalt, nem érvényes a lépés
+                    	// ilyenkor hogyan vonod vissza az eddig felkommitolt dolgokat az adatbázisból?
+                    	errorCode = 2;
+                    	throw new IllegalArgumentException("Too much house bought for: "+boughtBuildingPlace.getId());
                     }
-                    step.setHouseBuyings(houseBuyings);
+					boughtBuildingPlace.setHouseNumber(newSumHouseNumber);
+
+                    step.setBuyedBuilding(boughtBuildingPlace);
                     mem.commit(step);
 
+                    player.setMoney(player.getMoney() - boughtBuildingPlace.getBuilding().getPrice()
+                            * boughtBuildingPlace.getHouseNumber());
+                    mem.commit(player);
+
                 }
+                step.setHouseBuyings(houseBuyings);
+                
+                // Ide kellene majd még, hogy megvizsgáljuk a pénzét, ha negatív, akkor menjen csõdbe (telkek elvétele és ürítése, állapot átállítása...)
+                
+                //Szerintem csak itt kéne kommitolni mindent, azt nem lehet? mondjuk a houseBuyings-os listán végigmenve mindegyiket egyesével meg a player-t is
+                mem.commit(step);
             } catch (Exception e)
             {
                 // TODO Auto-generated catch block
