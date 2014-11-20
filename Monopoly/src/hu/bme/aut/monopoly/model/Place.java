@@ -22,9 +22,10 @@ public class Place implements Serializable
      */
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private Game game;
+    private int placeSequenceNumber;
 
     @XmlElement
     @ManyToOne
@@ -42,6 +43,17 @@ public class Place implements Serializable
     public int getId()
     {
         return id;
+    }
+
+    @XmlElement
+    public int getPlaceSequenceNumber()
+    {
+        return placeSequenceNumber;
+    }
+
+    public void setPlaceSequenceNumber(int placeSequenceNumber)
+    {
+        this.placeSequenceNumber = placeSequenceNumber;
     }
 
 }

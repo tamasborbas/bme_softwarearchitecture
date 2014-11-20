@@ -12,7 +12,6 @@ import java.security.NoSuchAlgorithmException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -22,6 +21,9 @@ import javax.ws.rs.core.MediaType;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.sun.jersey.api.JResponse;
 
 
 @Path("/userapi")
@@ -35,7 +37,7 @@ public class UserApi
         return "Hello Jersey";
     }
 
-    @Path("/login")
+    @Path("/Login")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public HttpServletResponse login(String json, @Context
@@ -45,12 +47,12 @@ public class UserApi
         System.out.println("Login start: " + json + "itt");
 
         JSONArray jsonTomb;
-        String email = null;
+        String userName = null;
         String password = null;
         try
         {
             jsonTomb = new JSONArray(json);
-            email = jsonTomb.getJSONObject(0).getString("email");
+            userName = jsonTomb.getJSONObject(0).getString("userName");
             password = jsonTomb.getJSONObject(0).getString("password");
         } catch (JSONException e1)
         {
@@ -66,19 +68,18 @@ public class UserApi
         // MD5 hash alkalmazása a jelszora
         passwordHash = encodePassword(password);
 
-        System.out.println(email + " - " + passwordHash);
+        System.out.println(userName + " - " + passwordHash);
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
 
-        if (mem.getUserIsRegistered(email, passwordHash))
+        if (mem.getUserIsRegistered(userName, passwordHash))
         {
-            session.setAttribute("loggedInUser", email);
+            session.setAttribute("loggedInUser", mem.getUserByName(userName).getEmail());
             try
             {
                 // TODO
-                // response.sendError(0);
 
-                response.sendRedirect("/Monopoly/home.html");
+                response.sendRedirect("/Monopoly/pages/home.html");
             } catch (IOException e)
             {
                 // TODO Auto-generated catch block
@@ -116,7 +117,7 @@ public class UserApi
         System.out.println("logout");
         try
         {
-            response.sendRedirect("/Monopoly/login.html");
+            response.sendRedirect("/Monopoly/index.html");
         } catch (IOException e)
         {
             // TODO Auto-generated catch block
@@ -125,40 +126,14 @@ public class UserApi
         return response;
     }
 
-    private String encodePassword(String password)
-    {
-        String passwordHash = null;
-
-        try
-        {
-            byte[] bytesOfMessage = null;
-
-            bytesOfMessage = password.getBytes("UTF-8");
-
-            MessageDigest md;
-            md = MessageDigest.getInstance("MD5");
-            byte[] digest = md.digest(bytesOfMessage);
-            BigInteger bigInt = new BigInteger(1, digest);
-            String hashtext = bigInt.toString(16);
-
-            passwordHash = hashtext;
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return passwordHash;
-    }
-
     @Path("/Registration")
     @POST
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public HttpServletResponse addUser(String json, @Context
+    public JResponse<JSONObject> addUser(String json, @Context
     HttpServletRequest request, @Context
     HttpServletResponse response) throws JSONException
     {
 
-        // session, helyes regisztrációná be is léptetjük.
+        // session, helyes regisztracional be is leptetjük.
         HttpSession session = request.getSession(true);
         session.setAttribute("loggedInUser", "");
 
@@ -182,6 +157,8 @@ public class UserApi
         String passwordHash = null;
         passwordHash = encodePassword(password);
 
+        int errorCode = 0;
+
         if (null != email && null != passwordHash && null != name)
         {
             MonopolyEntityManager mem = new MonopolyEntityManager();
@@ -191,12 +168,10 @@ public class UserApi
                 mem.initDB();
                 if (mem.isUserEmailRegistered(email))
                 {
-                    // TODO mukodik?
-                    response.sendError(2);
+                    errorCode = 2;
                 } else if (mem.isUserNameRegistered(name))
                 {
-                    // TODO mukodik?
-                    response.sendError(1);
+                    errorCode = 1;
                 } else
                 {
                     mem.addNewUser(email, passwordHash, name, UserType.user);
@@ -224,9 +199,57 @@ public class UserApi
                 }
             }
             mem.closeDB();
-
         }
-        return response;
+
+        JSONObject responseJsonObject = new JSONObject();
+        responseJsonObject.put("errorCode", errorCode);
+
+        return JResponse.ok(responseJsonObject).build();
+    }
+
+    @Path("/Remind")
+    @POST
+    public JResponse<JSONObject> remind(String json) throws JSONException
+    {
+        boolean success = true;
+
+        // TODO reminder
+
+        JSONObject responseJsonObject = new JSONObject();
+        try
+        {
+            responseJsonObject.put("success", success);
+        } catch (JSONException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return JResponse.ok(responseJsonObject).build();
+    }
+
+    private String encodePassword(String password)
+    {
+        String passwordHash = null;
+
+        try
+        {
+            byte[] bytesOfMessage = null;
+
+            bytesOfMessage = password.getBytes("UTF-8");
+
+            MessageDigest md;
+            md = MessageDigest.getInstance("MD5");
+            byte[] digest = md.digest(bytesOfMessage);
+            BigInteger bigInt = new BigInteger(1, digest);
+            String hashtext = bigInt.toString(16);
+
+            passwordHash = hashtext;
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return passwordHash;
     }
 
 }

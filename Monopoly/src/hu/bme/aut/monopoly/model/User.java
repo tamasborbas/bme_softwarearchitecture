@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Entity
 @NamedQueries({
 
-        @NamedQuery(name = "User.getUserByEmailAndPass", query = "SELECT u from User u WHERE u.email like :emailPattern AND u.passwordHash like :passHashPattern"),
+        @NamedQuery(name = "User.getUserByNameAndPass", query = "SELECT u from User u WHERE u.name like :namePattern AND u.passwordHash like :passHashPattern"),
 
         @NamedQuery(name = "User.getUserByEmail", query = "SELECT u from User u WHERE u.email like :emailPattern"),
         @NamedQuery(name = "User.getUserByName", query = "SELECT u from User u WHERE u.name like :namePattern") })
@@ -33,7 +33,7 @@ public class User implements Serializable
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String email;
     private String passwordHash;

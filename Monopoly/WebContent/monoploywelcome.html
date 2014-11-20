@@ -18,7 +18,7 @@
 		var jsonObject = [];
 		
 		jsonObject.push({
-			"email" : "admin@gmail.com",
+			"userName" : "admin",
 			"password" : "admin"
 		});
 
@@ -26,7 +26,7 @@
 		$.ajax({
 		    type: "POST",
 		    data: JSON.stringify(jsonObject),
-		    url: "/Monopoly/rest/userapi/login"
+		    url: "/Monopoly/rest/userapi/Login"
 		});
 		
 
@@ -53,7 +53,7 @@
 		var jsonObject = [];
 		
 		jsonObject.push({
-			"gameId" : "4"
+			"gameId" : "2"
 		});
 
 		
@@ -94,7 +94,7 @@
 		var jsonObject = [];
 		
 		jsonObject.push({
-			"buildingPlaceId" : "54"
+			"buildingPlaceId" : "116"
 		});
 
 		
@@ -112,7 +112,7 @@
 		var jsonObject = [];
 		
 		jsonObject.push({
-			"gameId" : "4"
+			"gameId" : "2"
 		});
 
 		
@@ -142,7 +142,7 @@
 		var jsonObject = [];
 		
 		jsonObject.push({
-			"gameId" : "3"
+			"gameId" : "1"
 		});
 
 		
@@ -161,7 +161,7 @@
 		var jsonObject = [];
 		
 		jsonObject.push({
-			"gameId" : "3"
+			"gameId" : "1"
 		});
 
 		
@@ -207,7 +207,7 @@
 		var jsonObject = [];
 		
 		jsonObject.push({
-			"placeId" : "54"
+			"placeId" : "116"
 		});
 
 		
@@ -220,6 +220,30 @@
             }
 		});
 	}
+	
+	function getPlayerData() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"playerId" : "2"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/GetPlayerData"
+		    }).done(function(data) {
+
+				
+				$(data).each(function(index, item) {
+					$("#elements").append(item.user.id);
+				});
+		    });
+	}
+	
+	
 	function logout() {
 
 		var url = "/Monopoly/rest/userapi/Logout";
@@ -260,6 +284,7 @@
 			<button	 type="button" onclick="createGame()" class="btn btn-large btn-block btn-primary">CreateGame</button>
 			<button	 type="button" onclick="getProfil()" class="btn btn-large btn-block btn-primary">GetProfil</button>
 			<button	 type="button" onclick="getPlaceData()" class="btn btn-large btn-block btn-primary">GetPlaceData</button>
+			<button	 type="button" onclick="getPlayerData()" class="btn btn-large btn-block btn-primary">GetPlayerData</button>
 		
 			<button	 type="button" onclick="logout()" class="btn btn-large btn-block btn-primary">Logout</button>
 			

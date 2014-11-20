@@ -3,6 +3,7 @@ package hu.bme.aut.monopoly.rest;
 import hu.bme.aut.monopoly.model.BuildingPlace;
 import hu.bme.aut.monopoly.model.Game;
 import hu.bme.aut.monopoly.model.GameStatus;
+import hu.bme.aut.monopoly.model.HouseBuying;
 import hu.bme.aut.monopoly.model.MonopolyEntityManager;
 import hu.bme.aut.monopoly.model.Place;
 import hu.bme.aut.monopoly.model.Player;
@@ -89,20 +90,16 @@ public class GameApi
     @Path("/GetActiveGames")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONArray> getActiveGames(@Context
+    public JResponse<JSONObject> getActiveGames(@Context
     HttpServletRequest request)
     {
         System.out.println("GetActiveGames");
-
         String loggedInUseremail = Helper.getLoggedInUserEmail(request);
 
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
 
         List<Game> activeGamesByEmail = mem.getActiveGamesByEmail(loggedInUseremail);
-        System.out.println("***********************");
-        System.out.println(activeGamesByEmail.toString());
-        System.out.println("***********************");
 
         JSONArray activeGamesJsonArray = new JSONArray();
         for (Game game : activeGamesByEmail)
@@ -121,16 +118,13 @@ public class GameApi
 
                 for (Player player : game.getPlayers())
                 {
-
                     System.out.println("JATEKOS NEV: " + player.getId() + " - " + player.getUser().getName());
                     if ((player.getPlayerStatus() == PlayerStatus.accepted)
                             && !(player.getUser().getEmail().equals(loggedInUseremail)))
                     {
-
                         JSONObject aAcceptedPlayer = new JSONObject();
                         aAcceptedPlayer.put("name", player.getUser().getName());
                         acceptedPlayersJsonArray.put(aAcceptedPlayer);
-
                     }
                 }
                 aActiveGame.put("players", acceptedPlayersJsonArray);
@@ -144,12 +138,22 @@ public class GameApi
                 e.printStackTrace();
             }
             activeGamesJsonArray.put(aActiveGame);
-            System.out.println("ELKULDOTT: " + activeGamesJsonArray);
         }
-
         mem.closeDB();
 
-        return JResponse.ok(activeGamesJsonArray).build();
+        JSONObject responseJsonObject = new JSONObject();
+        try
+        {
+            responseJsonObject.put("activeGames", activeGamesJsonArray);
+        } catch (JSONException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        System.out.println("ELKULDOTT: " + responseJsonObject);
+
+        return JResponse.ok(responseJsonObject).build();
     }
 
     @Path("/OpenGame")
@@ -177,36 +181,57 @@ public class GameApi
             gameDetailesJsonObject.put("actualPlayer", game.getActualPlayer().getId());
 
             JSONArray playersJsonArray = new JSONArray();
+
             for (Player player : game.getPlayers())
             {
-                System.out.println("PLAYER: " + player.getId());
-                JSONObject aPlayer = new JSONObject();
-                aPlayer.put("playerId", player.getId());
-                aPlayer.put("name", player.getUser().getName());
-                aPlayer.put("status", player.getPlayerStatus());
-
                 if (player.getPlayerStatus() != PlayerStatus.refused)
                 {
 
-                    try
+                    System.out.println("PLAYER: " + player.getId());
+                    JSONObject aPlayerJsonObject = new JSONObject();
+                    aPlayerJsonObject.put("playerId", player.getId());
+                    aPlayerJsonObject.put("name", player.getUser().getName());
+                    aPlayerJsonObject.put("status", player.getPlayerStatus());
+                    boolean isActualPlayer = player.getGame().getActualPlayer().equals(player);
+                    aPlayerJsonObject.put("isActualPlayer", isActualPlayer);
+
+                    JSONObject actualPlayerJsonObject = new JSONObject();
+                    if (isActualPlayer)
                     {
-                        Step step = new Step();
-                        // mindenkit a starta rakunk
-                        step.setFinishPlace(game.getPlaces().get(0));
-                        mem.commit(step);
-                        player.addStep(step);
-                        mem.commit(player);
-                        aPlayer.put("placeId", player.getSteps().get(player.getSteps().size() - 1).getFinishPlace()
-                                .getId());
-                    } catch (Exception e)
+                        actualPlayerJsonObject.put("money", player.getMoney());
+                        actualPlayerJsonObject.put("placeSequenceNumber",
+                                player.getSteps().get(player.getSteps().size() - 1).getFinishPlace()
+                                        .getPlaceSequenceNumber());
+
+                        JSONArray ownedBuildingsJsonArray = new JSONArray();
+                        for (BuildingPlace buildingPlace : player.getBuildings())
+                        {
+                            JSONObject aOwnedBuildingJsonObject = new JSONObject();
+
+                            aOwnedBuildingJsonObject.put("buildingId", buildingPlace.getBuilding().getId());
+                            aOwnedBuildingJsonObject.put("buildingName", buildingPlace.getBuilding().getName());
+                            aOwnedBuildingJsonObject.put("maxHouseNumber", 5 - buildingPlace.getHouseNumber());
+                            ownedBuildingsJsonArray.put(aOwnedBuildingJsonObject);
+                        }
+
+                        actualPlayerJsonObject.put("ownedBuildings", ownedBuildingsJsonArray);
+                        aPlayerJsonObject.put("actualPlayer", actualPlayerJsonObject);
+                    } else
                     {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        aPlayerJsonObject.put("actualPlayer", "");
                     }
 
-                }
+                    // !!!! place ahol all
 
-                playersJsonArray.put(aPlayer);
+                    // Step step = new Step();
+                    // // mindenkit a starta rakunk
+                    // step.setFinishPlace(game.getPlaces().get(0));
+                    // mem.commit(step);
+                    // player.addStep(step);
+                    // mem.commit(player);
+
+                    playersJsonArray.put(aPlayerJsonObject);
+                }
             }
             gameDetailesJsonObject.put("players", playersJsonArray);
 
@@ -216,8 +241,22 @@ public class GameApi
 
                 JSONObject aPlace = new JSONObject();
                 aPlace.put("placeId", place.getId());
+                aPlace.put("placeSequenceNumber", place.getPlaceSequenceNumber());
+                aPlace.put("type", place.getClass().getSimpleName());
 
-                aPlace.put("type", place.getClass());
+                // minden placehez egy lista, h melyik players all rajta ID-NAME
+                JSONArray playersOnPlaceJsonArray = new JSONArray();
+                for (Player player : game.getPlayers())
+                {
+                    if (player.getSteps().get(player.getSteps().size() - 1).getFinishPlace() == place)
+                    {
+                        JSONObject aPlayerOnPlaceJsonObject = new JSONObject();
+                        aPlayerOnPlaceJsonObject.put("playerId", player.getId());
+                        aPlayerOnPlaceJsonObject.put("userName", player.getUser().getName());
+                        playersOnPlaceJsonArray.put(aPlayerOnPlaceJsonObject);
+                    }
+                }
+                aPlace.put("playersOnPlace", playersOnPlaceJsonArray);
                 placesJsonArray.put(aPlace);
             }
 
@@ -254,7 +293,7 @@ public class GameApi
     @Path("/GetMyGames")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONArray> getMyGames(@Context
+    public JResponse<JSONObject> getMyGames(@Context
     HttpServletRequest request)
     {
         System.out.println("GetMyGames");
@@ -265,56 +304,69 @@ public class GameApi
         mem.initDB();
         List<Game> games = mem.getOwnedInitGamesByEmail(loggedInUseremail);
         mem.closeDB();
-
+        System.out.println(games);
         JSONArray ownedGamesJsonArray = new JSONArray();
         for (Game game : games)
         {
             System.out.println(game.getName());
-            try
-            {
-                JSONObject aGameJsonObject = new JSONObject();
-                aGameJsonObject.put("id", game.getId());
-                aGameJsonObject.put("name", game.getName());
-                JSONArray acceptedPlayersJsonArray = new JSONArray();
-                JSONArray notAcceptedYetPlayersJsonArray = new JSONArray();
-                JSONArray refusedPlayersJsonArray = new JSONArray();
-                for (Player player : game.getPlayers())
-                {
-                    JSONObject aPlayer = new JSONObject();
-                    aPlayer.put("playerId", player.getId());
-                    aPlayer.put("name", player.getUser().getName());
-                    aPlayer.put("status", player.getPlayerStatus());
-                    aPlayer.put("placeId", player.getSteps().get(player.getSteps().size() - 1).getFinishPlace()
-                            .getId());
-
-                    if (player.getPlayerStatus() == PlayerStatus.accepted)
-                    {
-                        acceptedPlayersJsonArray.put(aPlayer);
-                    } else if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
-                    {
-                        notAcceptedYetPlayersJsonArray.put(aPlayer);
-                    } else if (player.getPlayerStatus() == PlayerStatus.refused)
-                    {
-                        refusedPlayersJsonArray.put(aPlayer);
-                    }
-                }
-
-                aGameJsonObject.put("acceptedPlayers", acceptedPlayersJsonArray);
-                aGameJsonObject.put("notAcceptedYetPlayers", notAcceptedYetPlayersJsonArray);
-                aGameJsonObject.put("refusedPlayers", refusedPlayersJsonArray);
-                ownedGamesJsonArray.put(aGameJsonObject);
-
-            } catch (JSONException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-            // playersJsonArray.put(aPlayer);
+            ownedGamesJsonArray.put(getGameDetailes(game));
         }
 
-        System.out.println(ownedGamesJsonArray);
-        return JResponse.ok(ownedGamesJsonArray).build();
+        JSONObject responseJsonObject = new JSONObject();
+        try
+        {
+            responseJsonObject.put("myGames", ownedGamesJsonArray);
+        } catch (JSONException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        System.out.println(responseJsonObject);
+        return JResponse.ok(responseJsonObject).build();
+    }
+
+    private JSONObject getGameDetailes(Game game)
+    {
+        System.out.println(game.getName());
+        JSONObject aGameJsonObject = new JSONObject();
+        try
+        {
+
+            aGameJsonObject.put("id", game.getId());
+            aGameJsonObject.put("name", game.getName());
+            JSONArray acceptedPlayersJsonArray = new JSONArray();
+            JSONArray notAcceptedYetPlayersJsonArray = new JSONArray();
+            JSONArray refusedPlayersJsonArray = new JSONArray();
+            for (Player player : game.getPlayers())
+            {
+                JSONObject aPlayer = new JSONObject();
+                aPlayer.put("playerId", player.getId());
+                aPlayer.put("name", player.getUser().getName());
+                aPlayer.put("status", player.getPlayerStatus());
+                aPlayer.put("placeId", player.getSteps().get(player.getSteps().size() - 1).getFinishPlace().getId());
+
+                if (player.getPlayerStatus() == PlayerStatus.accepted)
+                {
+                    acceptedPlayersJsonArray.put(aPlayer);
+                } else if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
+                {
+                    notAcceptedYetPlayersJsonArray.put(aPlayer);
+                } else if (player.getPlayerStatus() == PlayerStatus.refused)
+                {
+                    refusedPlayersJsonArray.put(aPlayer);
+                }
+            }
+
+            aGameJsonObject.put("acceptedPlayers", acceptedPlayersJsonArray);
+            aGameJsonObject.put("notAcceptedYetPlayers", notAcceptedYetPlayersJsonArray);
+            aGameJsonObject.put("refusedPlayers", refusedPlayersJsonArray);
+
+        } catch (JSONException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return aGameJsonObject;
     }
 
     @Path("/GetBuilding")
@@ -341,27 +393,42 @@ public class GameApi
 
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
+
         BuildingPlace buildingPlace = mem.getBuildingPlaceById(buildigPlaceId);
-        mem.closeDB();
-
         JSONObject buildingPlaceJsonObject = new JSONObject();
-        try
+        System.out.println("BuildigPlace: " + buildingPlace.getId() + " - " + buildingPlace.getOwnerPlayer());
+        if ((buildingPlace != null) && (buildingPlace.getOwnerPlayer() != null))
         {
-            buildingPlaceJsonObject.put("ownerUserName", buildingPlace.getOwnerPlayer().getUser().getName());
-            buildingPlaceJsonObject.put("houseNumber", buildingPlace.getHouseNumber());
-            buildingPlaceJsonObject.put("name", buildingPlace.getBuilding().getName());
-            buildingPlaceJsonObject.put("price", buildingPlace.getBuilding().getPrice());
-            buildingPlaceJsonObject.put("housePrice", buildingPlace.getBuilding().getHousePrice());
-            buildingPlaceJsonObject.put("baseNightPayment", buildingPlace.getBuilding().getBaseNightPayment());
-            buildingPlaceJsonObject.put("perHousePayment", buildingPlace.getBuilding().getPerHousePayment());
-        } catch (JSONException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
 
+            try
+            {
+                buildingPlaceJsonObject.put("ownerUserName", buildingPlace.getOwnerPlayer().getUser().getName());
+                getBuildingPlaceDetailes(buildingPlace, buildingPlaceJsonObject);
+            } catch (JSONException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        mem.closeDB();
         System.out.println(buildingPlaceJsonObject);
+
         return JResponse.ok(buildingPlaceJsonObject).build();
+    }
+
+    private JSONObject getBuildingPlaceDetailes(BuildingPlace buildingPlace, JSONObject buildingPlaceJsonObject)
+            throws JSONException
+    {
+        buildingPlaceJsonObject.put("houseNumber", buildingPlace.getHouseNumber());
+        buildingPlaceJsonObject.put("name", buildingPlace.getBuilding().getName());
+        buildingPlaceJsonObject.put("price", buildingPlace.getBuilding().getPrice());
+        buildingPlaceJsonObject.put("housePrice", buildingPlace.getBuilding().getHousePrice());
+        buildingPlaceJsonObject.put("baseNightPayment", buildingPlace.getBuilding().getBaseNightPayment());
+        buildingPlaceJsonObject.put("perHousePayment", buildingPlace.getBuilding().getPerHousePayment());
+        buildingPlaceJsonObject.put("placeSequenceNumber", buildingPlace.getPlaceSequenceNumber());
+        buildingPlaceJsonObject.put("placeId", buildingPlace.getId());
+
+        return buildingPlaceJsonObject;
     }
 
     @Path("/StartGame")
@@ -372,7 +439,7 @@ public class GameApi
     {
         JSONArray jsonTomb;
         int gameId;
-
+        boolean success = true;
         JSONObject responseJsonObject = new JSONObject();
         try
         {
@@ -381,31 +448,34 @@ public class GameApi
 
             String loggedInUserEmail = Helper.getLoggedInUserEmail(request);
 
-            try
-            {
-                MonopolyEntityManager mem = new MonopolyEntityManager();
-                mem.initDB();
-                Game game = mem.getGameById(gameId);
-                game.setGameStatus(GameStatus.inProgress);
-                mem.commit(game);
-                mem.closeDB();
-                responseJsonObject.put("success", true);
-                return JResponse.ok(responseJsonObject).build();
-            } catch (Exception e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            MonopolyEntityManager mem = new MonopolyEntityManager();
+            mem.initDB();
+            Game game = mem.getGameById(gameId);
 
-        } catch (JSONException e1)
+            // ha nem fogadta el a felhasznalo a jatekra valo felkeres, akkor elutasitjuk a jatek megkezdesekor
+            for (Player player : game.getPlayers())
+            {
+                if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
+                {
+                    player.setPlayerStatus(PlayerStatus.refused);
+                    mem.commit(player);
+                }
+            }
+            game.setGameStatus(GameStatus.inProgress);
+            mem.commit(game);
+            Helper.makeBoard(gameId);
+            mem.closeDB();
+
+        } catch (Exception e)
         {
             // TODO Auto-generated catch block
-            e1.printStackTrace();
+            e.printStackTrace();
+            success = false;
 
         }
         try
         {
-            responseJsonObject.put("success", false);
+            responseJsonObject.put("success", success);
         } catch (JSONException e)
         {
             // TODO Auto-generated catch block
@@ -417,7 +487,7 @@ public class GameApi
     @Path("/GetInvitations")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONArray> getInvitations(@Context
+    public JResponse<JSONObject> getInvitations(@Context
     HttpServletRequest request)
     {
         System.out.println("GetInvitations");
@@ -436,12 +506,23 @@ public class GameApi
         {
             if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
             {
-                notAcceptedYetGamesJsonArray.put(player.getGame());
+                notAcceptedYetGamesJsonArray.put(getGameDetailes(player.getGame()));
                 System.out.println(player.getGame().getName());
             }
         }
-        System.out.println(notAcceptedYetGamesJsonArray);
-        return JResponse.ok(notAcceptedYetGamesJsonArray).build();
+
+        JSONObject responseJsonObject = new JSONObject();
+        try
+        {
+            responseJsonObject.put("nayGames", notAcceptedYetGamesJsonArray);
+        } catch (JSONException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        System.out.println(responseJsonObject);
+        return JResponse.ok(responseJsonObject).build();
     }
 
     @Path("/AcceptInvitation")
@@ -469,11 +550,13 @@ public class GameApi
     HttpServletRequest request)
     {
 
+        boolean success = true;
+        List<User> validUsers = new ArrayList<User>();
         System.out.println(json);
 
         JSONArray jsonTomb;
         String gameName;
-        List<Player> gamePlayers = new ArrayList<Player>();
+
         JSONArray invalidUserNamesJsonArray = new JSONArray();
         JSONArray notRegisteredUserEmailsJsonArray = new JSONArray();
 
@@ -494,11 +577,12 @@ public class GameApi
                 // username jott, es a username az adatbazisban - ok
                 if ((mem.isUserNameRegistered(playerEmailOrName)))
                 {
-                    Player player = new Player();
-                    player.setUser(mem.getUserByName(playerEmailOrName));
-                    player.setMoney(1000);
-                    mem.commit(player);
-                    gamePlayers.add(player);
+                    validUsers.add(mem.getUserByName(playerEmailOrName));
+                    // Player player = new Player();
+                    // player.setUser(mem.getUserByName(playerEmailOrName));
+                    // player.setMoney(1000);
+                    // mem.commit(player);
+                    // gamePlayers.add(player);
                 }
                 // valami jott, de az a usernamek kozott nincs az adatbazisban
                 else
@@ -506,15 +590,15 @@ public class GameApi
                     // emailcim jott, benne van az emailek kozott
                     if (mem.isUserEmailRegistered(playerEmailOrName))
                     {
-                        Player player = new Player();
                         User user = mem.getUserByEmail(playerEmailOrName);
-                        player.setUser(user);
-                        player.setMoney(1000);
-                        mem.commit(player);
-                        gamePlayers.add(player);
-                        if (user.getUserType() == UserType.notRegistered)
+
+                        if (user.getUserType() == UserType.notRegistered)/* && (/*van-e aktiv jeteka)) */
                         {
                             notRegisteredUserEmailsJsonArray.put(playerEmailOrName);
+                            errorCode = 1;
+                        } else
+                        {
+                            validUsers.add(user);
                         }
                     }
                     // vagy email, ami nincsen az adatbazisban, vagy username, ami nincsen az adatbazisban
@@ -522,7 +606,14 @@ public class GameApi
                     {
                         if (playerEmailOrName.contains("@"))
                         {
-                            // ujemail, mi legyen?
+                            // ujemail, mi legyen?-->vegyuk fel a user tablaba mint nem regisztralt felhasznalo
+                            // uj user a listahoz adni
+                            User user = new User();
+                            user.setEmail(playerEmailOrName);
+                            user.setUserType(UserType.notRegistered);
+                            mem.commit(user);
+
+                            validUsers.add(mem.getUserByName(playerEmailOrName));
                         }
                         // nem regisztralt username
                         else
@@ -536,10 +627,31 @@ public class GameApi
                 }
 
             }
-            Game game = new Game();
-            game.setName(gameName);
-            game.setPlayers(gamePlayers);
-            mem.commit(game);
+
+            if (errorCode == 0)
+            {
+                Game game = new Game();
+                game.setName(gameName);
+                mem.commit(game);
+
+                List<Player> gamePlayers = new ArrayList<Player>();
+                for (User user : validUsers)
+                {
+                    Player player = new Player();
+                    player.setPlayerStatus(PlayerStatus.notAcceptedYet);
+                    player.setMoney(1000);
+                    player.setUser(user);
+                    player.setGame(game);
+                    mem.commit(player);
+                    gamePlayers.add(player);
+
+                    user.addGamePlayer(player);
+                    mem.commit(user);
+                }
+
+                game.setPlayers(gamePlayers);
+                mem.commit(game);
+            }
 
         } catch (JSONException e)
         {
@@ -558,7 +670,7 @@ public class GameApi
 
             responseJsonObject.put("code", errorCode);
             responseJsonObject.put("invalidUserNames", invalidUserNamesJsonArray);
-            responseJsonObject.put("notRegisteredUserEmailsJsonArray", notRegisteredUserEmailsJsonArray);
+            responseJsonObject.put("notRegisteredUserEmails", notRegisteredUserEmailsJsonArray);
 
         } catch (JSONException e)
         {
@@ -599,7 +711,7 @@ public class GameApi
         try
         {
             responseJsonObject.put("name", user.getName());
-            responseJsonObject.put("passwordHash", user.getPasswordHash());
+            responseJsonObject.put("email", user.getEmail());
             responseJsonObject.put("participatedGamesNum", user.getGamePlayers().size());
             responseJsonObject.put("ownGamesNum", ownedGames.size());
             responseJsonObject.put("wonGamesNum", wonGamesNum);
@@ -640,15 +752,17 @@ public class GameApi
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
         JSONObject placeJsonObject = new JSONObject();
+        boolean isBuilding = false;
 
         Place place = mem.getPlaceById(placeId);
-        if (place.getClass() == StartPlace.class)
+        if (place instanceof StartPlace)
         {
             StartPlace startPlace = mem.getStartPlaceById(placeId);
             try
             {
-                placeJsonObject.put("gameId", startPlace.getGame().getId());
+
                 placeJsonObject.put("placeId", startPlace.getId());
+                placeJsonObject.put("placeSequenceNumber", startPlace.getPlaceSequenceNumber());
                 placeJsonObject.put("throughMoney", startPlace.getThroughMoney());
 
             } catch (JSONException e)
@@ -663,6 +777,7 @@ public class GameApi
             {
                 placeJsonObject.put("gameId", buildingPlace.getGame().getId());
                 placeJsonObject.put("placeId", buildingPlace.getId());
+                placeJsonObject.put("placeSequenceNumber", buildingPlace.getPlaceSequenceNumber());
                 placeJsonObject.put("houseNumber", buildingPlace.getHouseNumber());
                 placeJsonObject.put("ownerPlayerId", buildingPlace.getOwnerPlayer().getId());
                 placeJsonObject.put("buildingId", buildingPlace.getBuilding().getId());
@@ -672,6 +787,7 @@ public class GameApi
                 placeJsonObject.put("buildingBaseNightPayment", buildingPlace.getBuilding().getBaseNightPayment());
                 placeJsonObject.put("buildingPerHousePayment", buildingPlace.getBuilding().getPerHousePayment());
 
+                isBuilding = true;
             } catch (JSONException e)
             {
                 // TODO Auto-generated catch block
@@ -682,6 +798,7 @@ public class GameApi
             try
             {
                 placeJsonObject.put("gameId", place.getGame().getId());
+                placeJsonObject.put("placeSequenceNumber", place.getPlaceSequenceNumber());
                 placeJsonObject.put("placeId", place.getId());
             } catch (JSONException e)
             {
@@ -692,6 +809,184 @@ public class GameApi
         System.out.println(placeJsonObject);
         mem.closeDB();
 
+        try
+        {
+            responseJsonObject.put("buildingData", placeJsonObject);
+            responseJsonObject.put("isBuilding", isBuilding);
+        } catch (JSONException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return JResponse.ok(responseJsonObject).build();
+    }
+
+    @Path("/GetPlayerData")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public JResponse<JSONObject> getPlayerData(String json, @Context
+    HttpServletRequest request)
+    {
+        System.out.println("JSON: " + json);
+        JSONArray jsonTomb;
+        int playerId = 0;
+        try
+        {
+            jsonTomb = new JSONArray(json);
+            playerId = jsonTomb.getJSONObject(0).getInt("playerId");
+            System.out.println("PlayerID: " + playerId);
+        } catch (JSONException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        MonopolyEntityManager mem = new MonopolyEntityManager();
+        mem.initDB();
+        JSONObject playerJsonObject = new JSONObject();
+
+        Player player = mem.getPlayerById(playerId);
+        System.out.println(player.getId());
+        try
+        {
+            playerJsonObject.put("gameId", player.getGame().getId());
+            playerJsonObject.put("gameName", player.getGame().getName());
+            playerJsonObject.put("playerId", player.getId());
+            playerJsonObject.put("playerSequenceNumber", player.getGame().getPlayers().indexOf(player));
+            playerJsonObject.put("playerStatus", player.getPlayerStatus());
+            playerJsonObject.put("money", player.getMoney());
+            playerJsonObject.put("userId", player.getUser().getId());
+            playerJsonObject.put("userName", player.getUser().getName());
+
+            JSONArray ownedBuildingsJsonArray = new JSONArray();
+            for (BuildingPlace buildingPlace : player.getBuildings())
+            {
+                JSONObject buildingPlaceJsonObject = new JSONObject();
+                System.out.println(buildingPlace);
+                ownedBuildingsJsonArray.put(getBuildingPlaceDetailes(buildingPlace, buildingPlaceJsonObject));
+            }
+
+            playerJsonObject.put("ownedBuildingPlaces", ownedBuildingsJsonArray);
+        } catch (JSONException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        System.out.println(playerJsonObject);
+        mem.closeDB();
+
+        return JResponse.ok(playerJsonObject).build();
+    }
+
+    @Path("/MakeStep")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public JResponse<JSONObject> makeStep(String json, @Context
+    HttpServletRequest request)
+    {
+        int errorCode = 0;
+
+        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
+
+        JSONArray jsonTomb;
+        int playerId = 0;
+        int placeSequenceNumber = 0;
+        int roll = 0;
+        boolean isBuildingBought = false;
+        boolean isPayed = false;
+        boolean isSold = false;
+        JSONArray soldBuildingsIds = new JSONArray();
+        JSONArray boughtHouseNumberForBuildings = new JSONArray();
+
+        try
+        {
+            jsonTomb = new JSONArray(json);
+            playerId = jsonTomb.getJSONObject(0).getInt("playerId");
+            placeSequenceNumber = jsonTomb.getJSONObject(0).getInt("placeSequenceNumber");
+            roll = jsonTomb.getJSONObject(0).getInt("roll");
+            isBuildingBought = jsonTomb.getJSONObject(0).getBoolean("isBuildingBought");
+            isPayed = jsonTomb.getJSONObject(0).getBoolean("isPayed");
+            isSold = jsonTomb.getJSONObject(0).getBoolean("isSold");
+            soldBuildingsIds = jsonTomb.getJSONObject(0).getJSONArray("soldBuildingsIds");
+            boughtHouseNumberForBuildings = jsonTomb.getJSONObject(0).getJSONArray("boughtHouseNumberForBuildings");
+
+            System.out.println("BuildigPlaceID: " + placeSequenceNumber);
+        } catch (JSONException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        MonopolyEntityManager mem = new MonopolyEntityManager();
+        mem.initDB();
+        Player player = mem.getPlayerById(playerId);
+
+        if (roll < 1
+                || roll > 6
+                || ((player.getSteps().get(player.getSteps().size() - 1).getFinishPlace().getPlaceSequenceNumber() + roll) % 16 != placeSequenceNumber))
+        {
+            errorCode = 2;
+        } else
+        {
+            Step step = new Step();
+
+            // TODO SCROLL!!!!!!!!!!! nincs az adatbazisban
+            try
+            {
+                mem.commit(step);
+
+                if (isBuildingBought && isPayed)
+                {
+                    List<HouseBuying> houseBuyings = new ArrayList<HouseBuying>();
+                    int buildingId;
+                    int number;
+                    for (int i = 0; i < boughtHouseNumberForBuildings.length(); i++)
+                    {
+                        buildingId = boughtHouseNumberForBuildings.getJSONObject(i).getInt("buildingId");
+                        number = boughtHouseNumberForBuildings.getJSONObject(i).getInt("number");
+
+                        // LEELLENORIZNI H VAN_E ILYEN ID BUILDING
+                        BuildingPlace boughtBuildingPlace = mem.getBuildingPlaceById(buildingId);
+
+                        HouseBuying houseBuying = new HouseBuying();
+                        houseBuying.setBuyedHouseNumber(number);
+                        houseBuying.setForBuilding(boughtBuildingPlace);
+                        mem.commit(houseBuying);
+                        houseBuyings.add(houseBuying);
+
+                        step.setBuyedBuilding(boughtBuildingPlace);
+                        mem.commit(step);
+
+                        player.setMoney(player.getMoney() - boughtBuildingPlace.getBuilding().getPrice()
+                                * boughtBuildingPlace.getHouseNumber());
+                        mem.commit(player);
+
+                    }
+                    step.setHouseBuyings(houseBuyings);
+                    mem.commit(step);
+
+                }
+            } catch (Exception e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+        }
+
+        mem.closeDB();
+
+        JSONObject responseJsonObject = new JSONObject();
+
+        try
+        {
+            responseJsonObject.put("errorCode", errorCode);
+        } catch (JSONException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         return JResponse.ok(responseJsonObject).build();
     }
 
@@ -729,7 +1024,8 @@ public class GameApi
         for (Player player : gamePlayers)
         {
             System.out.println("PLAYERID: " + player.getId());
-            if ((player.getGame() == game) && (player.getPlayerStatus() != playerStatus))
+            if ((player.getGame() == game) && (player.getPlayerStatus() != playerStatus)
+                    && (player.getPlayerStatus() != PlayerStatus.refused))
             {
 
                 try

@@ -19,7 +19,7 @@ public class HouseBuying implements Serializable
      */
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private int buyedHouseNumber;
     private BuildingPlace forBuilding;

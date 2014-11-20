@@ -1,13 +1,12 @@
 package hu.bme.aut.monopoly.test;
 
-import hu.bme.aut.monopoly.model.Building;
-import hu.bme.aut.monopoly.model.BuildingPlace;
 import hu.bme.aut.monopoly.model.Game;
 import hu.bme.aut.monopoly.model.GameStatus;
 import hu.bme.aut.monopoly.model.MonopolyEntityManager;
 import hu.bme.aut.monopoly.model.Player;
 import hu.bme.aut.monopoly.model.PlayerStatus;
 import hu.bme.aut.monopoly.model.User;
+import hu.bme.aut.monopoly.rest.Helper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,8 +46,8 @@ public class Main
         // openGame(mem, "TEST2", GameStatus.inProgress);
         // openGame(mem, "TEST3", GameStatus.init);
 
-        // Helper.makeBoard(3);
-        // Helper.makeBoard(4);
+        Helper.makeBoard(1);
+        Helper.makeBoard(2);
 
         // List<? extends Place> places = mem.getPlacesByGameId(3);
         // for (Place place : places)
@@ -58,17 +57,17 @@ public class Main
 
         try
         {
-            BuildingPlace buildingPlace = mem.getBuildingPlaceById(54);
-            Building building = new Building();
-            building.setName("Hilton Hotel");
-            building.setBaseNightPayment(100);
-            building.setHousePrice(5);
-            building.setPerHousePayment(2);
-            building.setPrice(200);
-            mem.commit(building);
-            buildingPlace.setBuilding(building);
-            buildingPlace.setOwnerPlayer(mem.getPlayerById(4));
-            mem.commit(buildingPlace);
+            // BuildingPlace buildingPlace = mem.getBuildingPlaceById(54);
+            // Building building = new Building();
+            // building.setName("Hilton Hotel");
+            // building.setBaseNightPayment(100);
+            // building.setHousePrice(5);
+            // building.setPerHousePayment(2);
+            // building.setPrice(200);
+            // mem.commit(building);
+            // buildingPlace.setBuilding(building);
+            // buildingPlace.setOwnerPlayer(mem.getPlayerById(4));
+            // mem.commit(buildingPlace);
 
         } catch (Exception e)
         {

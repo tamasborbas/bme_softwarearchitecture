@@ -33,20 +33,22 @@ public class Helper
         {
             Game game = mem.getGameById(gameId);
 
-            StartPlace satartPlace = new StartPlace();
-            satartPlace.setGame(game);
+            StartPlace startPlace = new StartPlace();
+            startPlace.setGame(game);
             // TODO through money
-            satartPlace.setThroughMoney(1000);
-            mem.commit(satartPlace);
+            startPlace.setThroughMoney(1000);
+            startPlace.setPlaceSequenceNumber(1);
+            mem.commit(startPlace);
 
-            places.add(satartPlace);
+            places.add(startPlace);
             // TODO boardsize
-            for (int i = 1; i < 40; i++)
+            for (int i = 1; i < 16; i++)
             {
                 if (i % 3 == 0)
                 {
                     BuildingPlace buildingPlace = new BuildingPlace();
                     buildingPlace.setGame(game);
+                    buildingPlace.setPlaceSequenceNumber(i + 1);
                     // Building building = new Building();
                     // building.setName("Building"+i);
                     // building.setPrice(100);
@@ -58,6 +60,7 @@ public class Helper
                 {
                     SimplePlace simplePlace = new SimplePlace();
                     simplePlace.setGame(game);
+                    simplePlace.setPlaceSequenceNumber(i + 1);
                     mem.commit(simplePlace);
                     places.add(simplePlace);
                 }

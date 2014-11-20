@@ -48,11 +48,11 @@ public class MonopolyEntityManager
         }
     }
 
-    public boolean getUserIsRegistered(String email, String hash)
+    public boolean getUserIsRegistered(String name, String hash)
     {
 
-        Query q = em.createNamedQuery("User.getUserByEmailAndPass");
-        q.setParameter("emailPattern", email);
+        Query q = em.createNamedQuery("User.getUserByNameAndPass");
+        q.setParameter("namePattern", name);
         q.setParameter("passHashPattern", hash);
         List<User> result = q.getResultList();
         if (result.size() == 0)
