@@ -1,10 +1,8 @@
-﻿function signIn() {
+﻿/********************* Event handler functions *********************/
+
+function signIn() {
     var nameinput = document.getElementById("lname");
     var passwdinput = document.getElementById("lpasswd");
-    var body = document.getElementById("body");
-//    body.innerHTML = "New line";
-//    window.confirm(nameinput.value + ": " + passwdinput.value);
-    
     var jsonObject = [];
 	
 	jsonObject.push({
@@ -36,14 +34,11 @@
 		}
 	});
 }
-function signUp(mailID, nameID, passwdID) {
-    var nameinput = document.getElementById(nameID);
-    var passwdinput = document.getElementById(passwdID);
-    var mailinput = document.getElementById(mailID);
-//    var body = document.getElementById("body");
-//    body.innerHTML = "New line";
-//    window.confirm(mailinput.value + " - " + nameinput.value + ": " + passwdinput.value);
-    
+function signUp() {
+    var nameinput = document.getElementById("name");
+    var passwdinput = document.getElementById("passwd");
+    var mailinput = document.getElementById("mail");
+   
     var jsonObject = [];
 	
 	jsonObject.push({
@@ -60,6 +55,25 @@ function signUp(mailID, nameID, passwdID) {
 	});
     alert(jsonObject);
 }
+function remind() {
+	 var mailinput = document.getElementById("rmail");
+  
+	var jsonObject = [];
+	
+	jsonObject.push({
+		"email" : mailinput.value
+	});
+
+	
+	$.ajax({
+	    type: "POST",
+	    data: JSON.stringify(jsonObject),
+	    url: "/Monopoly/rest/userapi/Reminder"
+	});
+	alert(jsonObject);
+}
+
+/********************* UI modification functions *********************/
 
 function resetsecs(e) {
     var l = document.getElementById("loginsec");

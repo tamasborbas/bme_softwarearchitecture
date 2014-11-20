@@ -51,54 +51,45 @@
 			</div>
 		</section>
 		<section id="actgamesec">
-			<section class="nactgame" onclick="openGame(id)">
-				<h3>GameName</h3>
-				<hr class="act" />
-				<section class="users">
-					<section class="user">User1;</section>
-					<section class="user">User1</section>
-					<section class="user">User1</section>
-					<section class="user">User1</section>
-					<section class="user">User1</section>
-				</section>
-			</section>
 		</section>
 		<section id="newgamesec">
-			<div class="creategame">
-				<div>
-					<label class="iconWithText" for="gname"><i class="fa fa-gamepad">  Game ID</i></label>
-					<input type="text" name="gname" id="gname" placeholder="Game Name" required="required" />
+			<form action="createGame()">
+				<div class="creategame">
+					<div>
+						<label class="iconWithText" for="gname"><i class="fa fa-gamepad">  Game ID</i></label>
+						<input type="text" name="gname" id="gname" placeholder="Game Name" required="required"  pattern="[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+					</div>
+					<div>
+						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 1</i></label>
+						<input type="text" name="name" id="name" placeholder="UserName" required="required"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+					</div>
+					<div>
+						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 2</i></label>
+						<input type="text" name="name" id="name" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+					</div>
+					<div>
+						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 3</i></label>
+						<input type="text" name="name" id="name" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+					</div>
+					<div>
+						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 4</i></label>
+						<input type="text" name="name" id="name" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+					</div>
+					<div>
+						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 5</i></label>
+						<input type="text" name="name" id="name" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+					</div>
+					<div>
+						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 6</i></label>
+						<input type="text" name="name" id="name" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+					</div>
+					<div>
+						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 7</i></label>
+						<input type="text" name="name" id="name" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+					</div>
+					<button type="submit" class="button" id="btnCreateGame">Create</button>
 				</div>
-				<div>
-					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 1</i></label>
-					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
-				</div>
-				<div>
-					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 2</i></label>
-					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
-				</div>
-				<div>
-					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 3</i></label>
-					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
-				</div>
-				<div>
-					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 4</i></label>
-					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
-				</div>
-				<div>
-					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 5</i></label>
-					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
-				</div>
-				<div>
-					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 6</i></label>
-					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
-				</div>
-				<div>
-					<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 7</i></label>
-					<input type="text" name="name" id="name" placeholder="UserName" required="required" />
-				</div>
-				<a href="#" class="button" id="logoutbtn" onclick="remind('rmail')">Create</a>
-			</div>
+			</form>
 		</section>
 		<section id="managesec">
 
@@ -107,7 +98,7 @@
 			
 		</section>
 		<section id="logoutsec">
-			<a href="#" class="button" id="logoutbtn" onclick="remind('rmail')">Logout</a>
+			<button type="button" class="button" id="logoutbtn" onclick="logout">Logout</button>
 		</section>
 	</div>
 	<footer>

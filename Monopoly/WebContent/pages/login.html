@@ -33,36 +33,36 @@
 		<br/>
 		<hr />
 		<section id="loginsec">
-			<form action="/">
+			<form action="signIn()">
 				<label class="icon" for="lname"><i class="fa fa-user"></i></label>
-				<input type="text" name="lname" id="lname" placeholder="UserName" required="required" />
+				<input type="text" name="lname" id="lname" placeholder="UserName" required="required" pattern="[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters." />
 				<br />
 				<label class="icon" for="lpasswd"><i class="fa fa-shield"></i></label>
-				<input type="password" name="lpasswd" id="lpasswd" placeholder="Password" required="required" />
+				<input type="password" name="lpasswd" id="lpasswd" placeholder="Password" required="required" pattern="[a-zA-Z0-9#$]+" title="You only can use a-z, A-Z and 0-9 characters." />
 				<br />
-				<a href="#" class="button" onclick="signIn()">Sign In</a>
+				<button type="submit" class="button" onclick="">Sign In</button>
 			</form>
 		</section>
 		<section id="registrationsec">
-			<form action="/">
+			<form action="signUp()">
 				<label class="icon" for="mail"><i class="fa fa-envelope-o"></i></label>
 				<input type="email" name="mail" id="mail" placeholder="Email" required="required" />
 				<br />
 				<label class="icon" for="name"><i class="fa fa-user"></i></label>
-				<input type="text" name="name" id="name" placeholder="UserName" required="required" />
+				<input type="text" name="name" id="name" placeholder="UserName" required="required" pattern="[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters." />
 				<br />
 				<label class="icon" for="passwd"><i class="fa fa-shield"></i></label>
-				<input type="password" name="passwd" id="passwd" placeholder="Password" required="required" />
+				<input type="password" name="passwd" id="passwd" placeholder="Password" required="required" pattern="[a-zA-Z0-9#$]+" title="You only can use a-z, A-Z and 0-9 characters." />
 				<br />
 				<p>By clicking Sign up, you agree on our <a href="#">T&C</a>.</p>
-				<a href="#" class="button" onclick="signUp('mail', 'name', 'passwd')">Sign up</a>
+				<button type="submit" class="button">Sign up</button>
 			</form>
 		</section>
 		<section id="remindersec">
-			<form action="/">
+			<form action="remind()">
 				<label class="icon" for="rmail"><i class="fa fa-envelope-o"></i></label>
 				<input type="email" name="rmail" id="rmail" placeholder="Email" required="required" />
-				<a href="#" class="button" onclick="remind('rmail')">Remind</a>
+				<button type="submit" class="button">Remind</button>
 			</form>
 		</section>
 	</div>
