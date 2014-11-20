@@ -46,8 +46,8 @@ public class Main
         // openGame(mem, "TEST2", GameStatus.inProgress);
         // openGame(mem, "TEST3", GameStatus.init);
 
-        Helper.makeBoard(1);
-        Helper.makeBoard(2);
+//        Helper.makeBoard(1);
+//        Helper.makeBoard(2);
 
         // List<? extends Place> places = mem.getPlacesByGameId(3);
         // for (Place place : places)

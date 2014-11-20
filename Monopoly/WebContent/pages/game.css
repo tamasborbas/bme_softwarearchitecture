@@ -16,6 +16,21 @@ footer {
 	font-family: Magneto;
 	color: rgb(50, 50, 50);
 }
+div.loading {
+	background-color: rgba(255, 255, 255, 0.67);
+	width: 100%;
+	height:100%;
+	position: fixed;
+	z-index: 2;
+	top:0;
+	text-align: center;
+}
+div.invisible {
+	display:none;
+}
+/* #loadinggif{ */
+/* 	margin-top: 70px; */
+/* } */
 
 /*section.visiblesec {
     display: block;

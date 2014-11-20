@@ -44,11 +44,16 @@ public class Helper
             // TODO boardsize
             for (int i = 1; i < 16; i++)
             {
-                if (i % 3 == 0)
+                if (i % 2 == 0)
                 {
                     BuildingPlace buildingPlace = new BuildingPlace();
                     buildingPlace.setGame(game);
                     buildingPlace.setPlaceSequenceNumber(i + 1);
+                    
+                    //Itt le kéne kérdezni az (i/2)-es id-val rendelkezõ buildinget az adatbázisból, és azt beállítani
+//                    Building building = mem.getBuildingById(i/2);
+//                    buildingPlace.setBuilding(building);
+                    
                     // Building building = new Building();
                     // building.setName("Building"+i);
                     // building.setPrice(100);
