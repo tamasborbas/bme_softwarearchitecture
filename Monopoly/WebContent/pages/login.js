@@ -3,77 +3,94 @@
 function signIn() {
     var nameinput = document.getElementById("lname");
     var passwdinput = document.getElementById("lpasswd");
-    var jsonObject = [];
-	
-	jsonObject.push({
-		"email" : nameinput.value,
-		"password" : passwdinput.value
-	});
-
-	
-	$.ajax({
-	    type: "POST",
-	    data: JSON.stringify(jsonObject),
-	    url: "/Monopoly/rest/userapi/login",
-	    success: function(data,textStatus,jqXHR) {
-	    	console.log("***************success***************");
-			console.log(data);
-			console.log(textStatus);
-			console.log(jqXHR);
-		},
-		error: function(jqXHR,textStatus,errorThrown ) {
-	    	console.log("***************error***************");
-			console.log(jqXHR);
-			console.log(textStatus);
-			console.log(errorThrown);
-		},
-		complete : function(jqXHR,textStatus) {
-	    	console.log("***************complete***************");
-			console.log(jqXHR);
-			console.log(textStatus);
-		}
-	});
+	if(nameinput.checkValidity() && passwdinput.checkValidity()) {
+		loadingActivate();
+	    var jsonObject = [];
+		
+		jsonObject.push({
+			"userName" : nameinput.value,
+			"password" : passwdinput.value
+		});
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/userapi/Login",
+		    success: function(data,textStatus,jqXHR) {
+		    	console.log("***************success***************");
+	//			console.log(data);
+	//			console.log(textStatus);
+	//			console.log(jqXHR);
+	//			console.log(nameinput.value);
+				sessionStorage.happygames_basic_username = nameinput.value;
+				window.location.href = "https://localhost:8443/Monopoly/pages/home.html";
+			},
+			error: function(jqXHR,textStatus,errorThrown ) {
+		    	console.log("***************error***************");
+				console.log(jqXHR);
+				sessionStorage.errorcode = jqXHR;
+				console.log(textStatus);
+				console.log(errorThrown);
+	//			window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
+		    	loadingDeactivate();
+			}
+		});
+	}
 }
 function signUp() {
     var nameinput = document.getElementById("name");
     var passwdinput = document.getElementById("passwd");
     var mailinput = document.getElementById("mail");
-   
-    var jsonObject = [];
+    if(nameinput.validity.valid && passwdinput.validity.valid && mailinput.validity.valid) {
+	    loadingActivate();
+		var jsonObject = [];
+		
+	    jsonObject.push({
+			"email" : mailinput.value,
+			"password" : passwdinput.value,
+			"name" : nameinput.value
+		});
 	
-	jsonObject.push({
-		"email" : mailinput.value,
-		"password" : passwdinput.value,
-		"name" : nameinput.value
-	});
-
-	
-	$.ajax({
-	    type: "POST",
-	    data: JSON.stringify(jsonObject),
-	    url: "/Monopoly/rest/userapi/Registration"
-	});
-    alert(jsonObject);
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/userapi/Registration",
+		    complete: function() {
+				loadingDeactivate();
+			}
+		});
+    }
 }
 function remind() {
 	 var mailinput = document.getElementById("rmail");
-  
-	var jsonObject = [];
-	
-	jsonObject.push({
-		"email" : mailinput.value
-	});
+	 if(mailinput.validity.valid) {
+		    loadingActivate();
+		var jsonObject = [];
 
-	
-	$.ajax({
-	    type: "POST",
-	    data: JSON.stringify(jsonObject),
-	    url: "/Monopoly/rest/userapi/Reminder"
-	});
-	alert(jsonObject);
+		jsonObject.push({
+			"email" : mailinput.value
+		});
+
+		$.ajax({
+			type : "POST",
+			data : JSON.stringify(jsonObject),
+			url : "/Monopoly/rest/userapi/Reminder",
+			complete: function() {
+				loadingDeactivate();
+			}
+		});
+	 }
 }
 
 /********************* UI modification functions *********************/
+function loadingActivate() {
+	var loading=document.getElementById("loading");
+	loading.className = "loading";
+}
+function loadingDeactivate() {
+	var loading=document.getElementById("loading");
+	loading.className = "loading invisible";
+}
 
 function resetsecs(e) {
     var l = document.getElementById("loginsec");

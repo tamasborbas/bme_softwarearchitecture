@@ -64,40 +64,72 @@ function getActiveGames() {
 	var basesec = document.getElementById("actgamesec");
 	deleteAllSubNode(basesec);
 	
-	var jsonobject = JSON.parse(actGameData);
-	for (var gi in jsonobject.activeGames) {
-		var game = jsonobject.activeGames[gi];
-		var sec = document.createElement('section');
-		sec.className = "actgame";
-		sec.id = game.id;
-		sec.onclick = openGame.bind(this, game.id);
-		basesec.appendChild(sec);
-
-		var aghead = document.createElement('h3');
-		aghead.textContent = game.name;
-		sec.appendChild(aghead);
-
-		var aghr = document.createElement('hr');
-		aghr.className = "act";
-		sec.appendChild(aghr);
-
-		var spanuact = document.createElement('section');
-		spanuact.className = "user user-act";
-		spanuact.textContent = game.actualPlayer + "|";
-		sec.appendChild(spanuact);
-
-		for (var ui in game.players) {
-			var suser = game.players[ui];
-			var spanu = document.createElement('section');
-			spanu.className = "user";
-			if (ui != game.players.length - 1) {
-				spanu.textContent = suser.name + "|";
-			} else {
-				spanu.textContent = suser.name;
-			}
-			sec.appendChild(spanu);
-		}
-	}
+//	$.ajax({
+//		type: "GET",
+//		url: "/Monopoly/rest/gameapi/GetActiveGames",
+//		contentType: "application/json",
+//		success: function(json) {
+//	    	console.log("***************success***************");
+//			console.log(JSON.parse(json.activeGames));
+//			console.log(textStatus);
+//			console.log(jqXHR);
+//		},
+//		error: function(jqXHR,textStatus,errorThrown ) {
+//	    	console.log("***************error***************");
+//			console.log(jqXHR);
+//			console.log(textStatus);
+//			console.log(errorThrown);
+////			window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
+////	    	loadingDeactivate();
+//		}
+//	});
+	var resp = $.getJSON( "/Monopoly/rest/gameapi/GetActiveGames", function(json) {
+		  console.log( "success" );
+		  console.log(json.activeGames.length);
+		  console.log(JSON.stringify(json));
+		})
+		  .done(function() {
+		    console.log( "second success" );
+		  })
+		  .fail(function() {
+		    console.log( "error" );
+		  });
+	console.log(resp);
+	
+//	var jsonobject = JSON.parse(actGameData);
+//	for (var gi in jsonobject.activeGames) {
+//		var game = jsonobject.activeGames[gi];
+//		var sec = document.createElement('section');
+//		sec.className = "actgame";
+//		sec.id = game.id;
+//		sec.onclick = openGame.bind(this, game.id);
+//		basesec.appendChild(sec);
+//
+//		var aghead = document.createElement('h3');
+//		aghead.textContent = game.name;
+//		sec.appendChild(aghead);
+//
+//		var aghr = document.createElement('hr');
+//		aghr.className = "act";
+//		sec.appendChild(aghr);
+//
+//		var spanuact = document.createElement('section');
+//		spanuact.className = "user user-act";
+//		spanuact.textContent = game.actualPlayer + "|";
+//		sec.appendChild(spanuact);
+//
+//		for (var ui in game.players) {
+//			var suser = game.players[ui];
+//			var spanu = document.createElement('section');
+//			spanu.className = "user";
+//			if (ui != game.players.length - 1) {
+//				spanu.textContent = suser.name + "|";
+//			} else {
+//				spanu.textContent = suser.name;
+//			}
+//			sec.appendChild(spanu);
+//		}
+//	}
 	//});
 }
 
