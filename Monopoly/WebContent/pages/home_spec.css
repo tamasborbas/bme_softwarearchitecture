@@ -1,7 +1,7 @@
-﻿section.mygame {
+section.invgame, section.mygame, section.actgame {
 	display: inline-table;
 	width: 225px;
-	min-height: 90px;
+	min-height: 60px;
 	margin: 5px;
 	padding: 2px;
 	background-color: rgba(250,250,250,0.5); 
@@ -13,17 +13,27 @@
 	box-shadow: 1px 2px 5px rgba(0,0,0,.31); 
 	border: solid 1px #656565;
 }
-#start {
+#tick, #close, #start {
 	margin-left: 5px;
 	margin-right: 5px;
 	font-size: 1.5em;
 	float:right;
 }
-#start:hover {
+#close:hover {
+	color: red;
+}
+#tick:hover {
 	color: green;
 }
+#start:hover {
+	color: blue;
+}
 
-/*section.mygame:hover {
+section.actgame:hover {
+	background-color: rgba(250,250,250,0.8); 
+}
+
+/*section.invgame:hover {
 	background-color: rgba(250,250,250,0.8); 
 }*/
 
@@ -31,14 +41,32 @@ hr.act{
 	margin: 0px;
 }
 
+div.invgame h3 {
+	font-family: 'Open Sans', sans-serif;
+	width:100%;
+}
+
 div.mygame h3 {
 	font-family: 'Open Sans', sans-serif;
 	width:100%;
 }
 
+div.actgame h3 {
+	font-family: 'Open Sans', sans-serif;
+	width:100%;
+}
+section.user {
+	display: inline-block;
+	font-family: 'Open Sans', sans-serif;
+}
+section.users {
+	display: block;
+	font-family: 'Open Sans', sans-serif;
+}
+
 /* Users special sections */
 section.accept {
-	display: block;
+	display: inline-block;
 	font-family: 'Open Sans', sans-serif;
 }
 section.accepts {
@@ -58,7 +86,7 @@ section.notyets {
 }
 
 section.refused {
-	display: block;
+	display: inline-block;
 	font-family: 'Open Sans', sans-serif;
 }
 section.refuseds {

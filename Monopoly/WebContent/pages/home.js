@@ -49,19 +49,28 @@ function acceptInvitation(id) {
 	//});
 }
 
-var data1 = '{"actGames":[{"name":"valami","id":1100,"users":[{"name":"uasdasdasd1"},{"name":"uasasdasdd2"},{"name":"uasasdasdd2"},{"name":"uasasdasdd2"},{"name":"uasdasdasd3"}]},{"name":"valami","id":1100,"users":[{"name":"uasdasdasd1"}]},{"name":"valami","id":1100,"users":[{"name":"uasdasdasd1"},{"name":"uasasdasdd2"},{"name":"uasdasdasd3"},{"name":"uasasdasdd2"},{"name":"uasdasdasd3"}]}]}';
-var data = '{"myGames":[{"name":"valami","id":1100,"accept":[{"name":"uasdasdasd1"}],"notyet":[{"name":"uasasdasdd2"},{"name":"uasasdasdd2"},{"name":"uasasdasdd2"},{"name":"uasdasdasd3"}],"refused":[{"name":"uasasdasdd2"},{"name":"uasdasdasd3"}]},{"name":"valami","id":1100,"accept":[{"name":"uasdasdasd1"}],"notyet":[{"name":"uasasdasdd2"},{"name":"uasdasdasd3"}],"refused":[{"name":"uasasdasdd2"},{"name":"uasdasdasd3"}]},{"name":"valami","id":1100,"accept":[{"name":"uasdasdasd1"}],"notyet":[{"name":"uasasdasdd2"},{"name":"uasdasdasd3"}],"refused":[{"name":"uasasdasdd2"},{"name":"uasdasdasd3"}]}]}';
+var actGameData = '{"activeGames":[{"id":3,"actualPlayer":"admin","players":[{"name":"anna"}],"name":"TEST2"}]}';
+var manageGameData = '{"myGames":[{"id":2,"notAcceptedYetPlayers":[],"refusedPlayers":[],"name":"TEST3","acceptedPlayers":[{"placeId":130,"status":"accepted","playerId":3,"name":"admin"},{"placeId":130,"status":"accepted","playerId":4,"name":"anna"}]}]}';
+var invGameData = '{"nayGames":[{"id":1,"notAcceptedYetPlayers":[{"placeId":130,"status":"notAcceptedYet","playerId":1,"name":"admin"}],"refusedPlayers":[],"name":"TEST2","acceptedPlayers":[{"placeId":130,"status":"accepted","playerId":2,"name":"anna"}]},{"id":2,"notAcceptedYetPlayers":[{"placeId":130,"status":"notAcceptedYet","playerId":3,"name":"admin"}],"refusedPlayers":[],"name":"TEST3","acceptedPlayers":[{"placeId":130,"status":"accepted","playerId":4,"name":"anna"}]}]}';
+
+function deleteAllSubNode(basesec) {
+	while(basesec.firstChild) {
+		basesec.removeChild(basesec.firstChild);
+	}
+}
 
 function getActiveGames() {
 	//$.getJSON("/Monopoly/rest/userapi/getActiveGames", function (data, status) {
 	var basesec = document.getElementById("actgamesec");
-	var jsonobject = JSON.parse(data1);
-	for (var gi in jsonobject.actGames) {
-		var game = jsonobject.actGames[gi];
+	deleteAllSubNode(basesec);
+	
+	var jsonobject = JSON.parse(actGameData);
+	for (var gi in jsonobject.activeGames) {
+		var game = jsonobject.activeGames[gi];
 		var sec = document.createElement('section');
 		sec.className = "actgame";
 		sec.id = game.id;
-		sec.onclick = function () { openGame(game.id + (Math.floor(Math.random() * 100))) };
+		sec.onclick = openGame.bind(this, game.id);
 		basesec.appendChild(sec);
 
 		var aghead = document.createElement('h3');
@@ -72,25 +81,84 @@ function getActiveGames() {
 		aghr.className = "act";
 		sec.appendChild(aghr);
 
-		//var divs = document.createElement('section');
-		//divs.className = "users";
-		//sec.appendChild(divs);
+		var spanuact = document.createElement('section');
+		spanuact.className = "user user-act";
+		spanuact.textContent = game.actualPlayer + "|";
+		sec.appendChild(spanuact);
 
-		for (var ui in game.users) {
-			var suser = game.users[ui];
+		for (var ui in game.players) {
+			var suser = game.players[ui];
 			var spanu = document.createElement('section');
 			spanu.className = "user";
-			spanu.textContent = suser.name + "|";
+			if (ui != game.players.length - 1) {
+				spanu.textContent = suser.name + "|";
+			} else {
+				spanu.textContent = suser.name;
+			}
 			sec.appendChild(spanu);
 		}
 	}
 	//});
 }
+
+
+function createPlayersBlock(sec, game) {
+	var divac = document.createElement('section');
+	divac.className = "accepts";
+	sec.appendChild(divac);
+
+	for (var ui in game.acceptedPlayers) {
+		var suser = game.acceptedPlayers[ui];
+		var spanu = document.createElement('section');
+		spanu.className = "accept";
+		if (ui != game.acceptedPlayers.length - 1) {
+			spanu.textContent = suser.name + "|";
+		} else {
+			spanu.textContent = suser.name;
+		}
+		divac.appendChild(spanu);
+	}
+
+	var divny = document.createElement('section');
+	divny.className = "notyets";
+	sec.appendChild(divny);
+
+	for (var uiny in game.notAcceptedYetPlayers) {
+		var suserny = game.notAcceptedYetPlayers[uiny];
+		var spanuny = document.createElement('section');
+		spanuny.className = "notyet";
+		if (uiny != game.notAcceptedYetPlayers.length - 1) {
+			spanuny.textContent = suserny.name + "|";
+		} else {
+			spanuny.textContent = suserny.name;
+		}
+		divny.appendChild(spanuny);
+	}
+
+	var divref = document.createElement('section');
+	divref.className = "refuseds";
+	sec.appendChild(divref);
+
+	for (var uir in game.refusedPlayers) {
+		var suserr = game.refusedPlayers[uir];
+		var spanur = document.createElement('section');
+		spanur.className = "refused";
+		if (uir != game.refusedPlayers.length - 1) {
+			spanur.textContent = suserr.name + "|";
+		} else {
+			spanur.textContent = suserr.name;
+		}
+		divref.appendChild(spanur);
+	}
+}
+
 function getMyGames() {
 	//$.getJSON("/Monopoly/rest/userapi/getMyGames", function (data, status) {
 	//alert(event.srcElement);
 	var basesec = document.getElementById("managesec");
-	var jsonobject = JSON.parse(data);
+	deleteAllSubNode(basesec);
+	
+	var jsonobject = JSON.parse(manageGameData);
 	for (var gi in jsonobject.myGames) {
 		var game = jsonobject.myGames[gi];
 		var sec = document.createElement('section');
@@ -106,41 +174,7 @@ function getMyGames() {
 		aghr.className = "act";
 		sec.appendChild(aghr);
 
-		var divac = document.createElement('section');
-		divac.className = "accepts";
-		sec.appendChild(divac);
-
-		for (var ui in game.accept) {
-			var suser = game.accept[ui];
-			var spanu = document.createElement('section');
-			spanu.className = "accept";
-			spanu.textContent = suser.name + "|";
-			divac.appendChild(spanu);
-		}
-
-		var divny = document.createElement('section');
-		divny.className = "notyets";
-		sec.appendChild(divny);
-
-		for (var ui in game.notyet) {
-			var suser = game.notyet[ui];
-			var spanu = document.createElement('section');
-			spanu.className = "notyet";
-			spanu.textContent = suser.name + "|";
-			divny.appendChild(spanu);
-		}
-
-		var divref = document.createElement('section');
-		divref.className = "refuseds";
-		sec.appendChild(divref);
-
-		for (var ui in game.refused) {
-			var suser = game.refused[ui];
-			var spanu = document.createElement('section');
-			spanu.className = "refused";
-			spanu.textContent = suser.name + "|";
-			divref.appendChild(spanu);
-		}
+		createPlayersBlock(sec, game);
 
 		var downhr = document.createElement('hr');
 		downhr.className = "act";
@@ -152,19 +186,20 @@ function getMyGames() {
 		cl.className = "fa fa-play-circle-o";
 		cl.id = "start";
 		cl.title = "Start the game.";
-		cl.onclick = function () { startGame(game.id + (Math.floor(Math.random() * 100))) };
+		cl.onclick = startGame.bind(this, game.id);
 		boxdiv.appendChild(cl);
 	}
-	//});
 }
 
 function getInvitations() {
 	//$.getJSON("/Monopoly/rest/userapi/getInvitations", function (data, status) {
 	//alert(event.srcElement);
 	var basesec = document.getElementById("invitationsec");
-	var jsonobject = JSON.parse(data);
-	for (var gi in jsonobject.myGames) {
-		var game = jsonobject.myGames[gi];
+	deleteAllSubNode(basesec);
+	
+	var jsonobject = JSON.parse(invGameData);
+	for (var gi in jsonobject.nayGames) {
+		var game = jsonobject.nayGames[gi];
 		var sec = document.createElement('section');
 		sec.className = "invgame";
 		sec.id = game.id;
@@ -178,41 +213,7 @@ function getInvitations() {
 		uphr.className = "act";
 		sec.appendChild(uphr);
 
-		var divac = document.createElement('section');
-		divac.className = "accepts";
-		sec.appendChild(divac);
-
-		for (var ui in game.accept) {
-			var suser = game.accept[ui];
-			var spanu = document.createElement('section');
-			spanu.className = "accept";
-			spanu.textContent = suser.name + "|";
-			divac.appendChild(spanu);
-		}
-
-		var divny = document.createElement('section');
-		divny.className = "notyets";
-		sec.appendChild(divny);
-
-		for (var ui in game.notyet) {
-			var suser = game.notyet[ui];
-			var spanu = document.createElement('section');
-			spanu.className = "notyet";
-			spanu.textContent = suser.name + "|";
-			divny.appendChild(spanu);
-		}
-
-		var divref = document.createElement('section');
-		divref.className = "refuseds";
-		sec.appendChild(divref);
-
-		for (var ui in game.refused) {
-			var suser = game.refused[ui];
-			var spanu = document.createElement('section');
-			spanu.className = "refused";
-			spanu.textContent = suser.name + "|";
-			divref.appendChild(spanu);
-		}
+		createPlayersBlock(sec, game);
 
 		var downhr = document.createElement('hr');
 		downhr.className = "act";
@@ -221,64 +222,28 @@ function getInvitations() {
 		var boxdiv = document.createElement('div');
 		sec.appendChild(boxdiv);
 		var cl = document.createElement('i');
-		cl.className="fa fa-close";
+		cl.className = "fa fa-close";
 		cl.id = "close";
 		cl.title = "Refuse invitation.";
-		cl.onclick = function() { refuseInvitation(game.id)};
+		cl.onclick = refuseInvitation.bind(this, game.id);
 		boxdiv.appendChild(cl);
 		var tick = document.createElement('i');
-		tick.className="fa fa-check";
+		tick.className = "fa fa-check";
 		tick.id = "tick";
-		tick.title = "Accept invitation."
-		tick.onclick = function() { acceptInvitation(game.id)};
+		tick.title = "Accept invitation.";
+		tick.onclick = acceptInvitation.bind(this, game.id);
 		boxdiv.appendChild(tick);
 	}
-	//});
 }
 
 
 function resetsecs(e) {
-	//var l = document.getElementById("loginsec");
-	//if (l != e) {
-	//	l.className = "";
-	//	l.style.display = 'none';
-	//}
-	//var r = document.getElementById("registrationsec");
-	//if (r != e) {
-	//	r.className = "";
-	//	r.style.display = 'none';
-	//}
-	//var rem = document.getElementById("remindersec");
-	//if (rem != e) {
-	//	rem.className = "";
-	//	rem.style.display = 'none';
-	//}
 	var visibleSecs = document.getElementsByClassName("visiblesec");
 	for (var i = 0; i < visibleSecs.length; i++) {
 		visibleSecs[i].className = "";
 	}
 }
 function reseticons(icon) {
-	//var iconb1 = document.getElementById("profiliconb");
-	//if (iconb1 != icon) {
-	//	iconb1.className = "header";
-	//}
-	//var iconb2 = document.getElementById("actgameiconb");
-	//if (iconb2 != icon) {
-	//	iconb2.className = "header";
-	//}
-	//var iconb3 = document.getElementById("newgameiconb");
-	//if (iconb3 != icon) {
-	//	iconb3.className = "header";
-	//}
-	//var iconb3 = document.getElementById("newgameiconb");
-	//if (iconb3 != icon) {
-	//	iconb3.className = "header";
-	//}
-	//var iconb3 = document.getElementById("newgameiconb");
-	//if (iconb3 != icon) {
-	//	iconb3.className = "header";
-	//}
 	var selectedHeaders = document.getElementsByClassName("selectedHeader");
 	for (var i = 0; i < selectedHeaders.length; i++) {
 		selectedHeaders[i].className = "header";
