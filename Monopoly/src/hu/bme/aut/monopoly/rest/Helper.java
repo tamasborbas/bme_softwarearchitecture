@@ -1,5 +1,6 @@
 package hu.bme.aut.monopoly.rest;
 
+import hu.bme.aut.monopoly.model.Building;
 import hu.bme.aut.monopoly.model.BuildingPlace;
 import hu.bme.aut.monopoly.model.Game;
 import hu.bme.aut.monopoly.model.MonopolyEntityManager;
@@ -10,6 +11,7 @@ import hu.bme.aut.monopoly.model.StartPlace;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -17,7 +19,8 @@ import javax.servlet.http.HttpSession;
 public class Helper
 {
     public static int throughMoney = 1000;
-    
+    public static int boardSize = 16;
+
     public static String getLoggedInUserEmail(HttpServletRequest request)
     {
         HttpSession session = request.getSession(true);
@@ -37,43 +40,60 @@ public class Helper
 
             StartPlace startPlace = new StartPlace();
             startPlace.setGame(game);
-            // TODO through money
-            startPlace.setThroughMoney(1000);
+            startPlace.setThroughMoney(throughMoney);
             startPlace.setPlaceSequenceNumber(1);
             mem.commit(startPlace);
 
             places.add(startPlace);
-            // TODO boardsize
-            for (int i = 1; i < 16; i++)
+            for (int i = 1; i < boardSize; i++)
             {
                 if (i % 2 == 0)
                 {
                     BuildingPlace buildingPlace = new BuildingPlace();
                     buildingPlace.setGame(game);
                     buildingPlace.setPlaceSequenceNumber(i + 1);
-                    
-                    //Itt le kéne kérdezni az (i/2)-es id-val rendelkezõ buildinget az adatbázisból, és azt beállítani
-//                    Building building = mem.getBuildingById(i/2);
-//                    buildingPlace.setBuilding(building);
-                    
+
+                    // Itt le kéne kérdezni az (i/2)-es id-val rendelkezõ buildinget az adatbázisból, és azt
+                    // beállítani
+                    Building building = mem.getBuildingById(i / 2);
+                    buildingPlace.setBuilding(building);
+
                     // Building building = new Building();
                     // building.setName("Building"+i);
                     // building.setPrice(100);
                     // building.setHousePrice(50);
                     // building.setBaseNightPayment(20);
-                    mem.commit(buildingPlace);
+                    // mem.commit(buildingPlace);
                     places.add(buildingPlace);
                 } else
                 {
                     SimplePlace simplePlace = new SimplePlace();
                     simplePlace.setGame(game);
                     simplePlace.setPlaceSequenceNumber(i + 1);
-                    mem.commit(simplePlace);
+                    // mem.commit(simplePlace);
                     places.add(simplePlace);
                 }
             }
-            game.setPlaces(places);
-            mem.commit(game);
+
+            EntityManager entityManager = mem.getEntityManager();
+            entityManager.getTransaction().begin();
+            try
+            {
+                for (Place place : places)
+                {
+                    entityManager.persist(place);
+                }
+
+                game.setPlaces(places);
+                entityManager.persist(game);
+
+                entityManager.getTransaction().commit();
+            } catch (Exception e)
+            {
+                entityManager.getTransaction().rollback();
+                throw e;
+            }
+
         } catch (Exception e)
         {
             // TODO Auto-generated catch block

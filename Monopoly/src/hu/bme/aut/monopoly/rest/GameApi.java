@@ -31,69 +31,67 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.sun.jersey.api.JResponse;
-
 
 @Path("/gameapi")
 public class GameApi
 {
 
-    @Path("/NewGame")
-    @POST
-    public void startNewGame(String json)
-    {
-
-        List<Player> players = new ArrayList<Player>();
-        JSONArray jsonTomb;
-        String nameOfGame = null;
-
-        try
-        {
-            jsonTomb = new JSONArray(json);
-            nameOfGame = jsonTomb.getJSONObject(0).getString("nameOfGame");
-
-            MonopolyEntityManager mem = new MonopolyEntityManager();
-            mem.initDB();
-
-            for (int i = 1; i < jsonTomb.length(); i++)
-            {
-                User user = mem.getUserByEmail(jsonTomb.getJSONObject(i).getString("email"));
-                Player player = new Player();
-                // TODO erteket kitalalni
-                player.setMoney(10000);
-                player.setPlayerStatus(PlayerStatus.accepted);
-                // TODO USERID
-                players.add(player);
-                mem.commit(player);
-                user.addGamePlayer(player);
-                mem.commit(user);
-
-            }
-
-            Game game = new Game();
-            game.setName(nameOfGame);
-            game.setPlayers(players);
-            game.setGameStatus(GameStatus.init);
-
-            mem.commit(game);
-
-            mem.closeDB();
-        } catch (JSONException e1)
-        {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        } catch (Exception e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-    }
+    // @Path("/NewGame")
+    // @POST
+    // public void startNewGame(String json)
+    // {
+    //
+    // List<Player> players = new ArrayList<Player>();
+    // JSONArray jsonTomb;
+    // String nameOfGame = null;
+    //
+    // try
+    // {
+    // jsonTomb = new JSONArray(json);
+    // nameOfGame = jsonTomb.getJSONObject(0).getString("nameOfGame");
+    //
+    // MonopolyEntityManager mem = new MonopolyEntityManager();
+    // mem.initDB();
+    //
+    // for (int i = 1; i < jsonTomb.length(); i++)
+    // {
+    // User user = mem.getUserByEmail(jsonTomb.getJSONObject(i).getString("email"));
+    // Player player = new Player();
+    // // TODO erteket kitalalni
+    // player.setMoney(10000);
+    // player.setPlayerStatus(PlayerStatus.accepted);
+    // // TODO USERID
+    // players.add(player);
+    // mem.commit(player);
+    // user.addGamePlayer(player);
+    // mem.commit(user);
+    //
+    // }
+    //
+    // Game game = new Game();
+    // game.setName(nameOfGame);
+    // game.setPlayers(players);
+    // game.setGameStatus(GameStatus.init);
+    //
+    // mem.commit(game);
+    //
+    // mem.closeDB();
+    // } catch (JSONException e1)
+    // {
+    // // TODO Auto-generated catch block
+    // e1.printStackTrace();
+    // } catch (Exception e)
+    // {
+    // // TODO Auto-generated catch block
+    // e.printStackTrace();
+    // }
+    //
+    // }
 
     @Path("/GetActiveGames")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONObject> getActiveGames(@Context
+    public Response getActiveGames(@Context
     HttpServletRequest request)
     {
         System.out.println("GetActiveGames");
@@ -155,14 +153,13 @@ public class GameApi
         }
 
         System.out.println("ELKULDOTT: " + responseJsonObject);
-
-        return JResponse.ok(responseJsonObject).build();
+        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     @Path("/OpenGame")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONObject> openGame(String json, @Context
+    public Response openGame(String json, @Context
     HttpServletRequest request)
     {
         // TODO minek ez?
@@ -272,7 +269,7 @@ public class GameApi
 
         mem.closeDB();
         System.out.println(gameDetailesJsonObject);
-        return JResponse.ok(gameDetailesJsonObject).build();
+        return Response.ok(gameDetailesJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     private int getGameIdFromJson(String json)
@@ -296,7 +293,7 @@ public class GameApi
     @Path("/GetMyGames")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONObject> getMyGames(@Context
+    public Response getMyGames(@Context
     HttpServletRequest request)
     {
         System.out.println("GetMyGames");
@@ -325,7 +322,7 @@ public class GameApi
             e.printStackTrace();
         }
         System.out.println(responseJsonObject);
-        return JResponse.ok(responseJsonObject).build();
+        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     private JSONObject getGameDetailes(Game game)
@@ -375,19 +372,19 @@ public class GameApi
     @Path("/GetBuilding")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONObject> getBuilding(String json, @Context
+    public Response getBuilding(String json, @Context
     HttpServletRequest request)
     {
         // TODO minek ez?
         String loggedInUseremail = Helper.getLoggedInUserEmail(request);
         JSONArray jsonTomb;
-        int buildigPlaceId = 0;
+        int placeSequenceNumber = 0;
 
         try
         {
             jsonTomb = new JSONArray(json);
-            buildigPlaceId = jsonTomb.getJSONObject(0).getInt("buildingPlaceId");
-            System.out.println("BuildigPlaceID: " + buildigPlaceId);
+            placeSequenceNumber = jsonTomb.getJSONObject(0).getInt("placeSequenceNumber");
+            System.out.println("BuildigPlaceSequenceNumber: " + placeSequenceNumber);
         } catch (JSONException e)
         {
             // TODO Auto-generated catch block
@@ -396,27 +393,28 @@ public class GameApi
 
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
-
-        BuildingPlace buildingPlace = mem.getBuildingPlaceById(buildigPlaceId);
         JSONObject buildingPlaceJsonObject = new JSONObject();
-        System.out.println("BuildigPlace: " + buildingPlace.getId() + " - " + buildingPlace.getOwnerPlayer());
-        if ((buildingPlace != null) && (buildingPlace.getOwnerPlayer() != null))
-        {
 
-            try
+        if (mem.getPlaceByPlaceSequenceNumber(placeSequenceNumber) instanceof BuildingPlace)
+        {
+            BuildingPlace buildingPlace = mem.getBuildingPlaceByPlaceSequenceNumber(placeSequenceNumber);
+            System.out.println("BuildigPlace: " + buildingPlace.getId() + " - " + buildingPlace.getOwnerPlayer());
+            if ((buildingPlace != null) && (buildingPlace.getOwnerPlayer() != null))
             {
-                buildingPlaceJsonObject.put("ownerUserName", buildingPlace.getOwnerPlayer().getUser().getName());
-                getBuildingPlaceDetailes(buildingPlace, buildingPlaceJsonObject);
-            } catch (JSONException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                try
+                {
+                    buildingPlaceJsonObject.put("ownerUserName", buildingPlace.getOwnerPlayer().getUser().getName());
+                    getBuildingPlaceDetailes(buildingPlace, buildingPlaceJsonObject);
+                } catch (JSONException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
         }
         mem.closeDB();
         System.out.println(buildingPlaceJsonObject);
-
-        return JResponse.ok(buildingPlaceJsonObject).build();
+        return Response.ok(buildingPlaceJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     private JSONObject getBuildingPlaceDetailes(BuildingPlace buildingPlace, JSONObject buildingPlaceJsonObject)
@@ -437,7 +435,7 @@ public class GameApi
     @Path("/StartGame")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONObject> startGame(String json, @Context
+    public Response startGame(String json, @Context
     HttpServletRequest request)
     {
         JSONArray jsonTomb;
@@ -489,7 +487,7 @@ public class GameApi
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return JResponse.ok(responseJsonObject).build();
+        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     private List<Player> sortRelaPlayer(Game game)
@@ -510,7 +508,7 @@ public class GameApi
     @Path("/GetInvitations")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONObject> getInvitations(@Context
+    public Response getInvitations(@Context
     HttpServletRequest request)
     {
         System.out.println("GetInvitations");
@@ -545,7 +543,7 @@ public class GameApi
         }
 
         System.out.println(responseJsonObject);
-        return JResponse.ok(responseJsonObject).build();
+        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     @Path("/AcceptInvitation")
@@ -569,7 +567,7 @@ public class GameApi
     @Path("/CreateGame")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONObject> createGame(String json, @Context
+    public Response createGame(String json, @Context
     HttpServletRequest request)
     {
 
@@ -719,13 +717,13 @@ public class GameApi
 
         System.out.println("RESPONSE: " + responseJsonObject);
 
-        return JResponse.ok(responseJsonObject).build();
+        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     @Path("/GetProfil")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONObject> getProfil(@Context
+    public Response getProfil(@Context
     HttpServletRequest request)
     {
         String loggedInUseremail = Helper.getLoggedInUserEmail(request);
@@ -764,23 +762,23 @@ public class GameApi
         mem.closeDB();
 
         System.out.println(responseJsonObject);
-        return JResponse.ok(responseJsonObject).build();
+        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     @Path("/GetPlaceData")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONObject> getPlaceData(String json, @Context
+    public Response getPlaceData(String json, @Context
     HttpServletRequest request)
     {
         System.out.println(json);
         JSONArray jsonTomb;
-        int placeId = 0;
+        int placeSequenceNumber = 0;
         try
         {
             jsonTomb = new JSONArray(json);
-            placeId = jsonTomb.getJSONObject(0).getInt("placeId");
-            System.out.println("PlaceID: " + placeId);
+            placeSequenceNumber = jsonTomb.getJSONObject(0).getInt("placeSequenceNumber");
+            System.out.println("PlacePlaceSequenceNumber: " + placeSequenceNumber);
         } catch (JSONException e)
         {
             // TODO Auto-generated catch block
@@ -793,10 +791,10 @@ public class GameApi
         JSONObject placeJsonObject = new JSONObject();
         boolean isBuilding = false;
 
-        Place place = mem.getPlaceById(placeId);
+        Place place = mem.getPlaceByPlaceSequenceNumber(placeSequenceNumber);
         if (place instanceof StartPlace)
         {
-            StartPlace startPlace = mem.getStartPlaceById(placeId);
+            StartPlace startPlace = mem.getStartPlaceByPlaceSequenceNumber(placeSequenceNumber);
             try
             {
 
@@ -809,22 +807,41 @@ public class GameApi
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-        } else if (place.getClass() == BuildingPlace.class)
+        } else if (place instanceof BuildingPlace)
         {
-            BuildingPlace buildingPlace = mem.getBuildingPlaceById(placeId);
+            BuildingPlace buildingPlace = mem.getBuildingPlaceByPlaceSequenceNumber(placeSequenceNumber);
             try
             {
                 placeJsonObject.put("gameId", buildingPlace.getGame().getId());
                 placeJsonObject.put("placeId", buildingPlace.getId());
                 placeJsonObject.put("placeSequenceNumber", buildingPlace.getPlaceSequenceNumber());
                 placeJsonObject.put("houseNumber", buildingPlace.getHouseNumber());
-                placeJsonObject.put("ownerPlayerId", buildingPlace.getOwnerPlayer().getId());
-                placeJsonObject.put("buildingId", buildingPlace.getBuilding().getId());
-                placeJsonObject.put("buildingName", buildingPlace.getBuilding().getName());
-                placeJsonObject.put("buildingPrice", buildingPlace.getBuilding().getPrice());
-                placeJsonObject.put("buildingHousePrice", buildingPlace.getBuilding().getHousePrice());
-                placeJsonObject.put("buildingBaseNightPayment", buildingPlace.getBuilding().getBaseNightPayment());
-                placeJsonObject.put("buildingPerHousePayment", buildingPlace.getBuilding().getPerHousePayment());
+                if (buildingPlace.getOwnerPlayer() != null)
+                {
+                    placeJsonObject.put("ownerPlayerId", buildingPlace.getOwnerPlayer().getId());
+                } else
+                {
+                    placeJsonObject.put("ownerPlayerId", "");
+                }
+                if (buildingPlace.getBuilding() != null)
+                {
+                    placeJsonObject.put("buildingId", buildingPlace.getBuilding().getId());
+                    placeJsonObject.put("buildingName", buildingPlace.getBuilding().getName());
+                    placeJsonObject.put("buildingPrice", buildingPlace.getBuilding().getPrice());
+                    placeJsonObject.put("buildingHousePrice", buildingPlace.getBuilding().getHousePrice());
+                    placeJsonObject
+                            .put("buildingBaseNightPayment", buildingPlace.getBuilding().getBaseNightPayment());
+                    placeJsonObject.put("buildingPerHousePayment", buildingPlace.getBuilding().getPerHousePayment());
+
+                } else
+                {
+                    placeJsonObject.put("buildingId", "");
+                    placeJsonObject.put("buildingName", "");
+                    placeJsonObject.put("buildingPrice", "");
+                    placeJsonObject.put("buildingHousePrice", "");
+                    placeJsonObject.put("buildingBaseNightPayment", "");
+                    placeJsonObject.put("buildingPerHousePaymentss", "");
+                }
 
                 isBuilding = true;
             } catch (JSONException e)
@@ -858,13 +875,13 @@ public class GameApi
             e.printStackTrace();
         }
 
-        return JResponse.ok(responseJsonObject).build();
+        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     @Path("/GetPlayerData")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONObject> getPlayerData(String json, @Context
+    public Response getPlayerData(String json, @Context
     HttpServletRequest request)
     {
         System.out.println("JSON: " + json);
@@ -916,13 +933,13 @@ public class GameApi
         System.out.println(playerJsonObject);
         mem.closeDB();
 
-        return JResponse.ok(playerJsonObject).build();
+        return Response.ok(playerJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     @Path("/MakeStep")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONObject> makeStep(String json, @Context
+    public Response makeStep(String json, @Context
     HttpServletRequest request)
     {
         int errorCode = 0;
@@ -951,7 +968,7 @@ public class GameApi
             soldBuildingsIds = jsonTomb.getJSONObject(0).getJSONArray("soldBuildingsIds");
             boughtHouseNumberForBuildings = jsonTomb.getJSONObject(0).getJSONArray("boughtHouseNumberForBuildings");
 
-            System.out.println("BuildigPlaceID: " + placeSequenceNumber);
+            System.out.println("BuildiSequenceNumber: " + placeSequenceNumber);
         } catch (JSONException e)
         {
             // TODO Auto-generated catch block
@@ -1029,11 +1046,14 @@ public class GameApi
                     // tulajdonjogának törlése...)
                     if (isSold)
                     {
-                        int soldBuildingPlaceId;
+                        int soldBuildingPlaceSequenceNumber;
                         for (int i = 0; i < soldBuildingsIds.length(); i++)
+
                         {
-                            soldBuildingPlaceId = soldBuildingsIds.getJSONObject(i).getInt("buildingPlaceId");
-                            BuildingPlace soldBuildingPlace = mem.getBuildingPlaceById(soldBuildingPlaceId);
+                            soldBuildingPlaceSequenceNumber = soldBuildingsIds.getJSONObject(i).getInt(
+                                    "placeSequenceNumber");
+                            BuildingPlace soldBuildingPlace = mem
+                                    .getBuildingPlaceByPlaceSequenceNumber(soldBuildingPlaceSequenceNumber);
 
                             player.setMoney(player.getMoney()
                                     + ((int) (soldBuildingPlace.getBuilding().getPrice() / 2)));
@@ -1192,7 +1212,7 @@ public class GameApi
             e.printStackTrace();
         }
         System.out.println(responseJsonObject);
-        return JResponse.ok(responseJsonObject).build();
+        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     private int getNumberOfGameInAStatus(User user, PlayerStatus ps)
