@@ -21,6 +21,11 @@ public class MonopolyEntityManager
         em = emf.createEntityManager();
     }
 
+    public EntityManager getEntityManager()
+    {
+        return em;
+    }
+
     public void closeDB()
     {
         em.close();
@@ -245,6 +250,22 @@ public class MonopolyEntityManager
         }
     }
 
+    public <T extends Place> T getPlaceByPlaceSequenceNumber(int placeSequenceNumber)
+    {
+
+        Query q = em.createNamedQuery("Place.getPlaceByPlaceSequenceNumber");
+        q.setParameter("placeSequenceNumberPattern", placeSequenceNumber);
+
+        List<T> result = q.getResultList();
+        if (result.size() == 0)
+        {
+            return null;
+        } else
+        {
+            return result.get(0);
+        }
+    }
+    
     public Player getPlayerById(int id)
     {
 

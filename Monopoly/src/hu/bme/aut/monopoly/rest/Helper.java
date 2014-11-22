@@ -16,6 +16,8 @@ import javax.servlet.http.HttpSession;
 
 public class Helper
 {
+    public static int throughMoney = 1000;
+    
     public static String getLoggedInUserEmail(HttpServletRequest request)
     {
         HttpSession session = request.getSession(true);

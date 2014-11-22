@@ -7,6 +7,7 @@ import hu.bme.aut.monopoly.model.HouseBuying;
 import hu.bme.aut.monopoly.model.MonopolyEntityManager;
 import hu.bme.aut.monopoly.model.Place;
 import hu.bme.aut.monopoly.model.Player;
+import hu.bme.aut.monopoly.model.PlayerComparator;
 import hu.bme.aut.monopoly.model.PlayerStatus;
 import hu.bme.aut.monopoly.model.StartPlace;
 import hu.bme.aut.monopoly.model.Step;
@@ -14,8 +15,10 @@ import hu.bme.aut.monopoly.model.User;
 import hu.bme.aut.monopoly.model.UserType;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -24,11 +27,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.http.conn.routing.RouteInfo.LayerType;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.sun.jersey.api.JResponse;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
 
 
 @Path("/gameapi")
@@ -461,6 +466,11 @@ public class GameApi
                     mem.commit(player);
                 }
             }
+
+            // kezdojatekos belallitasa
+            List<Player> realPlayers = sortRelaPlayer(game);
+            game.setActualPlayer(realPlayers.get(0));
+
             game.setGameStatus(GameStatus.inProgress);
             mem.commit(game);
             Helper.makeBoard(gameId);
@@ -482,6 +492,21 @@ public class GameApi
             e.printStackTrace();
         }
         return JResponse.ok(responseJsonObject).build();
+    }
+
+    private List<Player> sortRelaPlayer(Game game)
+    {
+        List<Player> realPlayers = new ArrayList<Player>();
+        for (Player player : game.getPlayers())
+        {
+            if (player.getPlayerStatus() == PlayerStatus.accepted)
+            {
+                realPlayers.add(player);
+            }
+        }
+
+        java.util.Collections.sort(realPlayers, new PlayerComparator());
+        return realPlayers;
     }
 
     @Path("/GetInvitations")
@@ -630,27 +655,43 @@ public class GameApi
 
             if (errorCode == 0)
             {
-                Game game = new Game();
-                game.setName(gameName);
-                mem.commit(game);
+                EntityManager entityManager = mem.getEntityManager();
 
-                List<Player> gamePlayers = new ArrayList<Player>();
-                for (User user : validUsers)
+                entityManager.getTransaction().begin();
+                try
                 {
-                    Player player = new Player();
-                    player.setPlayerStatus(PlayerStatus.notAcceptedYet);
-                    player.setMoney(1000);
-                    player.setUser(user);
-                    player.setGame(game);
-                    mem.commit(player);
-                    gamePlayers.add(player);
+                    Game game = new Game();
+                    game.setName(gameName);
+                    entityManager.persist(game);
 
-                    user.addGamePlayer(player);
-                    mem.commit(user);
+                    List<Player> gamePlayers = new ArrayList<Player>();
+                    for (User user : validUsers)
+                    {
+                        Player player = new Player();
+                        player.setPlayerStatus(PlayerStatus.notAcceptedYet);
+                        player.setMoney(Helper.throughMoney);
+                        player.setUser(user);
+                        player.setGame(game);
+                        Step step = new Step();
+                        step.setFinishPlace(mem.getPlaceByPlaceSequenceNumber(1));
+                        entityManager.persist(step);
+                        entityManager.persist(player);
+                        gamePlayers.add(player);
+
+                        user.addGamePlayer(player);
+                        entityManager.persist(user);
+                    }
+
+                    game.setPlayers(gamePlayers);
+                    entityManager.persist(game);
+
+                    entityManager.getTransaction().commit();
+                } catch (Exception e)
+                {
+                    entityManager.getTransaction().rollback();
+                    errorCode = 1;
                 }
 
-                game.setPlayers(gamePlayers);
-                mem.commit(game);
             }
 
         } catch (JSONException e)
@@ -918,6 +959,11 @@ public class GameApi
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
+        // playerId = 1;
+        // placeSequenceNumber = 3;
+        // roll = 2;
+
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
         Player player = mem.getPlayerById(playerId);
@@ -927,29 +973,88 @@ public class GameApi
                 || ((player.getSteps().get(player.getSteps().size() - 1).getFinishPlace().getPlaceSequenceNumber() + roll) % 16 != placeSequenceNumber))
         {
             errorCode = 2;
+            System.out.println("CSALAS");
         } else
         {
             Step step = new Step();
+            Player ownerOfBuildingPlace = null;
+            List<BuildingPlace> soldBuildingPlaces = new ArrayList<BuildingPlace>();
+            List<HouseBuying> houseBuyings = new ArrayList<HouseBuying>();
 
-            // TODO SCROLL!!!!!!!!!!! nincs az adatbazisban
+            // leptetes
+            step.setFinishPlace(mem.getPlaceByPlaceSequenceNumber(placeSequenceNumber));
+            player.addStep(step);
+            System.out.println("UJ MEZO: " + step.getFinishPlace());
             try
             {
-                mem.commit(step);
-
-                if (isBuildingBought)
+                // mem.commit(step);
+                // StartPlacere leptunk
+                if (mem.getPlaceByPlaceSequenceNumber(placeSequenceNumber) instanceof StartPlace)
                 {
-                    // megvásárolta az adott telket
-
-                } else if (isPayed) {
-                	// fizetett a telek gazdájának megfelelõ összeget
-                	
-                	if(isSold) {
-                		// eladott épületekkel szükséges mûveletek elvégzése (házak levétele a telekrõl, a telek tulajdonjogának törlése...)
-                	}
+                    System.out.println("START MEZO");
+                    player.setMoney(player.getMoney() + Helper.throughMoney);
                 }
-                
+                // buildingPlacere leptunk
+                else if (mem.getPlaceByPlaceSequenceNumber(placeSequenceNumber) instanceof BuildingPlace)
+                {
+                    System.out.println("EPITESI MEZO ");
+                    BuildingPlace buildingPlace = mem.getPlaceByPlaceSequenceNumber(placeSequenceNumber);
+
+                    // megvásárolta az adott telket
+                    if (isBuildingBought)
+                    {
+                        player.setMoney(player.getMoney() - buildingPlace.getBuilding().getPrice());
+                        step.setBuyedBuilding(buildingPlace);
+                        // mem.commit(step);
+                        player.addBuilding(buildingPlace);
+                        // mem.commit(player);
+
+                    }
+
+                    // fizetett a telek gazdájának megfelelõ összeget
+                    else if (isPayed)
+                    {
+
+                        int amount;
+                        amount = buildingPlace.getBuilding().getBaseNightPayment() + buildingPlace.getHouseNumber()
+                                * buildingPlace.getBuilding().getPerHousePayment();
+
+                        ownerOfBuildingPlace = buildingPlace.getOwnerPlayer();
+                        ownerOfBuildingPlace.setMoney(ownerOfBuildingPlace.getMoney() + amount);
+                        // mem.commit(ownerOfBuildingPlace);
+
+                        player.setMoney(player.getMoney() - amount);
+                        // mem.commit(player);
+                    }
+
+                    // eladott épületekkel szükséges mûveletek elvégzése (házak levétele a telekrõl, a telek
+                    // tulajdonjogának törlése...)
+                    if (isSold)
+                    {
+                        int soldBuildingPlaceId;
+                        for (int i = 0; i < soldBuildingsIds.length(); i++)
+                        {
+                            soldBuildingPlaceId = soldBuildingsIds.getJSONObject(i).getInt("buildingPlaceId");
+                            BuildingPlace soldBuildingPlace = mem.getBuildingPlaceById(soldBuildingPlaceId);
+
+                            player.setMoney(player.getMoney()
+                                    + ((int) (soldBuildingPlace.getBuilding().getPrice() / 2)));
+                            player.removeBuilding(soldBuildingPlace);
+                            // mem.commit(player);
+
+                            soldBuildingPlace.setHouseNumber(0);
+                            soldBuildingPlace.setOwnerPlayer(null);
+                            // mem.commit(soldBuildingPlace);
+                            soldBuildingPlaces.add(soldBuildingPlace);
+                            step.addSoldBuilding(soldBuildingPlace);
+                        }
+
+                        // mem.commit(step);
+
+                    }
+                }
+
                 // Külön kell végig menni a telkeire vett házakon
-                List<HouseBuying> houseBuyings = new ArrayList<HouseBuying>();
                 int buildingId;
                 int number;
                 for (int i = 0; i < boughtHouseNumberForBuildings.length(); i++)
@@ -958,41 +1063,119 @@ public class GameApi
                     number = boughtHouseNumberForBuildings.getJSONObject(i).getInt("number");
 
                     // LEELLENORIZNI H VAN_E ILYEN ID BUILDING
-                    BuildingPlace boughtBuildingPlace = mem.getBuildingPlaceById(buildingId);
+                    if (mem.getBuildingPlaceById(buildingId) != null)
+                    {
+                        BuildingPlace boughtBuildingPlace = mem.getBuildingPlaceById(buildingId);
 
-                    HouseBuying houseBuying = new HouseBuying();
-                    houseBuying.setBuyedHouseNumber(number);
-                    houseBuying.setForBuilding(boughtBuildingPlace);
-                    mem.commit(houseBuying);
-                    houseBuyings.add(houseBuying);
-                    
-                    // Ez kimaradt, növelni kell a házak számát az adott telken
-                    int newSumHouseNumber = boughtBuildingPlace.getHouseNumber()+number;
-                    if(newSumHouseNumber>5) {
-                    	// csalt, nem érvényes a lépés
-                    	// ilyenkor hogyan vonod vissza az eddig felkommitolt dolgokat az adatbázisból?
-                    	errorCode = 2;
-                    	throw new IllegalArgumentException("Too much house bought for: "+boughtBuildingPlace.getId());
+                        HouseBuying houseBuying = new HouseBuying();
+                        houseBuying.setBuyedHouseNumber(number);
+                        houseBuying.setForBuilding(boughtBuildingPlace);
+                        // mem.commit(houseBuying);
+                        houseBuyings.add(houseBuying);
+
+                        // Ez kimaradt, növelni kell a házak számát az adott telken
+                        int newSumHouseNumber = boughtBuildingPlace.getHouseNumber() + number;
+                        if (newSumHouseNumber > 5)
+                        {
+                            // csalt, nem érvényes a lépés
+                            // ilyenkor hogyan vonod vissza az eddig felkommitolt dolgokat az adatbázisból?
+                            errorCode = 2;
+                            throw new IllegalArgumentException("Too much house bought for: "
+                                    + boughtBuildingPlace.getId());
+                        }
+                        boughtBuildingPlace.setHouseNumber(newSumHouseNumber);
+
+                        step.setBuyedBuilding(boughtBuildingPlace);
+                        // mem.commit(step);
+
+                        player.setMoney(player.getMoney() - boughtBuildingPlace.getBuilding().getPrice()
+                                * boughtBuildingPlace.getHouseNumber());
+                        // mem.commit(player);
+                    } else
+                    {
+                        // nincsen ilyen id a buildingPlace között
+                        errorCode = 2;
+                        throw new IllegalArgumentException("No BuildingPlace with id : " + buildingId);
                     }
-					boughtBuildingPlace.setHouseNumber(newSumHouseNumber);
-
-                    step.setBuyedBuilding(boughtBuildingPlace);
-                    mem.commit(step);
-
-                    player.setMoney(player.getMoney() - boughtBuildingPlace.getBuilding().getPrice()
-                            * boughtBuildingPlace.getHouseNumber());
-                    mem.commit(player);
 
                 }
                 step.setHouseBuyings(houseBuyings);
-                
-                // Ide kellene majd még, hogy megvizsgáljuk a pénzét, ha negatív, akkor menjen csõdbe (telkek elvétele és ürítése, állapot átállítása...)
-                
-                //Szerintem csak itt kéne kommitolni mindent, azt nem lehet? mondjuk a houseBuyings-os listán végigmenve mindegyiket egyesével meg a player-t is
+
+                // Ide kellene majd még, hogy megvizsgáljuk a pénzét, ha negatív, akkor menjen csõdbe (telkek elvétele
+                // és ürítése, állapot átállítása...)
+
+                if (player.getMoney() < 0)
+                {
+                    for (BuildingPlace buildingPlace : player.getBuildings())
+                    {
+                        buildingPlace.setHouseNumber(0);
+                        buildingPlace.setOwnerPlayer(null);
+                        player.removeBuilding(buildingPlace);
+                    }
+                    player.setPlayerStatus(PlayerStatus.lost);
+                }
+
                 mem.commit(step);
+
+                // Ha kell gyoztesnek allitjuk
+                int numberOfAcceptedPlayer = 0;
+                for (Player aPlayer : player.getGame().getPlayers())
+                {
+                    if (aPlayer.getPlayerStatus() == PlayerStatus.accepted)
+                    {
+                        numberOfAcceptedPlayer++;
+                    }
+                }
+
+                if (numberOfAcceptedPlayer == 1)
+                {
+                    player.setPlayerStatus(PlayerStatus.win);
+                    player.getGame().setGameStatus(GameStatus.finished);
+                }
+
             } catch (Exception e)
             {
                 // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            // Szerintem csak itt kéne kommitolni mindent, azt nem lehet? mondjuk a houseBuyings-os listán
+            // végigmenve mindegyiket egyesével meg a player-t is
+            EntityManager entityManager = mem.getEntityManager();
+            entityManager.getTransaction().begin();
+            try
+            {
+                if (isPayed)
+                {
+                    entityManager.persist(ownerOfBuildingPlace);
+                }
+                if (isSold)
+                {
+                    for (BuildingPlace aSoldBuildingPlace : soldBuildingPlaces)
+                    {
+                        mem.commit(aSoldBuildingPlace);
+                    }
+                }
+
+                for (HouseBuying houseBuying : houseBuyings)
+                {
+                    entityManager.persist(houseBuying);
+                }
+
+                entityManager.persist(player);
+                entityManager.persist(step);
+
+                // kovetkezo jatekos beallitasa
+                List<Player> realPlayers = sortRelaPlayer(player.getGame());
+                int nextActualPlayerIndex = (realPlayers.indexOf(player) + 1) % realPlayers.size();
+                Game game = player.getGame();
+                game.setActualPlayer(realPlayers.get(nextActualPlayerIndex));
+                entityManager.persist(game);
+
+                entityManager.getTransaction().commit();
+            } catch (Exception e)
+            {
+                entityManager.getTransaction().rollback();
                 e.printStackTrace();
             }
 
@@ -1010,6 +1193,7 @@ public class GameApi
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        System.out.println(responseJsonObject);
         return JResponse.ok(responseJsonObject).build();
     }
 
@@ -1080,6 +1264,27 @@ public class GameApi
         mem.closeDB();
         System.out.println(notAcceptedYetGamesJsonArray);
 
+        int numberOfAcceptedPlayer = 0;
+        for (Player player : gamePlayers)
+        {
+            if (player.getPlayerStatus() == PlayerStatus.accepted)
+            {
+                numberOfAcceptedPlayer++;
+            }
+        }
+        if (numberOfAcceptedPlayer == gamePlayers.size())
+        {
+            game.setGameStatus(GameStatus.inProgress);
+            try
+            {
+                mem.commit(game);
+            } catch (Exception e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        mem.closeDB();
         return JResponse.ok(responseJsonObject).build();
     }
 }
