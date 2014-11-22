@@ -53,6 +53,18 @@ function acceptInvitation(id) {
 	jsonObject.push({
 		"gameid": id
 	});
+	
+	/* Így kéne csinálni!!!
+	 * $.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    dataType: "json",
+		    url: "/Monopoly/rest/gameapi/AcceptInvitation"
+		}).done(function(data) {
+				$("#elements").append(data);
+			
+	    });
+	 * */
 	//$.ajax({
 	//	type: "POST",
 	//	data: JSON.stringify(jsonObject),
