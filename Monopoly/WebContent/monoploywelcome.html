@@ -149,11 +149,12 @@
 		$.ajax({
 		    type: "POST",
 		    data: JSON.stringify(jsonObject),
-		    url: "/Monopoly/rest/gameapi/AcceptInvitation",
-		    success: function (data) {
-                $('#elements').html(data.msg);
-            }
-		});
+		    dataType: "json",
+		    url: "/Monopoly/rest/gameapi/AcceptInvitation"
+		}).done(function(data) {
+				$("#elements").append(data);
+			
+	    });
 	}
 	
 	function refuseInvitation() {
@@ -228,18 +229,12 @@
 		jsonObject.push({
 			"playerId" : "2"
 		});
-
+		$("#elements").append("b");
 		
 		$.ajax({
 		    type: "POST",
 		    data: JSON.stringify(jsonObject),
 		    url: "/Monopoly/rest/gameapi/GetPlayerData"
-		    }).done(function(data) {
-
-				
-				$(data).each(function(index, item) {
-					$("#elements").append(item.user.id);
-				});
 		    });
 	}
 	function makeStep() {
@@ -310,7 +305,7 @@
 		
 			<button	 type="button" onclick="logout()" class="btn btn-large btn-block btn-primary">Logout</button>
 			
-			<dev id="elements"></dev>
+			<dev id="elements">a</dev>
 		</form>
 	</div>
 

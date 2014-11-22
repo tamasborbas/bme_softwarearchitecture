@@ -15,7 +15,6 @@ import hu.bme.aut.monopoly.model.User;
 import hu.bme.aut.monopoly.model.UserType;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -26,14 +25,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-import org.apache.http.conn.routing.RouteInfo.LayerType;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.sun.jersey.api.JResponse;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
 
 
 @Path("/gameapi")
@@ -553,7 +551,7 @@ public class GameApi
     @Path("/AcceptInvitation")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONObject> acceptInvitation(String json, @Context
+    public Response acceptInvitation(String json, @Context
     HttpServletRequest request)
     {
         return modifyPlayerStatus(json, request, PlayerStatus.accepted);
@@ -562,7 +560,7 @@ public class GameApi
     @Path("/RefuseInvitation")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public JResponse<JSONObject> refuseInvitation(String json, @Context
+    public Response refuseInvitation(String json, @Context
     HttpServletRequest request)
     {
         return modifyPlayerStatus(json, request, PlayerStatus.refused);
@@ -1210,8 +1208,7 @@ public class GameApi
         return gamesNum;
     }
 
-    private JResponse<JSONObject> modifyPlayerStatus(String json, HttpServletRequest request,
-            PlayerStatus playerStatus)
+    private Response modifyPlayerStatus(String json, HttpServletRequest request, PlayerStatus playerStatus)
     {
         JSONObject responseJsonObject = new JSONObject();
         System.out.println("GetInvitations");
@@ -1230,7 +1227,7 @@ public class GameApi
 
         for (Player player : gamePlayers)
         {
-            System.out.println("PLAYERID: " + player.getId());
+            System.out.println("PLAYERID: " + player.getId() + " - " + player.getPlayerStatus());
             if ((player.getGame() == game) && (player.getPlayerStatus() != playerStatus)
                     && (player.getPlayerStatus() != PlayerStatus.refused))
             {
@@ -1258,10 +1255,20 @@ public class GameApi
                 }
 
                 System.out.println(player.getGame().getName() + " - " + player.getId());
+            } else
+            {
+                try
+                {
+                    responseJsonObject.put("success", false);
+                } catch (JSONException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
 
         }
-        mem.closeDB();
+
         System.out.println(notAcceptedYetGamesJsonArray);
 
         int numberOfAcceptedPlayer = 0;
@@ -1285,6 +1292,8 @@ public class GameApi
             }
         }
         mem.closeDB();
-        return JResponse.ok(responseJsonObject).build();
+        System.out.println(responseJsonObject);
+
+        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 }
