@@ -1,0 +1,296 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Log In</title>
+
+<!-- <link rel="stylesheet" href="style.css" /> -->
+<link rel="stylesheet" href="bootstrap.css" />
+<link rel="stylesheet" href="mystyle.css" />
+<script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="js/jquery.json-2.4.js"></script>
+<script type="text/javascript" src="js/json2.js"></script>
+
+<script type="text/javascript">
+
+	function alterContent() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"userName" : "admin",
+			"password" : "admin"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/userapi/Login"
+		});
+		
+
+		
+// 		window.location.href = 'products.html';
+	}
+	
+	function getGames() {
+
+
+		var url = "/Monopoly/rest/gameapi/GetActiveGames";
+		$.ajax(url).done(function(data) {
+			
+			$(data).each(function(index, item) {
+			$("#elements").append(item.name);
+			
+			});
+		});
+	}
+	
+	function openGame() {
+
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"gameId" : "2"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/OpenGame",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+		
+// 		var url = "/Monopoly/rest/gameapi/OpenGame";
+// 		$.ajax(url).done(function(data) {
+			
+// 			$(data).each(function(index, item) {
+// 			$("#elements").append(item.name);
+			
+// 			});
+// 		});
+	}
+	
+	function getMyGames() {
+
+
+		var url = "/Monopoly/rest/gameapi/GetMyGames";
+		$.ajax(url).done(function(data) {
+			
+			$(data).each(function(index, item) {
+			$("#elements").append(item.name);
+			
+			});
+		});
+	}
+	
+	function getBuilding() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"buildingPlaceId" : "116"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/GetBuilding",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	function startGame() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"gameId" : "2"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/StartGame",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
+	function getInvitations() {
+		
+		$.ajax({
+		    type: "POST",		  
+		    url: "/Monopoly/rest/gameapi/GetInvitations",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
+	function acceptInvitation() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"gameId" : "1"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/AcceptInvitation",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
+	function refuseInvitation() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"gameId" : "1"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/RefuseInvitation",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
+	function createGame() {
+
+		var jsonObject = '{"gameName":"TestCreateGame","players":[{"player":"admin@gmail.com"},{"player":"xyz"},{ "player":"anna" }]}'
+		
+		
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/CreateGame",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
+	function getProfil() {
+	
+		$.ajax({
+		    type: "POST",
+		    url: "/Monopoly/rest/gameapi/GetProfil",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
+	function getPlaceData() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"placeId" : "116"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/GetPlaceData",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
+	function getPlayerData() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"playerId" : "2"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/GetPlayerData"
+		    }).done(function(data) {
+
+				
+				$(data).each(function(index, item) {
+					$("#elements").append(item.user.id);
+				});
+		    });
+	}
+	
+	
+	function logout() {
+
+		var url = "/Monopoly/rest/userapi/Logout";
+		$.ajax(url).done(function() {
+			 window.location.replace("index.html");
+			
+		});
+
+	}
+</script>
+
+
+</head>
+
+<body>
+	<div class="container-narrow">
+		
+		<ul class="nav nav-pills">
+			<li class="active"><a href="#">Log In</a></li>
+			<li><a href="register.html">Register</a></li>
+		</ul>
+
+		<form class="form-signin">
+
+			<h2 class="form-signin-heading">Please Log In</h2>
+
+			<input type="text" class="input-block-level" placeholder="Username"	id="userName" /> 
+			<input type="password" class="input-block-level"placeholder="Password" id="password" /> 
+			<button	 type="button" onclick="alterContent()" class="btn btn-large btn-block btn-primary">Login</button>
+			<button	 type="button" onclick="getGames()" class="btn btn-large btn-block btn-primary">GetGames</button>
+			<button	 type="button" onclick="openGame()" class="btn btn-large btn-block btn-primary">OpenGame</button>
+			<button	 type="button" onclick="getMyGames()" class="btn btn-large btn-block btn-primary">GetMyGames</button>
+			<button	 type="button" onclick="getBuilding()" class="btn btn-large btn-block btn-primary">GetBuilding</button>
+			<button	 type="button" onclick="startGame()" class="btn btn-large btn-block btn-primary">StartGame</button>
+			<button	 type="button" onclick="getInvitations()" class="btn btn-large btn-block btn-primary">GetInvitations</button>
+			<button	 type="button" onclick="acceptInvitation()" class="btn btn-large btn-block btn-primary">AcceptInvitation</button>
+			<button	 type="button" onclick="refuseInvitation()" class="btn btn-large btn-block btn-primary">RefuseInvitation</button>
+			<button	 type="button" onclick="createGame()" class="btn btn-large btn-block btn-primary">CreateGame</button>
+			<button	 type="button" onclick="getProfil()" class="btn btn-large btn-block btn-primary">GetProfil</button>
+			<button	 type="button" onclick="getPlaceData()" class="btn btn-large btn-block btn-primary">GetPlaceData</button>
+			<button	 type="button" onclick="getPlayerData()" class="btn btn-large btn-block btn-primary">GetPlayerData</button>
+		
+			<button	 type="button" onclick="logout()" class="btn btn-large btn-block btn-primary">Logout</button>
+			
+			<dev id="elements"></dev>
+		</form>
+	</div>
+
+</body>
+</html>

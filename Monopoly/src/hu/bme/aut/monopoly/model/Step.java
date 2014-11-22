@@ -23,22 +23,10 @@ public class Step implements Serializable
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int money;
     private BuildingPlace buyedBuilding;
-    private BuildingPlace soldBuilding;
     private Place finishPlace;
     private List<HouseBuying> houseBuyings = new ArrayList<HouseBuying>();
-
-    @XmlElement
-    public int getMoney()
-    {
-        return money;
-    }
-
-    public void setMoney(int money)
-    {
-        this.money = money;
-    }
+    private List<BuildingPlace> soldBuildings = new ArrayList<BuildingPlace>();
 
     @XmlElement
     public BuildingPlace getBuyedBuilding()
@@ -49,17 +37,6 @@ public class Step implements Serializable
     public void setBuyedBuilding(BuildingPlace buyedBuilding)
     {
         this.buyedBuilding = buyedBuilding;
-    }
-
-    @XmlElement
-    public BuildingPlace getSoldBuilding()
-    {
-        return soldBuilding;
-    }
-
-    public void setSoldBuilding(BuildingPlace soldBuilding)
-    {
-        this.soldBuilding = soldBuilding;
     }
 
     @XmlElement
@@ -89,5 +66,26 @@ public class Step implements Serializable
     {
         this.finishPlace = finishPlace;
     }
+
+    @XmlElement
+    public List<BuildingPlace> getSoldBuildings()
+    {
+        return soldBuildings;
+    }
+
+    
+    public void setSoldBuildings(List<BuildingPlace> soldBuildings)
+    {
+        this.soldBuildings = soldBuildings;
+    }
+    public void addSoldBuilding(BuildingPlace soldBuilding)
+    {
+        this.soldBuildings.add(soldBuilding);
+    }
+
+//    public void removeSoldBuildings(BuildingPlace soldBuilding)
+//    {
+//        this.soldBuildings.remove(soldBuilding);
+//    }
 
 }

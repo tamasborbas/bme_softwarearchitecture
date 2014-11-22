@@ -1,0 +1,170 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="utf-8"/>
+    <title>Happy Games Monopoly - Game</title>
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="game.css" />
+	<script src="game.js"></script>
+	<link rel="icon" type="image/x-icon" href="icon.png" />
+	<script src="../js/jquery-1.9.1.min.js"></script>
+	<script src="../js/jquery.json-2.4.js"></script>
+	<script src="../js/json2.js"></script>
+</head>
+<body onload="loadDatas()">
+	<div class="testbox" id="gamebox">
+		<section class="basesec" id="gameboard">
+		<div class="container">
+			<section class="boardline" id="gameboardtop">
+				<section class="place" id="place8"></section>
+				<section class="place" id="place9"></section>
+				<section class="place" id="place10"></section>
+				<section class="place" id="place11"></section>
+				<section class="place" id="place12"></section>
+			</section>
+			<section class="boardline-middle">
+				<section class="boardline boardline-td" id="gameboardleft">
+					<section class="place" id="place7"></section>
+					<section class="place" id="place6"></section>
+					<section class="place" id="place5"></section>
+				</section>
+				<section class="dataviewer">
+					<section class="dataspec dataspec-unvisible" id="gamedataspec">
+						<h2 id="gamename">Game Name</h2>
+						<hr class="datasep" />
+						<div>Owner: <span class="span-data" id="gd-owner">Owner Name</span></div>
+					</section>
+					<section class="dataspec" id="buildingdataspec">
+						<h2 id="buildingname">Building Name</h2>
+						<hr class="datasep" />
+						<div>
+							Price: <span class="span-data" id="bd-bprice">1000</span><br />
+							House price: <span class="span-data" id="bd-hprice">100</span><br />
+							<hr class="datasep" />
+							Basic sleep price: <span class="span-data" id="bd-bsprice">300</span><br />
+							Plus sleep price per house: <span class="span-data" id="bd-hsprice">50</span><br />
+							<hr class="datasep" />
+							Owner: <span class="span-data" id="bd-owner">Owner Name</span><br />
+							Number of houses: <span class="span-data" id="bd-houses">4</span><br />
+							Actual sleep price: <span class="span-data" id="bd-aprice">500</span><br />
+
+						</div>
+					</section>
+					<section class="dataspec dataspec-unvisible" id="playerdataspec">
+						<h2 id="playername">Player Name</h2>
+						<hr class="datasep" />
+						<div>
+							Status: <span class="span-data" id="pd-status">active</span><br />
+							Color: <section class="span-data" id="pd-color"></section><br />
+							Place: <span class="span-data" id="pd-place">1</span><br />
+							Money: <span class="span-data" id="pd-money">1000</span><br />
+							<hr class="datasep" />
+							<h3 class="pbuildingsheader">Owned buildings</h3>
+							<table class="pbuildings">
+								<thead>
+									<tr>
+										<th>Building name</th>
+										<th>Number of houses</th>
+										<th>Actual sleep price</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>Building name1</td>
+										<td class="value">0</td>
+										<td class="value value-last">200</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+				</section>
+				<section class="boardline boardline-td" id="gameboardright">
+					<section class="place" id="place13"></section>
+					<section class="place" id="place14"></section>
+					<section class="place" id="place15"></section>
+				</section>
+			</section>
+			<section class="boardline" id="gameboardbottom">
+				<section class="place" id="place4"></section>
+				<section class="place" id="place3"></section>
+				<section class="place" id="place2"></section>
+				<section class="place" id="place1"></section>
+				<section class="place" id="place0"></section>
+			</section>
+		</div>
+		</section><section class="basesec" id="stepboard">
+		<div class="stepmain">
+			<section class="steph1" id="moneysection">
+				<input id="actmoney_text" type="text" disabled="disabled" value="Your money: 1000" />
+			</section>
+			<section class="steph1 steph1-withbutton" id="rollsection">
+				<a class="button button-withspace" onclick="backToHome()">Go Home</a>
+				<a class="button" onclick="roll()">Roll</a>
+			</section>
+			<section class="steph1-collapsed" id="rollresults">
+				<input id="place_text" type="text" disabled="disabled" value="Place:" />
+				<input id="roll_text" type="text" disabled="disabled" value="Roll result:" />
+			</section>
+			<section class="steph1-collapsed" id="paysection">
+				<a class="button" onclick="pay()">Pay</a>
+			</section>
+			<section class="steph1-collapsed" id="buysection">
+				<input id="buildingbuy_text" type="text" disabled="disabled" value="Do you want to buy the building?" />
+				<a class="button button-half" id="yesbuilding" onclick="buyb()">Lets do it!</a>
+				<a class="button button-half" id="nobuilding" onclick="nbuyb()">No, thanks.</a>
+			</section>
+			<section class="steph1-collapsed" id="sellbuildingsection">
+				<table class="steptables">
+					<thead>
+						<tr>
+							<th class="scolumn">Building</th>
+							<th class="scolumn">Price</th>
+							<th class="ticky">Sold</th>
+						</tr>
+					</thead>
+					<tbody id="sellbuildingsbody">
+					</tbody>
+				</table>
+				<input id="debit_text" type="text" disabled="disabled" value="You debit: 1000" />
+				<a class="button button-third" id="sellbuilding" onclick="sellb()">Sell buildings</a>
+			</section>
+			<section class="steph1-collapsed" id="boughtsection">
+				<input id="buildingbuy_text" type="text" disabled="disabled" value="You bought this building: " />
+			</section>
+			<section class="steph1-collapsed" id="buyhousesection">
+				<table class="steptables">
+					<thead>
+						<tr>
+							<th class="hcolumn">Building</th>
+							<th class="hcolumn">Price per house</th>
+							<th class="plusmin">Number</th>
+						</tr>
+					</thead>
+					<tbody id="buybuildingsbody">
+					</tbody>
+				</table>
+				<input id="debit_text" type="text" disabled="disabled" value="Price of houses: 1000" />
+				<a class="button button-third" id="buyhouses" onclick="buyh()">Next</a>
+			</section>
+			<section class="steph1-collapsed" id="finishsection">
+				<a class="button" onclick="finish()">Finish turn</a>
+			</section>
+		</div>
+		</section><section class="basesec" id="playersboard">
+		<div class="container" id="playersboardcontainer">
+			<section class="minibank">
+				<label class="playerid">BANK</label>
+			</section>
+
+		</div>
+		</section>
+	</div>
+	<div class="loading invisible" id="loading">
+		<img id="loadinggif" src="loading.gif" />
+	</div>
+	<footer>
+		Happy Games	<img alt="" src="logo_grey.png" />
+	</footer>
+</body>
+</html>

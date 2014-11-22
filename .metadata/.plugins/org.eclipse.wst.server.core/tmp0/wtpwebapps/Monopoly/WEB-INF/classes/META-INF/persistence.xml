@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persistence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+	version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">
+	<persistence-unit name="Monopoly" transaction-type="RESOURCE_LOCAL">
+<!-- 		<class>hu.bme.aut.monopoly.model.test.Todo</class> -->
+<!-- 		<class>hu.bme.aut.monopoly.model.test.Family</class> -->
+<!-- 		<class>hu.bme.aut.monopoly.model.test.Person</class> -->
+<!-- 		<class>hu.bme.aut.monopoly.model.test.Job</class> -->
+		<class>hu.bme.aut.monopoly.model.Building</class>
+		<class>hu.bme.aut.monopoly.model.BuildingPlace</class>
+		<class>hu.bme.aut.monopoly.model.Game</class>
+		<class>hu.bme.aut.monopoly.model.HouseBuying</class>
+		<class>hu.bme.aut.monopoly.model.Place</class>
+		<class>hu.bme.aut.monopoly.model.Player</class>
+		<class>hu.bme.aut.monopoly.model.SimplePlace</class>
+		<class>hu.bme.aut.monopoly.model.StartPlace</class>
+		<class>hu.bme.aut.monopoly.model.Step</class>
+		<class>hu.bme.aut.monopoly.model.User</class>
+
+		<properties>
+			<property name="eclipselink.jdbc.driver" value="com.mysql.jdbc.Driver" />
+			<property name="eclipselink.jdbc.url" value="jdbc:mysql://localhost/monopoly" />
+			<property name="eclipselink.jdbc.user" value="root" />
+			<property name="eclipselink.jdbc.password" value="Wilco515" />
+
+			<!-- EclipseLink should create the database schema automatically -->
+			<property name="eclipselink.ddl-generation" value="create-tables" />
+			<property name="eclipselink.ddl-generation.output-mode"
+				value="database" />
+			<property name="eclipselink.logging.level" value="INFO" />
+		</properties>
+
+	</persistence-unit>
+</persistence>

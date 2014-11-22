@@ -53,7 +53,7 @@
 		var jsonObject = [];
 		
 		jsonObject.push({
-			"gameId" : "2"
+			"gameId" : "1"
 		});
 
 		
@@ -242,6 +242,27 @@
 				});
 		    });
 	}
+	function makeStep() {
+
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"playerId" : "2"
+		});
+
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/gameapi/MakeStep"
+		    }).done(function(data) {
+
+				
+				$(data).each(function(index, item) {
+					$("#elements").append(item.user.id);
+				});
+		    });
+	}
 	
 	
 	function logout() {
@@ -285,6 +306,7 @@
 			<button	 type="button" onclick="getProfil()" class="btn btn-large btn-block btn-primary">GetProfil</button>
 			<button	 type="button" onclick="getPlaceData()" class="btn btn-large btn-block btn-primary">GetPlaceData</button>
 			<button	 type="button" onclick="getPlayerData()" class="btn btn-large btn-block btn-primary">GetPlayerData</button>
+			<button	 type="button" onclick="makeStep()" class="btn btn-large btn-block btn-primary">MakeStep</button>
 		
 			<button	 type="button" onclick="logout()" class="btn btn-large btn-block btn-primary">Logout</button>
 			

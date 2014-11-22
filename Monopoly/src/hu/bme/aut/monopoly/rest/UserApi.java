@@ -75,29 +75,11 @@ public class UserApi
         if (mem.getUserIsRegistered(userName, passwordHash))
         {
             session.setAttribute("loggedInUser", mem.getUserByName(userName).getEmail());
-            try
-            {
-                // TODO
 
-                response.sendRedirect("/Monopoly/pages/home.html");
-            } catch (IOException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
             System.out.println("Login okay");
         } else
         {
             System.out.println("Login NOT okay");
-            try
-            {
-                // TODO
-                response.sendRedirect("/Monopoly/login.html");
-            } catch (IOException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
         }
 
         mem.closeDB();
@@ -115,14 +97,6 @@ public class UserApi
         session.invalidate();
 
         System.out.println("logout");
-        try
-        {
-            response.sendRedirect("/Monopoly/index.html");
-        } catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
         return response;
     }
 
@@ -188,15 +162,6 @@ public class UserApi
             if (mem.getUserIsRegistered(email, passwordHash))
             {
                 session.setAttribute("loggedInUser", email);
-                try
-                {
-                    // TODO
-                    response.sendRedirect("/Monopoly/monopolywelcome.html");
-                } catch (IOException e)
-                {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
             }
             mem.closeDB();
         }

@@ -113,6 +113,17 @@ public class Player implements Serializable
         this.buildings = buildings;
     }
 
+    public void addBuilding(BuildingPlace building)
+    {
+        this.buildings.add(building);
+    }
+
+    public void removeBuilding(BuildingPlace building)
+    {
+        this.buildings.remove(building);
+    }
+
+    
     @XmlElement
     public int getId()
     {

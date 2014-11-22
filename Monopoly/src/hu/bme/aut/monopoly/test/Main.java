@@ -6,6 +6,7 @@ import hu.bme.aut.monopoly.model.MonopolyEntityManager;
 import hu.bme.aut.monopoly.model.Player;
 import hu.bme.aut.monopoly.model.PlayerStatus;
 import hu.bme.aut.monopoly.model.User;
+import hu.bme.aut.monopoly.model.UserType;
 import hu.bme.aut.monopoly.rest.Helper;
 
 import java.util.ArrayList;
@@ -26,8 +27,8 @@ public class Main
         // uj user hozzaadasa
         try
         {
-            // mem.addNewUser("anna@gmail.com", "a70f9e38ff015afaa9ab0aacabee2e13", "anna", UserType.user);
-            // mem.addNewUser("admin@gmail.com", "21232f297a57a5a743894a0e4a801fc3", "admin", UserType.user);
+             mem.addNewUser("anna@gmail.com", "a70f9e38ff015afaa9ab0aacabee2e13", "anna", UserType.user);
+             mem.addNewUser("admin@gmail.com", "21232f297a57a5a743894a0e4a801fc3", "admin", UserType.user);
         } catch (Exception e)
         {
             // TODO Auto-generated catch block
@@ -43,11 +44,11 @@ public class Main
         // mem.addNewPlayerTest();
 
         // jatekosok jatekhoz rendelese
-        // openGame(mem, "TEST2", GameStatus.inProgress);
-        // openGame(mem, "TEST3", GameStatus.init);
+         openGame(mem, "TEST2", GameStatus.inProgress);
+         openGame(mem, "TEST3", GameStatus.init);
 
-//        Helper.makeBoard(1);
-//        Helper.makeBoard(2);
+        Helper.makeBoard(1);
+        Helper.makeBoard(2);
 
         // List<? extends Place> places = mem.getPlacesByGameId(3);
         // for (Place place : places)

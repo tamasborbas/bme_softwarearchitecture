@@ -1,0 +1,98 @@
+package hu.bme.aut.monopoly.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+
+@Entity
+@XmlRootElement(name = "Step")
+public class Step implements Serializable
+{
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    private int money;
+    private BuildingPlace buyedBuilding;
+    private Place finishPlace;
+    private List<HouseBuying> houseBuyings = new ArrayList<HouseBuying>();
+    private List<BuildingPlace> soldBuildings = new ArrayList<BuildingPlace>();
+
+    @XmlElement
+    public int getMoney()
+    {
+        return money;
+    }
+
+    public void setMoney(int money)
+    {
+        this.money = money;
+    }
+
+    @XmlElement
+    public BuildingPlace getBuyedBuilding()
+    {
+        return buyedBuilding;
+    }
+
+    public void setBuyedBuilding(BuildingPlace buyedBuilding)
+    {
+        this.buyedBuilding = buyedBuilding;
+    }
+
+    @XmlElement
+    public List<HouseBuying> getHouseBuyings()
+    {
+        return houseBuyings;
+    }
+
+    public void setHouseBuyings(List<HouseBuying> houseBuyings)
+    {
+        this.houseBuyings = houseBuyings;
+    }
+
+    @XmlElement
+    public int getId()
+    {
+        return id;
+    }
+
+    @XmlElement
+    public Place getFinishPlace()
+    {
+        return finishPlace;
+    }
+
+    public void setFinishPlace(Place finishPlace)
+    {
+        this.finishPlace = finishPlace;
+    }
+
+    @XmlElement
+    public List<BuildingPlace> getSoldBuildings()
+    {
+        return soldBuildings;
+    }
+
+    
+    public void setSoldBuildings(List<BuildingPlace> soldBuildings)
+    {
+        this.soldBuildings = soldBuildings;
+    }
+    public void setSoldBuildings(BuildingPlace soldBuilding)
+    {
+        this.soldBuildings.add(soldBuildings);
+    }
+
+}

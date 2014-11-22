@@ -1,0 +1,6 @@
+INDEX VERSION 1.122+D:\Egyetem\msc\szar\MonopolyGit\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+3006939726.index
+1555038968.index
+400402008.index
+3534517450.index
+1575857210.index
