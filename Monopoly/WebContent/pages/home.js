@@ -63,7 +63,7 @@ function acceptInvitation(id) {
 function createGame() {
 	var gname = document.getElementById("gname");
 	if(gname.checkValidity()) {
-		var jsonString = '[{"gameName":"'+gname.value+',"players":[{"player":"'+sessionStorage.happygames_basic_username+'"}';
+		var jsonString = '[{"gameName":"'+gname.value+'","players":[{"player":"'+sessionStorage.happygames_basic_username+'"}';
 		for(var i=1;i<8;i++) {
 			var iname = document.getElementById("iname"+i);
 			if(iname.checkValidity()) {
@@ -77,7 +77,7 @@ function createGame() {
 		jsonString = jsonString + ']}]';
 		$.ajax({
 			type: "POST",
-			data : JSON.stringify(jsonString),
+			data : jsonString,
 			url : "/Monopoly/rest/gameapi/CreateGame",
 			success : function(data) {
 				alert(data.msg);
