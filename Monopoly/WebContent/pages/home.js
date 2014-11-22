@@ -1,4 +1,15 @@
-﻿function openGame(id) {
+﻿function logout() {
+	$.ajax({
+		type: "GET",
+		url : "/Monopoly/rest/userapi/Logout",
+		success : function() {
+			sessionStorage.clear();
+			window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
+		}
+	});
+}
+
+function openGame(id) {
 	alert(id);
 	var jsonObject = [];
 	jsonObject.push({
@@ -47,6 +58,32 @@ function acceptInvitation(id) {
 	//	data: JSON.stringify(jsonObject),
 	//	url: "/Monopoly/rest/userapi/acceptInvitation"
 	//});
+}
+
+function createGame() {
+	var gname = document.getElementById("gname");
+	if(gname.checkValidity()) {
+		var jsonString = '[{"gameName":"'+gname.value+',"players":[{"player":"'+sessionStorage.happygames_basic_username+'"}';
+		for(var i=1;i<8;i++) {
+			var iname = document.getElementById("iname"+i);
+			if(iname.checkValidity()) {
+				if(iname.value!="") {
+					jsonString = jsonString+',{"player":"'+iname.value+'"}';
+				}
+			} else {
+				return false;
+			}
+		}
+		jsonString = jsonString + ']}]';
+		$.ajax({
+			type: "POST",
+			data : JSON.stringify(jsonString),
+			url : "/Monopoly/rest/gameapi/CreateGame",
+			success : function(data) {
+				alert(data.msg);
+			}
+		});
+	}
 }
 
 var actGameData = '{"activeGames":[{"id":3,"actualPlayer":"admin","players":[{"name":"anna"}],"name":"TEST2"}]}';

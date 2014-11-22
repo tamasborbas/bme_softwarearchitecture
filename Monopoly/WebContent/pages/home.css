@@ -204,6 +204,27 @@ input:disabled {
 	background-color: lightgray;
 	border-color: darkgrey;
 }
+input:invalid {
+	outline: none !important;
+	-webkit-box-shadow: 0 0 5px rgba(200, 0, 0, 1);
+	-moz-box-shadow: 0 0 5px rgba(200, 0, 0, 1);
+	box-shadow: 0 0 5px rgba(200, 0, 0, 1); 
+	border: 1px solid rgba(200, 0, 0, 1);
+}
+input:valid {
+	outline: none !important;
+	-webkit-box-shadow: 0 0 5px rgba(0, 200, 0, 1);
+	-moz-box-shadow: 0 0 5px rgba(0, 200, 0, 1);
+	box-shadow: 0 0 5px rgba(0, 200, 0, 1); 
+	border: 1px solid rgba(0, 200, 0, 1);
+}
+input[value=""]:valid {
+	outline: none !important;
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none; 
+	border: 1px solid rgba(0, 200, 0, 1);
+}
 
 input[type=password]{
   margin-bottom: 25px;

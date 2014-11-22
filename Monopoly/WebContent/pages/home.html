@@ -41,62 +41,57 @@
 		<section class="visiblesec" id="profilsec">
 			<div>
 				<label class="icon" for="mail"><i class="fa fa-envelope-o"></i></label>
-				<input type="email" name="mail" id="mail" placeholder="Email" required="required" disabled="disabled" />
+				<input type="email" id="mail" placeholder="Email" required="required" disabled="disabled" />
 			</div>
 			<div>
 				<label class="icon" for="name"><i class="fa fa-user"></i></label>
-				<input type="text" name="name" id="name" placeholder="UserName" required="required" disabled="disabled" />
+				<input type="text" id="name" placeholder="UserName" required="required" disabled="disabled" />
 			</div>
 		</section>
-		<section id="actgamesec">
-		</section>
+		<section id="actgamesec"></section>
 		<section id="newgamesec">
-			<form action="createGame()">
+			<form>
 				<div class="creategame">
 					<div>
 						<label class="iconWithText" for="gname"><i class="fa fa-gamepad">  Game ID</i></label>
-						<input type="text" name="gname" id="gname" placeholder="Game Name" required="required"  pattern="[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+						<input type="text" id="gname" placeholder="Game Name" required="required"  pattern="[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
 					</div>
 					<div>
-						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 1</i></label>
-						<input type="text" name="name" id="name" placeholder="UserName" required="required"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+						<label class="iconWithText" for="name1"><i class="fa fa-paper-plane">  Player 1</i></label>
+						<input type="text" id="iname1" placeholder="UserName" required="required"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
 					</div>
 					<div>
-						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 2</i></label>
-						<input type="text" name="name" id="name" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+						<label class="iconWithText" for="name2"><i class="fa fa-paper-plane">  Player 2</i></label>
+						<input type="text" id="iname2" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
 					</div>
 					<div>
-						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 3</i></label>
-						<input type="text" name="name" id="name" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+						<label class="iconWithText" for="name3"><i class="fa fa-paper-plane">  Player 3</i></label>
+						<input type="text" id="iname3" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
 					</div>
 					<div>
-						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 4</i></label>
-						<input type="text" name="name" id="name" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+						<label class="iconWithText" for="name4"><i class="fa fa-paper-plane">  Player 4</i></label>
+						<input type="text" id="iname4" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
 					</div>
 					<div>
-						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 5</i></label>
-						<input type="text" name="name" id="name" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+						<label class="iconWithText" for="name5"><i class="fa fa-paper-plane">  Player 5</i></label>
+						<input type="text" id="iname5" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
 					</div>
 					<div>
-						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 6</i></label>
-						<input type="text" name="name" id="name" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+						<label class="iconWithText" for="name6"><i class="fa fa-paper-plane">  Player 6</i></label>
+						<input type="text" id="iname6" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
 					</div>
 					<div>
-						<label class="iconWithText" for="name"><i class="fa fa-paper-plane">  Player 7</i></label>
-						<input type="text" name="name" id="name" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
+						<label class="iconWithText" for="name7"><i class="fa fa-paper-plane">  Player 7</i></label>
+						<input type="text" id="iname7" placeholder="UserName"  pattern="[a-zA-Z0-9.]+@?[a-zA-Z0-9.]+[a-zA-Z0-9.]+" title="You only can use a-z, A-Z, 0-9 and . characters."/>
 					</div>
-					<button type="submit" class="button" id="btnCreateGame">Create</button>
+					<button type="button" class="button" id="btnCreateGame" onclick="createGame()">Create</button>
 				</div>
 			</form>
 		</section>
-		<section id="managesec">
-
-		</section>
-		<section id="invitationsec">
-			
-		</section>
+		<section id="managesec"></section>
+		<section id="invitationsec"></section>
 		<section id="logoutsec">
-			<button type="button" class="button" id="logoutbtn" onclick="logout">Logout</button>
+			<button type="button" class="button" id="logoutbtn" onclick="logout()">Logout</button>
 		</section>
 	</div>
 	<div class="loading invisible" id="loading">
