@@ -6,12 +6,14 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQuery;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 
 @Entity
 @XmlRootElement(name = "Building")
+@NamedQuery(name = "Building.getBuildingById", query = "SELECT b FROM Building b WHERE b.id =:idPattern")
 public class Building implements Serializable
 {
     /**

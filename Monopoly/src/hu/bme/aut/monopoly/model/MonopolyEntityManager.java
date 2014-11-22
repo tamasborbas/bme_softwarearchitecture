@@ -218,6 +218,22 @@ public class MonopolyEntityManager
         }
     }
 
+    public BuildingPlace getBuildingPlaceByPlaceSequenceNumber(int placeSequenceNumber)
+    {
+
+        Query q = em.createNamedQuery("BuildigPlace.getBuildingPlaceByPlaceSequenceNumber");
+        q.setParameter("placeSequenceNumberPattern", placeSequenceNumber);
+
+        List<BuildingPlace> result = q.getResultList();
+        if (result.size() == 0)
+        {
+            return null;
+        } else
+        {
+            return result.get(0);
+        }
+    }
+
     public StartPlace getStartPlaceById(int id)
     {
 
@@ -225,6 +241,38 @@ public class MonopolyEntityManager
         q.setParameter("idPattern", id);
 
         List<StartPlace> result = q.getResultList();
+        if (result.size() == 0)
+        {
+            return null;
+        } else
+        {
+            return result.get(0);
+        }
+    }
+
+    public StartPlace getStartPlaceByPlaceSequenceNumber(int placeSequenceNumber)
+    {
+
+        Query q = em.createNamedQuery("StartPlace.getStartPlaceByPlaceSequenceNumber");
+        q.setParameter("placeSequenceNumber", placeSequenceNumber);
+
+        List<StartPlace> result = q.getResultList();
+        if (result.size() == 0)
+        {
+            return null;
+        } else
+        {
+            return result.get(0);
+        }
+    }
+
+    public Building getBuildingById(int id)
+    {
+
+        Query q = em.createNamedQuery("Building.getBuildingById");
+        q.setParameter("idPattern", id);
+
+        List<Building> result = q.getResultList();
         if (result.size() == 0)
         {
             return null;
@@ -265,7 +313,7 @@ public class MonopolyEntityManager
             return result.get(0);
         }
     }
-    
+
     public Player getPlayerById(int id)
     {
 

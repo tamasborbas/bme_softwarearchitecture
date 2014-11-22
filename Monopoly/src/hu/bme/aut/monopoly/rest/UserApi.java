@@ -3,7 +3,6 @@ package hu.bme.aut.monopoly.rest;
 import hu.bme.aut.monopoly.model.MonopolyEntityManager;
 import hu.bme.aut.monopoly.model.UserType;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -18,12 +17,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.sun.jersey.api.JResponse;
 
 
 @Path("/userapi")
@@ -102,7 +100,7 @@ public class UserApi
 
     @Path("/Registration")
     @POST
-    public JResponse<JSONObject> addUser(String json, @Context
+    public Response addUser(String json, @Context
     HttpServletRequest request, @Context
     HttpServletResponse response) throws JSONException
     {
@@ -169,12 +167,12 @@ public class UserApi
         JSONObject responseJsonObject = new JSONObject();
         responseJsonObject.put("errorCode", errorCode);
 
-        return JResponse.ok(responseJsonObject).build();
+        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     @Path("/Remind")
     @POST
-    public JResponse<JSONObject> remind(String json) throws JSONException
+    public Response remind(String json) throws JSONException
     {
         boolean success = true;
 
@@ -189,7 +187,7 @@ public class UserApi
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return JResponse.ok(responseJsonObject).build();
+        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     private String encodePassword(String password)
