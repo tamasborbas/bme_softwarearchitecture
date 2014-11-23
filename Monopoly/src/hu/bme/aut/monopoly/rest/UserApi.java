@@ -3,6 +3,7 @@ package hu.bme.aut.monopoly.rest;
 import hu.bme.aut.monopoly.model.MonopolyEntityManager;
 import hu.bme.aut.monopoly.model.UserType;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -78,6 +79,13 @@ public class UserApi
         } else
         {
             System.out.println("Login NOT okay");
+            session.invalidate();
+            try {
+				response.sendError(401, "The user is not registered");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
 
         mem.closeDB();
