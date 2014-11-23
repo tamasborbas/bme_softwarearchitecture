@@ -157,9 +157,9 @@ function getInvitations() {
 
 	loadingActivate();
 	$.ajax({
-		type : "GET",
+		type : "POST",
 		dataType : "json",
-		url : "/Monopoly/rest/gameapi/GetMyGames"
+		url : "/Monopoly/rest/gameapi/GetInvitations"
 	}).success(function(data) {
 		var jsonobject = JSON.parse(data);
 		for (var gi in jsonobject.nayGames) {

@@ -343,7 +343,7 @@ public class GameApi
                 aPlayer.put("playerId", player.getId());
                 aPlayer.put("name", player.getUser().getName());
                 aPlayer.put("status", player.getPlayerStatus());
-                aPlayer.put("placeId", player.getSteps().get(player.getSteps().size() - 1).getFinishPlace().getId());
+                //aPlayer.put("placeId", player.getSteps().get(player.getSteps().size() - 1).getFinishPlace().getId());
 
                 if (player.getPlayerStatus() == PlayerStatus.accepted)
                 {
@@ -592,8 +592,8 @@ public class GameApi
             JSONArray playersJsonArray = jsonTomb.getJSONObject(0).getJSONArray("players");
             for (int i = 0; i < playersJsonArray.length(); i++)
             {
-                playersJsonArray.getString(i);
-                String playerEmailOrName = playersJsonArray.getString(i);
+                System.out.println(playersJsonArray.getJSONObject(i).getString("player"));
+                String playerEmailOrName = playersJsonArray.getJSONObject(i).getString("player");
 
                 // username jott, es a username az adatbazisban - ok
                 if ((mem.isUserNameRegistered(playerEmailOrName)))
