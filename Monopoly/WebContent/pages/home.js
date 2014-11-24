@@ -69,7 +69,7 @@ function getActiveGames() {
 	deleteAllSubNode(basesec);
 	loadingActivate();
 	$.ajax({
-		type : "GET",
+		type : "POST",
 		dataType : "json",
 		url : "/Monopoly/rest/gameapi/GetActiveGames"
 	}).success(function(data) {
@@ -115,7 +115,7 @@ function getMyGames() {
 
 	loadingActivate();
 	$.ajax({
-		type : "GET",
+		type : "POST",
 		dataType : "json",
 		url : "/Monopoly/rest/gameapi/GetMyGames"
 	}).success(function(data) {
@@ -203,7 +203,7 @@ function getInvitations() {
 }
 function logout() {
 	$.ajax({
-		type: "GET",
+		type: "POST",
 		url : "/Monopoly/rest/userapi/Logout",
 		success : function() {
 			sessionStorage.clear();
