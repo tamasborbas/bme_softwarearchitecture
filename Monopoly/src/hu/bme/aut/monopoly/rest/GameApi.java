@@ -472,7 +472,39 @@ public class GameApi
 
             game.setGameStatus(GameStatus.inProgress);
             mem.commit(game);
+
+            // Tabla elkeszitese
             Helper.makeBoard(gameId);
+
+            // Kezdomezo kivalasztasa
+            StartPlace startPlace = null;
+            for (Place place : game.getPlaces())
+            {
+                if (place instanceof StartPlace)
+                {
+                    startPlace = mem.getStartPlaceById(place.getId());
+                    System.out.println("START PLACE: " + startPlace.getId());
+                }
+            }
+
+            // jatekosok kezdomezore allitasa
+            if (startPlace != null)
+            {
+                for (Player player : realPlayers)
+                {
+                    System.out.println("REAL PLAYER: " + player.getId());
+                    Step step = new Step();
+                    step.setFinishPlace(startPlace);
+                    player.addStep(step);
+                    mem.commit(step);
+                    mem.commit(player);
+                }
+            }
+            // ha nincsen kezdomezo, akkor baj van
+            else
+            {
+                success = false;
+            }
             mem.closeDB();
 
         } catch (Exception e)
@@ -581,7 +613,6 @@ public class GameApi
     public Response createGame(String json, @Context
     HttpServletRequest request)
     {
-
         boolean success = true;
         List<User> validUsers = new ArrayList<User>();
         System.out.println(json);
@@ -661,17 +692,19 @@ public class GameApi
                             invalidUserNamesJsonArray.put(playerEmailOrName);
                             errorCode = 1;
                         }
-
                     }
-
                 }
-
             }
 
             if (errorCode == 0)
             {
-                EntityManager entityManager = mem.getEntityManager();
+                // Get the owner of the game
+                String loggedInUseremail = Helper.getLoggedInUserEmail(request);
+                mem.initDB();
+                User ownerUser = mem.getUserByEmail(loggedInUseremail);
+                mem.closeDB();
 
+                EntityManager entityManager = mem.getEntityManager();
                 entityManager.getTransaction().begin();
                 try
                 {
@@ -683,13 +716,19 @@ public class GameApi
                     for (User user : validUsers)
                     {
                         Player player = new Player();
-                        player.setPlayerStatus(PlayerStatus.notAcceptedYet);
+                        if (user == ownerUser)
+                        {
+                            player.setPlayerStatus(PlayerStatus.accepted);
+                            game.setOwnerOfGame(ownerUser);
+                        } else
+                        {
+                            player.setPlayerStatus(PlayerStatus.notAcceptedYet);
+                        }
+
                         player.setMoney(Helper.throughMoney);
                         player.setUser(user);
                         player.setGame(game);
-                        Step step = new Step();
-                        step.setFinishPlace(mem.getPlaceByPlaceSequenceNumber(1));
-                        entityManager.persist(step);
+
                         entityManager.persist(player);
                         gamePlayers.add(player);
 
@@ -706,9 +745,7 @@ public class GameApi
                     entityManager.getTransaction().rollback();
                     errorCode = 1;
                 }
-
             }
-
         } catch (JSONException e)
         {
 
