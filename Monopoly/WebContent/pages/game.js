@@ -1,5 +1,44 @@
 ﻿/******************************* Load Datas *******************************/
+function getQueryVariable(variable) {
+	var query = window.location.search.substring(1);
+	var vars = query.split("&");
+	for (var i = 0; i < vars.length; i++) {
+		var pair = vars[i].split("=");
+		if (pair[0] == variable) {
+			return pair[1];
+		}
+	}
+	return(false);
+}
+
 function loadDatas() {
+	var playerMail = getQueryVariable("email");
+	var gameId = getQueryVariable("gameid");
+	sessionStorage.happygames_game_email = playerMail;
+	sessionStorage.happygames_game_gameid = gameId;
+	$.ajax({
+		type : "POST",
+		data: '[{"gameId":'+gameId+',"playerEmail":"'+playerMail+'"}]',
+		dataType : "json",
+		url : "/Monopoly/rest/gameapi/OpenGame"
+	}).success(function(data) {
+		console.log(data);
+		var gameData = JSON.parse(data);
+		if(gameData.gameStatus=="init") {
+			alert("Sorry, this game is under initialization.");
+			window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
+		} else if(gameData.gameStatus=="finished") {
+			alert("Sorry, this game has been finished.");
+			window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
+		} else {
+			sessionStorage.happygames_game_name = gameData.name;
+			sessionStorage.happygames_game_ownerOfGame = gameData.ownerOfGame;
+			sessionStorage.happygames_game_actualPlayer = gameData.actualPlayer;
+			sessionStorage.happygames_game_players = JSON.stringify(gameData.players);
+			sessionStorage.happygames_game_places = JSON.stringify(gameData.places);
+			// TODO folyt
+		}
+	});
 	createMiniPlayers();
 	createGameBoard();
 }
