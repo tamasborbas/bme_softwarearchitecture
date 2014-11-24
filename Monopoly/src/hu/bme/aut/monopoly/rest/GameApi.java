@@ -19,6 +19,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -162,12 +163,19 @@ public class GameApi
     public Response openGame(String json, @Context
     HttpServletRequest request)
     {
-        // TODO minek ez?
         String loggedInUseremail = Helper.getLoggedInUserEmail(request);
+        String notLoggedInUseremail = null;
         int gameId;
         try
         {
             gameId = getGameIdFromJson(json);
+            JSONArray jsonTomb;
+            jsonTomb = new JSONArray(json);
+            if (jsonTomb.getJSONObject(0).getString("email") != "")
+            {
+                notLoggedInUseremail = jsonTomb.getJSONObject(0).getString("email");
+            }
+            System.out.println("GAMEID: " + gameId);
         } catch (JSONException e1)
         {
             e1.printStackTrace();
@@ -176,8 +184,27 @@ public class GameApi
 
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
-        Game game = mem.getGameById(gameId);
 
+        Game game = mem.getGameById(gameId);
+        boolean isActualPlayer = false;
+        Player actualPlayer = null;
+
+        // ha nem regisztralt a felhasznalo, akkor itt inditunk neki sessiont
+        if (((notLoggedInUseremail != null) || !(notLoggedInUseremail.equals("")))
+                && ((loggedInUseremail == null) || (loggedInUseremail.equals(""))))
+        {
+            HttpSession session = request.getSession(true);
+            session.setAttribute("notLoggedInUser", notLoggedInUseremail);
+            User notLoggedInUser = mem.getUserByEmail(notLoggedInUseremail);
+            // ellenorizzuk, hogy o az aktualis jatekos-e
+            isActualPlayer = isPlayerActualPlayerOfTheGame(game, isActualPlayer, notLoggedInUser);
+        }
+        // bejelentkezett felhasznalo eseten is ellenorizzuk az aktualitast
+        else
+        {
+            User loggedInUser = mem.getUserByEmail(loggedInUseremail);
+            isActualPlayer = isPlayerActualPlayerOfTheGame(game, isActualPlayer, loggedInUser);
+        }
         JSONObject gameDetailesJsonObject = new JSONObject();
         try
         {
@@ -186,62 +213,29 @@ public class GameApi
             gameDetailesJsonObject.put("gameStatus", game.getGameStatus());
             gameDetailesJsonObject.put("name", game.getName());
             gameDetailesJsonObject.put("ownerOfGame", game.getOwnerOfGame().getId());
-            gameDetailesJsonObject.put("actualPlayer", game.getActualPlayer().getId());
+            gameDetailesJsonObject.put("actualPlayer", getAllDetailesOfPlayer(game.getActualPlayer()));
+            gameDetailesJsonObject.put("isActualPlayer", isActualPlayer);
 
-            JSONArray playersJsonArray = new JSONArray();
+            JSONArray acceptedPlayersJsonArray = new JSONArray();
+            JSONArray loserPlayersJsonArray = new JSONArray();
 
             for (Player player : game.getPlayers())
             {
-                if (player.getPlayerStatus() != PlayerStatus.refused)
+                if (player.getPlayerStatus() == PlayerStatus.accepted)
                 {
-
-                    System.out.println("PLAYER: " + player.getId());
+                    JSONObject aPlayerJsonObject = getAllDetailesOfPlayer(player);
+                    acceptedPlayersJsonArray.put(aPlayerJsonObject);
+                } else if (player.getPlayerStatus() == PlayerStatus.lost)
+                {
                     JSONObject aPlayerJsonObject = new JSONObject();
                     aPlayerJsonObject.put("playerId", player.getId());
                     aPlayerJsonObject.put("name", player.getUser().getName());
-                    aPlayerJsonObject.put("status", player.getPlayerStatus());
-                    boolean isActualPlayer = player.getGame().getActualPlayer().equals(player);
-                    aPlayerJsonObject.put("isActualPlayer", isActualPlayer);
 
-                    JSONObject actualPlayerJsonObject = new JSONObject();
-                    if (isActualPlayer)
-                    {
-                        actualPlayerJsonObject.put("money", player.getMoney());
-                        actualPlayerJsonObject.put("placeSequenceNumber",
-                                player.getSteps().get(player.getSteps().size() - 1).getFinishPlace()
-                                        .getPlaceSequenceNumber());
-
-                        JSONArray ownedBuildingsJsonArray = new JSONArray();
-                        for (BuildingPlace buildingPlace : player.getBuildings())
-                        {
-                            JSONObject aOwnedBuildingJsonObject = new JSONObject();
-
-                            aOwnedBuildingJsonObject.put("buildingId", buildingPlace.getBuilding().getId());
-                            aOwnedBuildingJsonObject.put("buildingName", buildingPlace.getBuilding().getName());
-                            aOwnedBuildingJsonObject.put("maxHouseNumber", 5 - buildingPlace.getHouseNumber());
-                            ownedBuildingsJsonArray.put(aOwnedBuildingJsonObject);
-                        }
-
-                        actualPlayerJsonObject.put("ownedBuildings", ownedBuildingsJsonArray);
-                        aPlayerJsonObject.put("actualPlayer", actualPlayerJsonObject);
-                    } else
-                    {
-                        aPlayerJsonObject.put("actualPlayer", "");
-                    }
-
-                    // !!!! place ahol all
-
-                    // Step step = new Step();
-                    // // mindenkit a starta rakunk
-                    // step.setFinishPlace(game.getPlaces().get(0));
-                    // mem.commit(step);
-                    // player.addStep(step);
-                    // mem.commit(player);
-
-                    playersJsonArray.put(aPlayerJsonObject);
+                    loserPlayersJsonArray.put(aPlayerJsonObject);
                 }
             }
-            gameDetailesJsonObject.put("players", playersJsonArray);
+            gameDetailesJsonObject.put("acceptedPlayers", acceptedPlayersJsonArray);
+            gameDetailesJsonObject.put("loserPlayers", loserPlayersJsonArray);
 
             JSONArray placesJsonArray = new JSONArray();
             for (Place place : game.getPlaces())
@@ -278,6 +272,50 @@ public class GameApi
         mem.closeDB();
         System.out.println(gameDetailesJsonObject);
         return Response.ok(gameDetailesJsonObject.toString(), MediaType.APPLICATION_JSON).build();
+    }
+
+    private JSONObject getAllDetailesOfPlayer(Player player) throws JSONException
+    {
+        System.out.println("PLAYER: " + player.getId());
+        JSONObject aPlayerJsonObject = new JSONObject();
+        aPlayerJsonObject.put("playerId", player.getId());
+        aPlayerJsonObject.put("name", player.getUser().getName());
+        aPlayerJsonObject.put("status", player.getPlayerStatus());
+
+        aPlayerJsonObject.put("money", player.getMoney());
+        aPlayerJsonObject.put("placeSequenceNumber", player.getSteps().get(player.getSteps().size() - 1)
+                .getFinishPlace().getPlaceSequenceNumber());
+
+        JSONArray ownedBuildingsJsonArray = new JSONArray();
+        for (BuildingPlace buildingPlace : player.getBuildings())
+        {
+            JSONObject aOwnedBuildingJsonObject = new JSONObject();
+
+            aOwnedBuildingJsonObject.put("buildingId", buildingPlace.getBuilding().getId());
+            aOwnedBuildingJsonObject.put("buildingName", buildingPlace.getBuilding().getName());
+            aOwnedBuildingJsonObject.put("nuberOfHouse", buildingPlace.getHouseNumber());
+            aOwnedBuildingJsonObject.put("price", buildingPlace.getBuilding().getPrice());
+            aOwnedBuildingJsonObject.put("housePrice", buildingPlace.getBuilding().getHousePrice());
+            aOwnedBuildingJsonObject.put("baseNightPayment", buildingPlace.getBuilding().getBaseNightPayment());
+            aOwnedBuildingJsonObject.put("perHousePayment", buildingPlace.getBuilding().getPerHousePayment());
+            aOwnedBuildingJsonObject.put("maxHouseNumber", 5 - buildingPlace.getHouseNumber());
+            ownedBuildingsJsonArray.put(aOwnedBuildingJsonObject);
+        }
+
+        aPlayerJsonObject.put("ownedBuildings", ownedBuildingsJsonArray);
+        return aPlayerJsonObject;
+    }
+
+    private boolean isPlayerActualPlayerOfTheGame(Game game, boolean isActualPlayer, User user)
+    {
+        for (Player playerOfUser : user.getGamePlayers())
+        {
+            if (playerOfUser.getGame() == game && (playerOfUser == game.getActualPlayer()))
+            {
+                isActualPlayer = true;
+            }
+        }
+        return isActualPlayer;
     }
 
     private int getGameIdFromJson(String json) throws JSONException
@@ -472,7 +510,39 @@ public class GameApi
 
             game.setGameStatus(GameStatus.inProgress);
             mem.commit(game);
+
+            // Tabla elkeszitese
             Helper.makeBoard(gameId);
+
+            // Kezdomezo kivalasztasa
+            StartPlace startPlace = null;
+            for (Place place : game.getPlaces())
+            {
+                if (place instanceof StartPlace)
+                {
+                    startPlace = mem.getStartPlaceById(place.getId());
+                    System.out.println("START PLACE: " + startPlace.getId());
+                }
+            }
+
+            // jatekosok kezdomezore allitasa
+            if (startPlace != null)
+            {
+                for (Player player : realPlayers)
+                {
+                    System.out.println("REAL PLAYER: " + player.getId());
+                    Step step = new Step();
+                    step.setFinishPlace(startPlace);
+                    player.addStep(step);
+                    mem.commit(step);
+                    mem.commit(player);
+                }
+            }
+            // ha nincsen kezdomezo, akkor baj van
+            else
+            {
+                success = false;
+            }
             mem.closeDB();
 
         } catch (Exception e)
@@ -581,7 +651,6 @@ public class GameApi
     public Response createGame(String json, @Context
     HttpServletRequest request)
     {
-
         boolean success = true;
         List<User> validUsers = new ArrayList<User>();
         System.out.println(json);
@@ -661,17 +730,19 @@ public class GameApi
                             invalidUserNamesJsonArray.put(playerEmailOrName);
                             errorCode = 1;
                         }
-
                     }
-
                 }
-
             }
 
             if (errorCode == 0)
             {
-                EntityManager entityManager = mem.getEntityManager();
+                // Get the owner of the game
+                String loggedInUseremail = Helper.getLoggedInUserEmail(request);
+                mem.initDB();
+                User ownerUser = mem.getUserByEmail(loggedInUseremail);
+                mem.closeDB();
 
+                EntityManager entityManager = mem.getEntityManager();
                 entityManager.getTransaction().begin();
                 try
                 {
@@ -683,13 +754,19 @@ public class GameApi
                     for (User user : validUsers)
                     {
                         Player player = new Player();
-                        player.setPlayerStatus(PlayerStatus.notAcceptedYet);
+                        if (user == ownerUser)
+                        {
+                            player.setPlayerStatus(PlayerStatus.accepted);
+                            game.setOwnerOfGame(ownerUser);
+                        } else
+                        {
+                            player.setPlayerStatus(PlayerStatus.notAcceptedYet);
+                        }
+
                         player.setMoney(Helper.throughMoney);
                         player.setUser(user);
                         player.setGame(game);
-                        Step step = new Step();
-                        step.setFinishPlace(mem.getPlaceByPlaceSequenceNumber(1));
-                        entityManager.persist(step);
+
                         entityManager.persist(player);
                         gamePlayers.add(player);
 
@@ -706,9 +783,7 @@ public class GameApi
                     entityManager.getTransaction().rollback();
                     errorCode = 1;
                 }
-
             }
-
         } catch (JSONException e)
         {
 
@@ -1202,7 +1277,6 @@ public class GameApi
         mem.closeDB();
 
         JSONObject responseJsonObject = new JSONObject();
-
         try
         {
             responseJsonObject.put("errorCode", errorCode);
@@ -1212,6 +1286,18 @@ public class GameApi
             return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
         }
         System.out.println(responseJsonObject);
+
+        // ha nem volt hiba es nem regisztralt felhasznaloval van dolgunk, akkor lezarjuk a hozza tartozo sessiont
+        if (errorCode == 0)
+        {
+            HttpSession session = request.getSession(true);
+            String notLoggedInUseremail = (String) session.getAttribute("notLoggedInUser");
+            if ((notLoggedInUseremail != null) && !(notLoggedInUseremail.equals("")))
+            {
+                session.invalidate();
+            }
+        }
+
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
