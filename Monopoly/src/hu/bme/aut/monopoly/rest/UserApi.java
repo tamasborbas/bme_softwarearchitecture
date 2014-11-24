@@ -4,10 +4,6 @@ import hu.bme.aut.monopoly.model.MonopolyEntityManager;
 import hu.bme.aut.monopoly.model.UserType;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -55,23 +51,25 @@ public class UserApi
             password = jsonTomb.getJSONObject(0).getString("password");
         } catch (JSONException e1)
         {
-            // TODO Auto-generated catch block
+            try
+            {
+                response.sendError(403, "Invalid JSON");
+            } catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             e1.printStackTrace();
         }
 
         HttpSession session = request.getSession(true);
         session.setAttribute("loggedInUser", "");
 
-        String passwordHash = "";
-
-        // MD5 hash alkalmazása a jelszora
-        passwordHash = encodePassword(password);
-
-        System.out.println(userName + " - " + passwordHash);
+        System.out.println(userName + " - " + password);
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
 
-        if (mem.getUserIsRegistered(userName, passwordHash))
+        if (mem.getUserIsRegistered(userName, password))
         {
             session.setAttribute("loggedInUser", mem.getUserByName(userName).getEmail());
 
@@ -80,12 +78,14 @@ public class UserApi
         {
             System.out.println("Login NOT okay");
             session.invalidate();
-            try {
-				response.sendError(401, "The user is not registered");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+            try
+            {
+                response.sendError(401, "The user is not registered");
+            } catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
 
         mem.closeDB();
@@ -93,7 +93,7 @@ public class UserApi
     }
 
     @Path("/Logout")
-    @GET
+    @POST
     public HttpServletResponse logout(@Context
     HttpServletRequest request, @Context
     HttpServletResponse response)
@@ -109,8 +109,7 @@ public class UserApi
     @Path("/Registration")
     @POST
     public Response addUser(String json, @Context
-    HttpServletRequest request, @Context
-    HttpServletResponse response) throws JSONException
+    HttpServletRequest request) throws JSONException
     {
 
         // session, helyes regisztracional be is leptetjük.
@@ -130,16 +129,13 @@ public class UserApi
             name = jsonTomb.getJSONObject(0).getString("name");
         } catch (JSONException e1)
         {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
         }
-
-        String passwordHash = null;
-        passwordHash = encodePassword(password);
 
         int errorCode = 0;
 
-        if (null != email && null != passwordHash && null != name)
+        if (null != email && null != password && null != name)
         {
             MonopolyEntityManager mem = new MonopolyEntityManager();
 
@@ -154,18 +150,19 @@ public class UserApi
                     errorCode = 1;
                 } else
                 {
-                    mem.addNewUser(email, passwordHash, name, UserType.user);
+                    mem.addNewUser(email, password, name, UserType.user);
                     mem.closeDB();
                 }
 
             } catch (Exception e)
             {
-                // TODO Auto-generated catch block
+
                 e.printStackTrace();
+                return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Database error").build();
             }
             mem = new MonopolyEntityManager();
             mem.initDB();
-            if (mem.getUserIsRegistered(email, passwordHash))
+            if (mem.getUserIsRegistered(email, password))
             {
                 session.setAttribute("loggedInUser", email);
             }
@@ -192,35 +189,11 @@ public class UserApi
             responseJsonObject.put("success", success);
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
         }
+
+        // TODO
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
-    }
-
-    private String encodePassword(String password)
-    {
-        String passwordHash = null;
-
-        try
-        {
-            byte[] bytesOfMessage = null;
-
-            bytesOfMessage = password.getBytes("UTF-8");
-
-            MessageDigest md;
-            md = MessageDigest.getInstance("MD5");
-            byte[] digest = md.digest(bytesOfMessage);
-            BigInteger bigInt = new BigInteger(1, digest);
-            String hashtext = bigInt.toString(16);
-
-            passwordHash = hashtext;
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return passwordHash;
     }
 
 }

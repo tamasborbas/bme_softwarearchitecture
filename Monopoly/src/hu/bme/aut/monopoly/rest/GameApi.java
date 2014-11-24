@@ -19,7 +19,6 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -89,7 +88,7 @@ public class GameApi
     // }
 
     @Path("/GetActiveGames")
-    @GET
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response getActiveGames(@Context
     HttpServletRequest request)
@@ -135,8 +134,8 @@ public class GameApi
 
             } catch (JSONException e)
             {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
+                return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
             }
             activeGamesJsonArray.put(aActiveGame);
         }
@@ -148,8 +147,9 @@ public class GameApi
             responseJsonObject.put("activeGames", activeGamesJsonArray);
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
+
             e.printStackTrace();
+            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
         }
 
         System.out.println("ELKULDOTT: " + responseJsonObject);
@@ -164,7 +164,15 @@ public class GameApi
     {
         // TODO minek ez?
         String loggedInUseremail = Helper.getLoggedInUserEmail(request);
-        int gameId = getGameIdFromJson(json);
+        int gameId;
+        try
+        {
+            gameId = getGameIdFromJson(json);
+        } catch (JSONException e1)
+        {
+            e1.printStackTrace();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
+        }
 
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
@@ -263,8 +271,8 @@ public class GameApi
             gameDetailesJsonObject.put("places", placesJsonArray);
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
         }
 
         mem.closeDB();
@@ -272,26 +280,20 @@ public class GameApi
         return Response.ok(gameDetailesJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
-    private int getGameIdFromJson(String json)
+    private int getGameIdFromJson(String json) throws JSONException
     {
         JSONArray jsonTomb;
         int gameId = 0;
 
-        try
-        {
-            jsonTomb = new JSONArray(json);
-            gameId = jsonTomb.getJSONObject(0).getInt("gameId");
-            System.out.println("GAMEID: " + gameId);
-        } catch (JSONException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        jsonTomb = new JSONArray(json);
+        gameId = jsonTomb.getJSONObject(0).getInt("gameId");
+        System.out.println("GAMEID: " + gameId);
+
         return gameId;
     }
 
     @Path("/GetMyGames")
-    @GET
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMyGames(@Context
     HttpServletRequest request)
@@ -309,7 +311,14 @@ public class GameApi
         for (Game game : games)
         {
             System.out.println(game.getName());
-            ownedGamesJsonArray.put(getGameDetailes(game));
+            try
+            {
+                ownedGamesJsonArray.put(getGameDetailes(game));
+            } catch (JSONException e)
+            {
+                e.printStackTrace();
+                return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
+            }
         }
 
         JSONObject responseJsonObject = new JSONObject();
@@ -318,54 +327,48 @@ public class GameApi
             responseJsonObject.put("myGames", ownedGamesJsonArray);
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
         }
         System.out.println(responseJsonObject);
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
-    private JSONObject getGameDetailes(Game game)
+    private JSONObject getGameDetailes(Game game) throws JSONException
     {
         System.out.println(game.getName());
         JSONObject aGameJsonObject = new JSONObject();
-        try
-        {
 
-            aGameJsonObject.put("id", game.getId());
-            aGameJsonObject.put("name", game.getName());
-            JSONArray acceptedPlayersJsonArray = new JSONArray();
-            JSONArray notAcceptedYetPlayersJsonArray = new JSONArray();
-            JSONArray refusedPlayersJsonArray = new JSONArray();
-            for (Player player : game.getPlayers())
+        aGameJsonObject.put("id", game.getId());
+        aGameJsonObject.put("name", game.getName());
+        JSONArray acceptedPlayersJsonArray = new JSONArray();
+        JSONArray notAcceptedYetPlayersJsonArray = new JSONArray();
+        JSONArray refusedPlayersJsonArray = new JSONArray();
+        for (Player player : game.getPlayers())
+        {
+            JSONObject aPlayer = new JSONObject();
+            aPlayer.put("playerId", player.getId());
+            aPlayer.put("name", player.getUser().getName());
+            aPlayer.put("status", player.getPlayerStatus());
+            // aPlayer.put("placeId", player.getSteps().get(player.getSteps().size() -
+            // 1).getFinishPlace().getId());
+
+            if (player.getPlayerStatus() == PlayerStatus.accepted)
             {
-                JSONObject aPlayer = new JSONObject();
-                aPlayer.put("playerId", player.getId());
-                aPlayer.put("name", player.getUser().getName());
-                aPlayer.put("status", player.getPlayerStatus());
-                //aPlayer.put("placeId", player.getSteps().get(player.getSteps().size() - 1).getFinishPlace().getId());
-
-                if (player.getPlayerStatus() == PlayerStatus.accepted)
-                {
-                    acceptedPlayersJsonArray.put(aPlayer);
-                } else if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
-                {
-                    notAcceptedYetPlayersJsonArray.put(aPlayer);
-                } else if (player.getPlayerStatus() == PlayerStatus.refused)
-                {
-                    refusedPlayersJsonArray.put(aPlayer);
-                }
+                acceptedPlayersJsonArray.put(aPlayer);
+            } else if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
+            {
+                notAcceptedYetPlayersJsonArray.put(aPlayer);
+            } else if (player.getPlayerStatus() == PlayerStatus.refused)
+            {
+                refusedPlayersJsonArray.put(aPlayer);
             }
-
-            aGameJsonObject.put("acceptedPlayers", acceptedPlayersJsonArray);
-            aGameJsonObject.put("notAcceptedYetPlayers", notAcceptedYetPlayersJsonArray);
-            aGameJsonObject.put("refusedPlayers", refusedPlayersJsonArray);
-
-        } catch (JSONException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
+
+        aGameJsonObject.put("acceptedPlayers", acceptedPlayersJsonArray);
+        aGameJsonObject.put("notAcceptedYetPlayers", notAcceptedYetPlayersJsonArray);
+        aGameJsonObject.put("refusedPlayers", refusedPlayersJsonArray);
+
         return aGameJsonObject;
     }
 
@@ -527,8 +530,16 @@ public class GameApi
         {
             if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
             {
-                notAcceptedYetGamesJsonArray.put(getGameDetailes(player.getGame()));
-                System.out.println(player.getGame().getName());
+                try
+                {
+                    notAcceptedYetGamesJsonArray.put(getGameDetailes(player.getGame()));
+                    System.out.println(player.getGame().getName());
+                } catch (JSONException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
+                }
             }
         }
 
@@ -538,8 +549,8 @@ public class GameApi
             responseJsonObject.put("nayGames", notAcceptedYetGamesJsonArray);
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
         }
 
         System.out.println(responseJsonObject);
@@ -632,7 +643,15 @@ public class GameApi
                             User user = new User();
                             user.setEmail(playerEmailOrName);
                             user.setUserType(UserType.notRegistered);
-                            mem.commit(user);
+                            try
+                            {
+                                mem.commit(user);
+                            } catch (Exception e)
+                            {
+                                e.printStackTrace();
+                                return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Database error")
+                                        .build();
+                            }
 
                             validUsers.add(mem.getUserByName(playerEmailOrName));
                         }
@@ -692,12 +711,9 @@ public class GameApi
 
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
+
             e.printStackTrace();
-        } catch (Exception e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
         }
         mem.closeDB();
 
@@ -711,8 +727,8 @@ public class GameApi
 
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
         }
 
         System.out.println("RESPONSE: " + responseJsonObject);
@@ -756,8 +772,8 @@ public class GameApi
             responseJsonObject.put("invitationsNum", invitationsNum);
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
         }
         mem.closeDB();
 
@@ -781,8 +797,8 @@ public class GameApi
             System.out.println("PlacePlaceSequenceNumber: " + placeSequenceNumber);
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
         }
 
         JSONObject responseJsonObject = new JSONObject();
@@ -792,26 +808,20 @@ public class GameApi
         boolean isBuilding = false;
 
         Place place = mem.getPlaceByPlaceSequenceNumber(placeSequenceNumber);
-        if (place instanceof StartPlace)
+        try
         {
-            StartPlace startPlace = mem.getStartPlaceByPlaceSequenceNumber(placeSequenceNumber);
-            try
+            if (place instanceof StartPlace)
             {
+                StartPlace startPlace = mem.getStartPlaceByPlaceSequenceNumber(placeSequenceNumber);
 
                 placeJsonObject.put("placeId", startPlace.getId());
                 placeJsonObject.put("placeSequenceNumber", startPlace.getPlaceSequenceNumber());
                 placeJsonObject.put("throughMoney", startPlace.getThroughMoney());
 
-            } catch (JSONException e)
+            } else if (place instanceof BuildingPlace)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        } else if (place instanceof BuildingPlace)
-        {
-            BuildingPlace buildingPlace = mem.getBuildingPlaceByPlaceSequenceNumber(placeSequenceNumber);
-            try
-            {
+                BuildingPlace buildingPlace = mem.getBuildingPlaceByPlaceSequenceNumber(placeSequenceNumber);
+
                 placeJsonObject.put("gameId", buildingPlace.getGame().getId());
                 placeJsonObject.put("placeId", buildingPlace.getId());
                 placeJsonObject.put("placeSequenceNumber", buildingPlace.getPlaceSequenceNumber());
@@ -844,35 +854,24 @@ public class GameApi
                 }
 
                 isBuilding = true;
-            } catch (JSONException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        } else
-        {
-            try
+
+            } else
             {
                 placeJsonObject.put("gameId", place.getGame().getId());
                 placeJsonObject.put("placeSequenceNumber", place.getPlaceSequenceNumber());
                 placeJsonObject.put("placeId", place.getId());
-            } catch (JSONException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        System.out.println(placeJsonObject);
-        mem.closeDB();
 
-        try
-        {
+            }
+            System.out.println(placeJsonObject);
+            mem.closeDB();
+
             responseJsonObject.put("buildingData", placeJsonObject);
             responseJsonObject.put("isBuilding", isBuilding);
+
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
         }
 
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
@@ -894,8 +893,8 @@ public class GameApi
             System.out.println("PlayerID: " + playerId);
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
         }
 
         MonopolyEntityManager mem = new MonopolyEntityManager();
@@ -926,8 +925,8 @@ public class GameApi
             playerJsonObject.put("ownedBuildingPlaces", ownedBuildingsJsonArray);
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
         }
 
         System.out.println(playerJsonObject);
@@ -971,8 +970,8 @@ public class GameApi
             System.out.println("BuildiSequenceNumber: " + placeSequenceNumber);
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
         }
 
         // playerId = 1;
@@ -1153,8 +1152,8 @@ public class GameApi
 
             } catch (Exception e)
             {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
+                return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Database error").build();
             }
 
             // Szerintem csak itt kéne kommitolni mindent, azt nem lehet? mondjuk a houseBuyings-os listán
@@ -1195,6 +1194,7 @@ public class GameApi
             {
                 entityManager.getTransaction().rollback();
                 e.printStackTrace();
+                return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Database error").build();
             }
 
         }
@@ -1208,8 +1208,8 @@ public class GameApi
             responseJsonObject.put("errorCode", errorCode);
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
         }
         System.out.println(responseJsonObject);
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
@@ -1235,7 +1235,15 @@ public class GameApi
 
         String loggedInUseremail = Helper.getLoggedInUserEmail(request);
 
-        int gameId = getGameIdFromJson(json);
+        int gameId;
+        try
+        {
+            gameId = getGameIdFromJson(json);
+        } catch (JSONException e2)
+        {
+            e2.printStackTrace();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
+        }
 
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
@@ -1245,50 +1253,39 @@ public class GameApi
         List<Player> gamePlayers = user.getGamePlayers();
         JSONArray notAcceptedYetGamesJsonArray = new JSONArray();
 
-        for (Player player : gamePlayers)
+        try
         {
-            System.out.println("PLAYERID: " + player.getId() + " - " + player.getPlayerStatus());
-            if ((player.getGame() == game) && (player.getPlayerStatus() != playerStatus)
-                    && (player.getPlayerStatus() != PlayerStatus.refused))
+            for (Player player : gamePlayers)
             {
-
-                try
+                System.out.println("PLAYERID: " + player.getId() + " - " + player.getPlayerStatus());
+                if ((player.getGame() == game) && (player.getPlayerStatus() != playerStatus)
+                        && (player.getPlayerStatus() != PlayerStatus.refused))
                 {
-                    player.setPlayerStatus(playerStatus);
-                    mem.commit(player);
-                    responseJsonObject.put("success", true);
-
-                } catch (Exception e)
-                {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
 
                     try
                     {
-                        responseJsonObject.put("success", false);
-                    } catch (JSONException e1)
+                        player.setPlayerStatus(playerStatus);
+                        mem.commit(player);
+                        responseJsonObject.put("success", true);
+
+                    } catch (Exception e)
                     {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
+                        e.printStackTrace();
+                        responseJsonObject.put("success", false);
                     }
 
-                }
-
-                System.out.println(player.getGame().getName() + " - " + player.getId());
-            } else
-            {
-                try
+                    System.out.println(player.getGame().getName() + " - " + player.getId());
+                } else
                 {
                     responseJsonObject.put("success", false);
-                } catch (JSONException e)
-                {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
                 }
+
             }
-
+        } catch (JSONException e1)
+        {
+            e1.printStackTrace();
+            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
         }
-
         System.out.println(notAcceptedYetGamesJsonArray);
 
         int numberOfAcceptedPlayer = 0;
@@ -1307,8 +1304,9 @@ public class GameApi
                 mem.commit(game);
             } catch (Exception e)
             {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
+                return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Database error").build();
+
             }
         }
         mem.closeDB();
