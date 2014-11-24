@@ -216,17 +216,26 @@ public class GameApi
             gameDetailesJsonObject.put("actualPlayer", getAllDetailesOfPlayer(game.getActualPlayer()));
             gameDetailesJsonObject.put("isActualPlayer", isActualPlayer);
 
-            JSONArray playersJsonArray = new JSONArray();
+            JSONArray acceptedPlayersJsonArray = new JSONArray();
+            JSONArray loserPlayersJsonArray = new JSONArray();
 
             for (Player player : game.getPlayers())
             {
-                if (player.getPlayerStatus() != PlayerStatus.refused)
+                if (player.getPlayerStatus() == PlayerStatus.accepted)
                 {
                     JSONObject aPlayerJsonObject = getAllDetailesOfPlayer(player);
-                    playersJsonArray.put(aPlayerJsonObject);
+                    acceptedPlayersJsonArray.put(aPlayerJsonObject);
+                } else if (player.getPlayerStatus() == PlayerStatus.lost)
+                {
+                    JSONObject aPlayerJsonObject = new JSONObject();
+                    aPlayerJsonObject.put("playerId", player.getId());
+                    aPlayerJsonObject.put("name", player.getUser().getName());
+
+                    loserPlayersJsonArray.put(aPlayerJsonObject);
                 }
             }
-            gameDetailesJsonObject.put("players", playersJsonArray);
+            gameDetailesJsonObject.put("acceptedPlayers", acceptedPlayersJsonArray);
+            gameDetailesJsonObject.put("loserPlayers", loserPlayersJsonArray);
 
             JSONArray placesJsonArray = new JSONArray();
             for (Place place : game.getPlaces())
