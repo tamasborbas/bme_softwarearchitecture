@@ -162,11 +162,13 @@ public class UserApi
             }
             mem = new MonopolyEntityManager();
             mem.initDB();
-            if (mem.getUserIsRegistered(email, password))
-            {
-                session.setAttribute("loggedInUser", email);
-            }
-            mem.closeDB();
+
+            // meg ne jelentkeztessuk be, abban maradtunk
+            // if (mem.getUserIsRegistered(email, password))
+            // {
+            // session.setAttribute("loggedInUser", email);
+            // }
+            // mem.closeDB();
         }
 
         JSONObject responseJsonObject = new JSONObject();
