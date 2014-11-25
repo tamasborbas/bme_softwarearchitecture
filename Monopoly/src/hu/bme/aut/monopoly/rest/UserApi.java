@@ -1,6 +1,8 @@
 package hu.bme.aut.monopoly.rest;
 
+import hu.bme.aut.monopoly.email.EmailManager;
 import hu.bme.aut.monopoly.model.MonopolyEntityManager;
+import hu.bme.aut.monopoly.model.User;
 import hu.bme.aut.monopoly.model.UserType;
 
 import java.io.IOException;
@@ -181,9 +183,26 @@ public class UserApi
     @POST
     public Response remind(String json) throws JSONException
     {
-        boolean success = true;
+        boolean success = false;
 
-        // TODO reminder
+        JSONArray jsonTomb;
+        String email = null;
+        try
+        {
+            jsonTomb = new JSONArray(json);
+            email = jsonTomb.getJSONObject(0).getString("email");
+        } catch (JSONException e1)
+        {
+            e1.printStackTrace();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
+        }
+
+        MonopolyEntityManager mem = new MonopolyEntityManager();
+        mem.initDB();
+        User user = mem.getUserByEmail(email);
+        mem.closeDB();
+
+        success = EmailManager.sendReminderEmail(email, user.getName(), user.getPassword());
 
         JSONObject responseJsonObject = new JSONObject();
         try
