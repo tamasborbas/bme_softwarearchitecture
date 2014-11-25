@@ -11,7 +11,7 @@ function getQueryVariable(variable) {
 	return(false);
 }
 
-function loadDatas() {
+function loadGameDatas() {
 	loadingActivate();
 	var playerMail = getQueryVariable("email");
 	var gameId = getQueryVariable("gameid");
@@ -19,7 +19,7 @@ function loadDatas() {
 	sessionStorage.happygames_game_gameid = gameId;
 	$.ajax({
 		type : "POST",
-		data: '[{"gameId":'+gameId+',"playerEmail":"'+playerMail+'"}]',
+		data: '[{"gameId":'+gameId+',"email":"'+playerMail+'"}]',
 		dataType : "json",
 		url : "/Monopoly/rest/gameapi/OpenGame"
 	}).success(function(data) {
@@ -391,4 +391,14 @@ function createMiniPlayers() {
 		lbllpplace.textContent = "Place: -";
 		seclpdata.appendChild(lbllpplace);
 	}
+}
+
+/********************************************* Loading *********************************************/
+function loadingActivate() {
+	var loading=document.getElementById("loading");
+	loading.className = "loading";
+}
+function loadingDeactivate() {
+	var loading=document.getElementById("loading");
+	loading.className = "loading invisible";
 }
