@@ -1372,25 +1372,57 @@ public class GameApi
         }
         System.out.println(notAcceptedYetGamesJsonArray);
 
-        int numberOfAcceptedPlayer = 0;
+        boolean isThereNotAcceptedYet = false;
         for (Player player : gamePlayers)
         {
-            if (player.getPlayerStatus() == PlayerStatus.accepted)
+            if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
             {
-                numberOfAcceptedPlayer++;
+                isThereNotAcceptedYet=true;
             }
         }
-        if (numberOfAcceptedPlayer == gamePlayers.size())
+        if (!isThereNotAcceptedYet)
         {
-            game.setGameStatus(GameStatus.inProgress);
-            try
-            {
-                mem.commit(game);
-            } catch (Exception e)
-            {
+
+
+            try {
+	            // kezdojatekos belallitasa
+	            List<Player> realPlayers = sortRelaPlayer(game);
+	            game.setActualPlayer(realPlayers.get(0));
+	
+	            game.setGameStatus(GameStatus.inProgress);
+	            mem.commit(game);
+	
+	
+	            // Tabla elkeszitese
+	            Helper.makeBoard(gameId);
+	
+	            // Kezdomezo kivalasztasa
+	            StartPlace startPlace = null;
+	            for (Place place : game.getPlaces())
+	            {
+	                if (place instanceof StartPlace)
+	                {
+	                    startPlace = mem.getStartPlaceById(place.getId());
+	                    System.out.println("START PLACE: " + startPlace.getId());
+	                }
+	            }
+	
+	            // jatekosok kezdomezore allitasa
+	            if (startPlace != null)
+	            {
+	                for (Player player : realPlayers)
+	                {
+	                    System.out.println("REAL PLAYER: " + player.getId());
+	                    Step step = new Step();
+	                    step.setFinishPlace(startPlace);
+	                    player.addStep(step);
+	                    mem.commit(step);
+	                    mem.commit(player);
+	                }
+	            }
+            } catch (Exception e) {
                 e.printStackTrace();
                 return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Database error").build();
-
             }
         }
         mem.closeDB();

@@ -242,10 +242,9 @@ function startGame(id) {
 	}
 }
 function refuseInvitation(id) {
-	
 	$.ajax({
 		type : "POST",
-		data : '{"gameid":'+id+'"}',
+		data : '{"gameId":'+id+'"}',
 		dataType : "json",
 		url : "/Monopoly/rest/gameapi/RefuseInvitation"
 	}).success(function(data) {
@@ -261,15 +260,9 @@ function refuseInvitation(id) {
 	});
 }
 function acceptInvitation(id) {
-	loadingActivate();
-	var jsonObject = [];
-	jsonObject.push({
-		"gameid": id
-	});
-	
 	$.ajax({
 		type : "POST",
-		data : JSON.stringify(jsonObject),
+		data : '{"gameId":'+id+'"}',
 		dataType : "json",
 		url : "/Monopoly/rest/gameapi/AcceptInvitation"
 	}).success(function(data) {
