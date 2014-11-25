@@ -1,11 +1,51 @@
 ﻿/******************************* Load Datas *******************************/
+function getQueryVariable(variable) {
+	var query = window.location.search.substring(1);
+	var vars = query.split("&");
+	for (var i = 0; i < vars.length; i++) {
+		var pair = vars[i].split("=");
+		if (pair[0] == variable) {
+			return pair[1];
+		}
+	}
+	return(false);
+}
+
 function loadDatas() {
+	var playerMail = getQueryVariable("email");
+	var gameId = getQueryVariable("gameid");
+	sessionStorage.happygames_game_email = playerMail;
+	sessionStorage.happygames_game_gameid = gameId;
+	$.ajax({
+		type : "POST",
+		data: '[{"gameId":'+gameId+',"playerEmail":"'+playerMail+'"}]',
+		dataType : "json",
+		url : "/Monopoly/rest/gameapi/OpenGame"
+	}).success(function(data) {
+		console.log(data);
+		var gameData = JSON.parse(data);
+		if(gameData.gameStatus=="init") {
+			alert("Sorry, this game is under initialization.");
+			window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
+		} else if(gameData.gameStatus=="finished") {
+			alert("Sorry, this game has been finished.");
+			window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
+		} else {
+			sessionStorage.happygames_game_name = gameData.name;
+			sessionStorage.happygames_game_ownerOfGame = gameData.ownerOfGame;
+			sessionStorage.happygames_game_actualPlayer = gameData.actualPlayer;
+			sessionStorage.happygames_game_players = JSON.stringify(gameData.players);
+			sessionStorage.happygames_game_places = JSON.stringify(gameData.places);
+			// TODO folyt
+		}
+	});
 	createMiniPlayers();
 	createGameBoard();
 }
 
 /******************************* Game Board *******************************/
-var gameboardData = '{"places":[{"type":"start","id":0,"name":"Start","players":[{"id":0,"name":"Valaki"},{"id":1,"name":"Valaki Más"}]},{"id":2,"name":"","players":[]},{"id":3,"name":"","players":[]},{"id":4,"name":"Épületes","players":[]},{"id":5,"name":"Vagy sem","players":[]},{"id":6,"name":"","players":[]},{"id":7,"name":"","players":[]},{"id":8,"name":"Nagyon-nagyon hosszú building név kell ide","players":[{"id":4,"name":"Nagyon valaki"}]},{"id":9,"name":"","players":[]},{"id":10,"name":"","players":[]},{"id":11,"name":"","players":[]},{"id":12,"name":"","players":[]},{"id":13,"name":"","players":[]},{"id":14,"name":"Itt is legyen egy building","players":[]},{"id":15,"name":"","players":[{"id":1,"name":"Valaki"}]},{"id":1,"name":"","players":[]}]}';
+var gameboardData = 
+	'{"places":[{"placeSequenceNumber":1,"type":"start","placeId":0,"name":"Start","playersOnPlace":[{"id":0,"name":"Valaki"},{"id":1,"name":"Valaki Más"}]}]}';
 function getPlaceData(id) {
 	alert(id);
 }
@@ -13,9 +53,9 @@ function createGameBoard() {
 	var jsonobject = JSON.parse(gameboardData);
 	for (var pi in jsonobject.places) {
 		var place = jsonobject.places[pi];
-		var basesec = document.getElementById(("place" + place.id));
-		if (place.name != "") {
-			basesec.onclick = getPlaceData.bind(this, place.id);
+		var basesec = document.getElementById(("place" + place.placeSequenceNumber));
+		if (place.type == "BuildingPlace") {
+			basesec.onclick = getPlaceData.bind(this, place.id); // TODO nem build.id kéne?
 		}
 
 		// basic place data
@@ -26,7 +66,7 @@ function createGameBoard() {
 
 		var lblpid = document.createElement('label');
 		lblpid.className = "placedata placedata-number";
-		lblpid.textContent = place.id;
+		lblpid.textContent = place.placeSequenceNumber;
 		basesec.appendChild(lblpid);
 
 		var brsep = document.createElement('br');
@@ -49,11 +89,11 @@ function createGameBoard() {
 		for (var i = 0; i < 4; i++) {
 			//console.log("Placeid:" + place.id + " | i:" + i);
 			var td1 = document.createElement('td');
-			td1.id = "place" + place.id + "player" + i;
+			td1.id = "place" + place.placeSequenceNumber + "player" + i;
 			td1.className = "transparentcolor";
 			tr1.appendChild(td1);
 			var td2 = document.createElement('td');
-			td2.id = "place" + place.id + "player" + (i+4);
+			td2.id = "place" + place.placeSequenceNumber + "player" + (i+4);
 			td2.className = "transparentcolor";
 			tr2.appendChild(td2);
 			if (place.players.length > 0) {
@@ -265,19 +305,19 @@ function finish() {
 }
 
 /******************************* Playerboard *******************************/
-var playersboardData = '{"activePlayers":[{"id":1,"name":"Valaki Neve","place":15,"money":800},{"id":2,"name":"Valaki Más Neve","place":10,"money":700}],"losers":[{"id":3,"name":"Nagyon-nagyon Senki Neve"}]}';
+var playersboardData = '{"actualPlayer":[{"playerId":1,"name":"Valaki Neve","placeSequenceNumber":15,"money":800},{"id":2,"name":"Valaki Más Neve","place":10,"money":700}],"losers":[{"id":3,"name":"Nagyon-nagyon Senki Neve"}]}';
 function getPlayerData(id) {
 	alert(id);
 }
 function createMiniPlayers() {
 	var basesec = document.getElementById("playersboardcontainer");
-	var jsonobject = JSON.parse(playersboardData);
+	var jsonobject = JSON.parse(sessionStorage.happygames_game_players);
 	for (var pi in jsonobject.activePlayers) {
 		var player = jsonobject.activePlayers[pi];
 		var sec = document.createElement('section');
 		sec.className = "miniplayer";
-		sec.id = player.id;
-		sec.onclick = getPlayerData.bind(this, player.id);
+		sec.id = player.playerId;
+		sec.onclick = getPlayerData.bind(this, player.playerId);
 		basesec.appendChild(sec);
 
 
@@ -307,45 +347,45 @@ function createMiniPlayers() {
 
 		var lblpplace = document.createElement('label');
 		lblpplace.className = "playerdata";
-		lblpplace.textContent = "Place: " + player.place;
+		lblpplace.textContent = "Place: " + player.placeSequenceNumber;
 		secpdata.appendChild(lblpplace);
 	}
-	for (var pi in jsonobject.losers) {
-		var player = jsonobject.losers[pi];
-		var sec = document.createElement('section');
-		sec.className = "miniplayer out";
-		sec.id = player.id;
-		sec.onclick = function () { getPlayerData(player.id) };
-		basesec.appendChild(sec);
+	for (var pli in jsonobject.losers) {
+		var loser = jsonobject.losers[pli];
+		var secl = document.createElement('section');
+		secl.className = "miniplayer out";
+		secl.id = loser.playerId;
+		secl.onclick = function () { getPlayerData(loser.playerId); };
+		basesec.appendChild(secl);
 
 
 		// player name section
-		var secpname = document.createElement('section');
-		secpname.className = "playerid";
-		sec.appendChild(secpname);
+		var seclpname = document.createElement('section');
+		seclpname.className = "playerid";
+		secl.appendChild(seclpname);
 
-		var lblpname = document.createElement('label');
-		lblpname.className = "playerid";
-		lblpname.textContent = player.name;
-		secpname.appendChild(lblpname);
+		var lbllpname = document.createElement('label');
+		lbllpname.className = "playerid";
+		lbllpname.textContent = loser.name;
+		seclpname.appendChild(lbllpname);
 
 
 		// player data section
-		var secpdata = document.createElement('section');
-		secpdata.className = "playerdata";
-		sec.appendChild(secpdata);
+		var seclpdata = document.createElement('section');
+		seclpdata.className = "playerdata";
+		secl.appendChild(seclpdata);
 
-		var lblpmoney = document.createElement('label');
-		lblpmoney.className = "playerdata";
-		lblpmoney.textContent = "Money: -";
-		secpdata.appendChild(lblpmoney);
+		var lbllpmoney = document.createElement('label');
+		lbllpmoney.className = "playerdata";
+		lbllpmoney.textContent = "Money: -";
+		seclpdata.appendChild(lbllpmoney);
 
-		var brsep = document.createElement('br');
-		secpdata.appendChild(brsep);
+		var brlsep = document.createElement('br');
+		seclpdata.appendChild(brlsep);
 
-		var lblpplace = document.createElement('label');
-		lblpplace.className = "playerdata";
-		lblpplace.textContent = "Place: -";
-		secpdata.appendChild(lblpplace);
+		var lbllpplace = document.createElement('label');
+		lbllpplace.className = "playerdata";
+		lbllpplace.textContent = "Place: -";
+		seclpdata.appendChild(lbllpplace);
 	}
 }

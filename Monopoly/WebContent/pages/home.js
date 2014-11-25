@@ -8,6 +8,7 @@ function getProfil() {
 		console.log(data);
 		var profilData = JSON.parse(data);
 		var userMail = document.getElementById("mail");
+		sessionStorage.happygames_basic_email = userMail;
 		userMail.value = profilData.email;
 		var userName = document.getElementById("name");
 		userName.value = profilData.name;
@@ -68,7 +69,7 @@ function getActiveGames() {
 	deleteAllSubNode(basesec);
 	loadingActivate();
 	$.ajax({
-		type : "GET",
+		type : "POST",
 		dataType : "json",
 		url : "/Monopoly/rest/gameapi/GetActiveGames"
 	}).success(function(data) {
@@ -114,7 +115,7 @@ function getMyGames() {
 
 	loadingActivate();
 	$.ajax({
-		type : "GET",
+		type : "POST",
 		dataType : "json",
 		url : "/Monopoly/rest/gameapi/GetMyGames"
 	}).success(function(data) {
@@ -202,7 +203,7 @@ function getInvitations() {
 }
 function logout() {
 	$.ajax({
-		type: "GET",
+		type: "POST",
 		url : "/Monopoly/rest/userapi/Logout",
 		success : function() {
 			sessionStorage.clear();
@@ -216,16 +217,7 @@ function logout() {
 
 function openGame(id) {
 	alert(id);
-	var jsonObject = [];
-	jsonObject.push({
-		"gameid": id
-	});
-	// TODO
-	//$.ajax({
-	//	type: "POST",
-	//	data: JSON.stringify(jsonObject),
-	//	url: "/Monopoly/rest/userapi/openGame"
-	//});
+	window.location.href = "https://localhost:8443/Monopoly/pages/game.html?email="+sessionStorage.happygames_basic_email+"&gameid="+id;
 }
 function startGame(id) {
 	if (confirm('Do you want to start the game? Somebody does not accept the invitation yet.')) {
@@ -244,7 +236,7 @@ function startGame(id) {
 			if(responseObject.success) {
 				alert("The game is started.");
 			} else {
-				alert("Sorry, something wen wrong.");
+				alert("Sorry, something went wrong.");
 			}
 			getMyGames();
 		}).fail(loadingDeactivate());
