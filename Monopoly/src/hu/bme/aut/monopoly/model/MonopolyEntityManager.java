@@ -85,13 +85,13 @@ public class MonopolyEntityManager
         }
     }
 
-    public void addNewUser(String email, String passwordHash, String name, UserType userType) throws Exception
+    public void addNewUser(String email, String password, String name, UserType userType) throws Exception
     {
 
         User u = new User();
         u.setEmail(email);
         u.setName(name);
-        u.setPasswordHash(passwordHash);
+        u.setPassword(password);
         u.setUserType(userType);
 
         commit(u);

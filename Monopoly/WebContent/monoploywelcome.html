@@ -34,6 +34,24 @@
 // 		window.location.href = 'products.html';
 	}
 	
+	
+	function remind() {
+		var jsonObject = [];
+		
+		jsonObject.push({
+			"email" : "admin@gmail.com"
+		});
+		
+		$.ajax({
+		    type: "POST",
+		    data: JSON.stringify(jsonObject),
+		    url: "/Monopoly/rest/userapi/Remind",
+		    success: function (data) {
+                $('#elements').html(data.msg);
+            }
+		});
+	}
+	
 	function getGames() {
 		$.ajax({
 			    type: "POST",
@@ -290,6 +308,7 @@
 			<input type="text" class="input-block-level" placeholder="Username"	id="userName" /> 
 			<input type="password" class="input-block-level"placeholder="Password" id="password" /> 
 			<button	 type="button" onclick="alterContent()" class="btn btn-large btn-block btn-primary">Login</button>
+			<button	 type="button" onclick="remind()" class="btn btn-large btn-block btn-primary">Remind</button>
 			<button	 type="button" onclick="getGames()" class="btn btn-large btn-block btn-primary">GetGames</button>
 			<button	 type="button" onclick="openGame()" class="btn btn-large btn-block btn-primary">OpenGame</button>
 			<button	 type="button" onclick="getMyGames()" class="btn btn-large btn-block btn-primary">GetMyGames</button>

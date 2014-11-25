@@ -21,7 +21,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @NamedQueries({
 
         @NamedQuery(name = "User.getUserByNameAndPass", query = "SELECT u from User u WHERE u.name like :namePattern AND u.passwordHash like :passHashPattern"),
-
         @NamedQuery(name = "User.getUserByEmail", query = "SELECT u from User u WHERE u.email like :emailPattern"),
         @NamedQuery(name = "User.getUserByName", query = "SELECT u from User u WHERE u.name like :namePattern") })
 @XmlRootElement(name = "User")
@@ -60,12 +59,12 @@ public class User implements Serializable
     }
 
     @XmlElement
-    public String getPasswordHash()
+    public String getPassword()
     {
         return passwordHash;
     }
 
-    public void setPasswordHash(String passwordHash)
+    public void setPassword(String passwordHash)
     {
         this.passwordHash = passwordHash;
     }
