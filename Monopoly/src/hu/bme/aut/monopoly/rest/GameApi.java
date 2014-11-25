@@ -544,7 +544,6 @@ public class GameApi
                 success = false;
             }
             mem.closeDB();
-
         } catch (Exception e)
         {
             // TODO Auto-generated catch block
@@ -653,6 +652,7 @@ public class GameApi
     {
         boolean success = true;
         List<User> validUsers = new ArrayList<User>();
+        List<User> inviteUsers = new ArrayList<User>();
         System.out.println(json);
 
         JSONArray jsonTomb;
@@ -679,6 +679,7 @@ public class GameApi
                 if ((mem.isUserNameRegistered(playerEmailOrName)))
                 {
                     validUsers.add(mem.getUserByName(playerEmailOrName));
+                    System.out.println("DB-USerName: " + mem.getUserByName(playerEmailOrName).getName());
                     // Player player = new Player();
                     // player.setUser(mem.getUserByName(playerEmailOrName));
                     // player.setMoney(1000);
@@ -696,10 +697,12 @@ public class GameApi
                         if (user.getUserType() == UserType.notRegistered)/* && (/*van-e aktiv jeteka)) */
                         {
                             notRegisteredUserEmailsJsonArray.put(playerEmailOrName);
+                            System.out.println("NOT REG TOMBBE: " + playerEmailOrName);
                             errorCode = 1;
                         } else
                         {
                             validUsers.add(user);
+                            System.out.println("DB-Email: " + mem.getUserByEmail(playerEmailOrName).getEmail());
                         }
                     }
                     // vagy email, ami nincsen az adatbazisban, vagy username, ami nincsen az adatbazisban
@@ -712,6 +715,7 @@ public class GameApi
                             User user = new User();
                             user.setEmail(playerEmailOrName);
                             user.setUserType(UserType.notRegistered);
+
                             try
                             {
                                 mem.commit(user);
@@ -722,11 +726,15 @@ public class GameApi
                                         .build();
                             }
 
-                            validUsers.add(mem.getUserByName(playerEmailOrName));
+                            // validUsers.add(mem.getUserByName(playerEmailOrName));
+                            validUsers.add(mem.getUserByEmail(playerEmailOrName));
+                            System.out.println("NO-DB-Email: " + mem.getUserByEmail(playerEmailOrName).getEmail());
+
                         }
                         // nem regisztralt username
                         else
                         {
+                            System.out.println("INVALID TÖMBBE: " + playerEmailOrName);
                             invalidUserNamesJsonArray.put(playerEmailOrName);
                             errorCode = 1;
                         }
@@ -751,6 +759,7 @@ public class GameApi
                     List<Player> gamePlayers = new ArrayList<Player>();
                     for (User user : validUsers)
                     {
+                        System.out.println("Actual hozzaadasa: " + user.getEmail());
                         Player player = new Player();
                         if (user == ownerUser)
                         {
