@@ -1,0 +1,173 @@
+body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, 
+pre, form, fieldset, input, textarea, p, blockquote, th, td { 
+  padding:0;
+  margin:0;
+}
+
+footer {
+    clear: both;
+    position: fixed;
+    bottom: 0;
+	right: 0;
+    margin-bottom: 0.5em;
+	margin-right: 0.5em;
+	font-family: Magneto;
+	color: rgb(50, 50, 50);
+	z-index:10;
+}
+div.loading {
+	background-color: rgba(255, 255, 255, 0.67);
+	width: 100%;
+	height:100%;
+	position: fixed;
+	z-index: 2;
+	top:0;
+	text-align: center;
+}
+div.invisible {
+	display:none;
+}
+
+
+section {
+    display: none;
+}
+
+section.visiblesec {
+    display: block;
+    animation: setvisibleanim 1.5s;
+    -webkit-animation: setvisibleanim 1.5s;
+    -moz-animation: setvisibleanim 1.5s;
+}
+@keyframes setvisibleanim {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity:1;
+    }
+}
+@-webkit-keyframes setvisibleanim {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity:1;
+    }
+}
+@-moz-keyframes setvisibleanim {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity:1;
+    }
+}
+
+#invbox{
+	width: 727px;
+	/*max-height: 90%;*/
+	fit: fill;
+	margin-left: auto;
+	margin-right: auto;
+    margin-bottom: 3em;
+	left: 50%;
+}
+
+fieldset, img {border:0}
+
+:focus {outline:none}
+
+html {
+    background-image: url("back.png");
+    background-repeat: repeat;
+	height: 100%;
+}
+
+
+.testbox {
+  margin: 20px 0px;
+  -webkit-border-radius: 8px/7px; 
+  -moz-border-radius: 8px/7px; 
+  border-radius: 8px/7px; 
+  background-color: rgba(250,250,250,0.5); 
+  -webkit-box-shadow: 1px 2px 5px rgba(0,0,0,.31); 
+  -moz-box-shadow: 1px 2px 5px rgba(0,0,0,.31); 
+  box-shadow: 1px 2px 5px rgba(0,0,0,.31); 
+  border: solid 1px #656565;
+  padding-bottom: 55px;
+}
+
+hr{
+	margin-top: 15px;
+  color: #a9a9a9;
+  opacity: 0.3;
+}
+
+section.invgame {
+	display: inline-table;
+	width: 225px;
+	min-height: 60px;
+	margin: 5px;
+	padding: 2px;
+	background-color: rgba(250,250,250,0.5); 
+	-webkit-border-radius: 8px/7px; 
+	-moz-border-radius: 8px/7px; 
+	border-radius: 8px/7px; 
+	-webkit-box-shadow: 1px 2px 5px rgba(0,0,0,.31); 
+	-moz-box-shadow: 1px 2px 5px rgba(0,0,0,.31); 
+	box-shadow: 1px 2px 5px rgba(0,0,0,.31); 
+	border: solid 1px #656565;
+}
+#tick, #close {
+	margin-left: 5px;
+	margin-right: 5px;
+	font-size: 1.5em;
+	float:right;
+}
+#close:hover {
+	color: red;
+}
+#tick:hover {
+	color: green;
+}
+
+hr.act{
+	margin: 0px;
+}
+
+div.invgame h3 {
+	font-family: 'Open Sans', sans-serif;
+	width:100%;
+}
+
+/* Users special sections */
+section.accept {
+	display: inline-block;
+	font-family: 'Open Sans', sans-serif;
+}
+section.accepts {
+	display: block;
+	font-family: 'Open Sans', sans-serif;
+	color: rgb(25, 154, 0);
+}
+
+section.notyet {
+	display: inline-block;
+	font-family: 'Open Sans', sans-serif;
+	color: rgb(88, 88, 88);
+}
+section.notyets {
+	display: block;
+	font-family: 'Open Sans', sans-serif;
+}
+
+section.refused {
+	display: inline-block;
+	font-family: 'Open Sans', sans-serif;
+}
+section.refuseds {
+	display: block;
+	font-family: 'Open Sans', sans-serif;
+	color: rgb(255, 0, 0);
+}

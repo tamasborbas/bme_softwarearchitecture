@@ -12,6 +12,7 @@ function getQueryVariable(variable) {
 }
 
 function loadDatas() {
+	loadingActivate();
 	var playerMail = getQueryVariable("email");
 	var gameId = getQueryVariable("gameid");
 	sessionStorage.happygames_game_email = playerMail;
@@ -37,10 +38,12 @@ function loadDatas() {
 			sessionStorage.happygames_game_players = JSON.stringify(gameData.players);
 			sessionStorage.happygames_game_places = JSON.stringify(gameData.places);
 			// TODO folyt
+			
+			loadingDeactivate();
 		}
 	});
-	createMiniPlayers();
-	createGameBoard();
+//	createMiniPlayers();
+//	createGameBoard();
 }
 
 /******************************* Game Board *******************************/
