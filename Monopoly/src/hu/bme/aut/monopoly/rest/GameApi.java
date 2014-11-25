@@ -738,9 +738,7 @@ public class GameApi
             {
                 // Get the owner of the game
                 String loggedInUseremail = Helper.getLoggedInUserEmail(request);
-                mem.initDB();
                 User ownerUser = mem.getUserByEmail(loggedInUseremail);
-                mem.closeDB();
 
                 EntityManager entityManager = mem.getEntityManager();
                 entityManager.getTransaction().begin();
