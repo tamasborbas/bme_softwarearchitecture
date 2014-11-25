@@ -169,20 +169,19 @@ public class GameApi
         int gameId;
         try
         {
-            gameId = getGameIdFromJson(json);
             JSONArray jsonTomb;
             jsonTomb = new JSONArray(json);
             if (jsonTomb.getJSONObject(0).getString("email") != "")
             {
                 notLoggedInUseremail = jsonTomb.getJSONObject(0).getString("email");
             }
+            gameId = jsonTomb.getJSONObject(0).getInt("gameId");
             System.out.println("GAMEID: " + gameId);
         } catch (JSONException e1)
         {
             e1.printStackTrace();
             return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
         }
-
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
 
