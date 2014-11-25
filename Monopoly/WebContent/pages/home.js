@@ -244,7 +244,7 @@ function startGame(id) {
 function refuseInvitation(id) {
 	$.ajax({
 		type : "POST",
-		data : '{"gameId":'+id+'"}',
+		data : '{"gameId":'+id+"}",
 		dataType : "json",
 		url : "/Monopoly/rest/gameapi/RefuseInvitation"
 	}).success(function(data) {
@@ -262,7 +262,7 @@ function refuseInvitation(id) {
 function acceptInvitation(id) {
 	$.ajax({
 		type : "POST",
-		data : '{"gameId":'+id+'"}',
+		data : '{"gameId":'+id+"}",
 		dataType : "json",
 		url : "/Monopoly/rest/gameapi/AcceptInvitation"
 	}).success(function(data) {
