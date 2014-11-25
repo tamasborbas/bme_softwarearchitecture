@@ -1,5 +1,8 @@
 package hu.bme.aut.monopoly.email;
 
+import hu.bme.aut.monopoly.model.Game;
+import hu.bme.aut.monopoly.model.Player;
+
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -59,6 +62,35 @@ public class EmailManager
         String emailContent = "Dear " + username + "," + "\n\nYour username is: " + username + "\nYour password is: "
                 + password;
         String emailSubject = "Monopoly password reminder";
+        return sendEmail(recipicientEmail, emailContent, emailSubject);
+
+    }
+
+    public static boolean sendInvitationEmail(String recipicientEmail)
+    {
+        String emailContent = "Dear Monopoly User" + "," + "\n\nYou got a new invitation. Check the following link: ";
+        String emailSubject = "Monopoly invitation";
+        return sendEmail(recipicientEmail, emailContent, emailSubject);
+    }
+
+    public static boolean sendStepSummaryEmail(String recipicientEmail, Game game)
+    {
+        String link = "https://localhost:8443/Monopoly/pages/game.html?email=" + recipicientEmail + "&gameid="
+                + game.getId();
+
+        String steps = "";
+        for (Player player : game.getPlayers())
+        {
+            steps.concat("Player: " + player.getUser().getEmail() + "\n");
+            steps.concat("Place number: " + player.getSteps().get(player.getSteps().size() - 1).getFinishPlace()
+                    + "\n");
+            steps.concat("Money: " + player.getMoney() + "\n\n");
+
+        }
+
+        String emailContent = "Dear Monopoly User" + "," + "\n\nThis happened, since your last turn:\n" + steps
+                + "\nIf you are ready for your next step, check the following link: " + link;
+        String emailSubject = "Monopoly step summary";
         return sendEmail(recipicientEmail, emailContent, emailSubject);
 
     }

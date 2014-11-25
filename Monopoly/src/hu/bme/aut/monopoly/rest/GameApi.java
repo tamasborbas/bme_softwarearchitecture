@@ -1,5 +1,6 @@
 package hu.bme.aut.monopoly.rest;
 
+import hu.bme.aut.monopoly.email.EmailManager;
 import hu.bme.aut.monopoly.model.BuildingPlace;
 import hu.bme.aut.monopoly.model.Game;
 import hu.bme.aut.monopoly.model.GameStatus;
@@ -320,11 +321,12 @@ public class GameApi
 
     private int getGameIdFromJson(String json) throws JSONException
     {
-        JSONArray jsonTomb;
+        JSONObject jsonObject;
+        System.out.println("JSON: " + json);
         int gameId = 0;
 
-        jsonTomb = new JSONArray(json);
-        gameId = jsonTomb.getJSONObject(0).getInt("gameId");
+        jsonObject = new JSONObject(json);
+        gameId = jsonObject.getInt("gameId");
         System.out.println("GAMEID: " + gameId);
 
         return gameId;
@@ -729,6 +731,7 @@ public class GameApi
                             // validUsers.add(mem.getUserByName(playerEmailOrName));
                             validUsers.add(mem.getUserByEmail(playerEmailOrName));
                             System.out.println("NO-DB-Email: " + mem.getUserByEmail(playerEmailOrName).getEmail());
+                            inviteUsers.add(mem.getUserByEmail(playerEmailOrName));
 
                         }
                         // nem regisztralt username
@@ -759,7 +762,7 @@ public class GameApi
                     List<Player> gamePlayers = new ArrayList<Player>();
                     for (User user : validUsers)
                     {
-                        System.out.println("Actual hozzaadasa: " + user.getEmail());
+                        // System.out.println("Actual hozzaadasa: " + user.getEmail());
                         Player player = new Player();
                         if (user == ownerUser)
                         {
@@ -785,6 +788,14 @@ public class GameApi
                     entityManager.persist(game);
 
                     entityManager.getTransaction().commit();
+
+                    // nem regisztralt felhasznalok meghivasa
+                    for (User user : inviteUsers)
+                    {
+                        System.out.println("Invitation kuldese: " + user.getEmail());
+                        EmailManager.sendInvitationEmail(user.getEmail());
+                    }
+
                 } catch (Exception e)
                 {
                     entityManager.getTransaction().rollback();
@@ -1272,6 +1283,9 @@ public class GameApi
                 entityManager.persist(game);
 
                 entityManager.getTransaction().commit();
+
+                // osszefoglalo kikuldese
+                EmailManager.sendStepSummaryEmail(realPlayers.get(nextActualPlayerIndex).getUser().getEmail(), game);
             } catch (Exception e)
             {
                 entityManager.getTransaction().rollback();
@@ -1386,50 +1400,50 @@ public class GameApi
         {
             if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
             {
-                isThereNotAcceptedYet=true;
+                isThereNotAcceptedYet = true;
             }
         }
         if (!isThereNotAcceptedYet)
         {
 
+            try
+            {
+                // kezdojatekos belallitasa
+                List<Player> realPlayers = sortRelaPlayer(game);
+                game.setActualPlayer(realPlayers.get(0));
 
-            try {
-	            // kezdojatekos belallitasa
-	            List<Player> realPlayers = sortRelaPlayer(game);
-	            game.setActualPlayer(realPlayers.get(0));
-	
-	            game.setGameStatus(GameStatus.inProgress);
-	            mem.commit(game);
-	
-	
-	            // Tabla elkeszitese
-	            Helper.makeBoard(gameId);
-	
-	            // Kezdomezo kivalasztasa
-	            StartPlace startPlace = null;
-	            for (Place place : game.getPlaces())
-	            {
-	                if (place instanceof StartPlace)
-	                {
-	                    startPlace = mem.getStartPlaceById(place.getId());
-	                    System.out.println("START PLACE: " + startPlace.getId());
-	                }
-	            }
-	
-	            // jatekosok kezdomezore allitasa
-	            if (startPlace != null)
-	            {
-	                for (Player player : realPlayers)
-	                {
-	                    System.out.println("REAL PLAYER: " + player.getId());
-	                    Step step = new Step();
-	                    step.setFinishPlace(startPlace);
-	                    player.addStep(step);
-	                    mem.commit(step);
-	                    mem.commit(player);
-	                }
-	            }
-            } catch (Exception e) {
+                game.setGameStatus(GameStatus.inProgress);
+                mem.commit(game);
+
+                // Tabla elkeszitese
+                Helper.makeBoard(gameId);
+
+                // Kezdomezo kivalasztasa
+                StartPlace startPlace = null;
+                for (Place place : game.getPlaces())
+                {
+                    if (place instanceof StartPlace)
+                    {
+                        startPlace = mem.getStartPlaceById(place.getId());
+                        System.out.println("START PLACE: " + startPlace.getId());
+                    }
+                }
+
+                // jatekosok kezdomezore allitasa
+                if (startPlace != null)
+                {
+                    for (Player player : realPlayers)
+                    {
+                        System.out.println("REAL PLAYER: " + player.getId());
+                        Step step = new Step();
+                        step.setFinishPlace(startPlace);
+                        player.addStep(step);
+                        mem.commit(step);
+                        mem.commit(player);
+                    }
+                }
+            } catch (Exception e)
+            {
                 e.printStackTrace();
                 return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Database error").build();
             }
