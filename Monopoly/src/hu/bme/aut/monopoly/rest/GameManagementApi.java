@@ -215,8 +215,16 @@ public class GameManagementApi
     public Response refuseInvitationFromEmail(String json, @Context
     HttpServletRequest request)
     {
-        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
-        return Helper.modifyPlayerStatus(json, request, PlayerStatus.refused, loggedInUseremail);
+        String userEmail = "";
+        try
+        {
+            userEmail = Helper.getEmailFromJson(json);
+        } catch (JSONException e)
+        {
+            e.printStackTrace();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
+        }
+        return Helper.modifyPlayerStatus(json, request, PlayerStatus.refused, userEmail);
     }
 
     /**
