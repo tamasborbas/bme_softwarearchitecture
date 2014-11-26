@@ -197,13 +197,13 @@ public class GameApi
             session.setAttribute("notLoggedInUser", notLoggedInUseremail);
             User notLoggedInUser = mem.getUserByEmail(notLoggedInUseremail);
             // ellenorizzuk, hogy o az aktualis jatekos-e
-            isActualPlayer = isPlayerActualPlayerOfTheGame(game, isActualPlayer, notLoggedInUser);
+            isActualPlayer = Helper.isPlayerActualPlayerOfTheGame(game, isActualPlayer, notLoggedInUser);
         }
         // bejelentkezett felhasznalo eseten is ellenorizzuk az aktualitast
         else
         {
             User loggedInUser = mem.getUserByEmail(loggedInUseremail);
-            isActualPlayer = isPlayerActualPlayerOfTheGame(game, isActualPlayer, loggedInUser);
+            isActualPlayer = Helper.isPlayerActualPlayerOfTheGame(game, isActualPlayer, loggedInUser);
         }
         JSONObject gameDetailesJsonObject = new JSONObject();
         try
@@ -212,8 +212,8 @@ public class GameApi
             gameDetailesJsonObject.put("id", game.getId());
             gameDetailesJsonObject.put("gameStatus", game.getGameStatus());
             gameDetailesJsonObject.put("name", game.getName());
-            gameDetailesJsonObject.put("ownerOfGame", game.getOwnerOfGame().getId());
-            gameDetailesJsonObject.put("actualPlayer", getAllDetailesOfPlayer(game.getActualPlayer()));
+            gameDetailesJsonObject.put("nameOfGameOwner", game.getOwnerOfGame().getName());
+            gameDetailesJsonObject.put("actualPlayer", Helper.getAllDetailesOfPlayer(game.getActualPlayer()));
             gameDetailesJsonObject.put("isActualPlayer", isActualPlayer);
 
             JSONArray acceptedPlayersJsonArray = new JSONArray();
@@ -223,7 +223,7 @@ public class GameApi
             {
                 if (player.getPlayerStatus() == PlayerStatus.accepted)
                 {
-                    JSONObject aPlayerJsonObject = getAllDetailesOfPlayer(player);
+                    JSONObject aPlayerJsonObject = Helper.getAllDetailesOfPlayer(player);
                     acceptedPlayersJsonArray.put(aPlayerJsonObject);
                 } else if (player.getPlayerStatus() == PlayerStatus.lost)
                 {
@@ -273,50 +273,6 @@ public class GameApi
         mem.closeDB();
         System.out.println(gameDetailesJsonObject);
         return Response.ok(gameDetailesJsonObject.toString(), MediaType.APPLICATION_JSON).build();
-    }
-
-    private JSONObject getAllDetailesOfPlayer(Player player) throws JSONException
-    {
-        System.out.println("PLAYER: " + player.getId());
-        JSONObject aPlayerJsonObject = new JSONObject();
-        aPlayerJsonObject.put("playerId", player.getId());
-        aPlayerJsonObject.put("name", player.getUser().getName());
-        aPlayerJsonObject.put("status", player.getPlayerStatus());
-
-        aPlayerJsonObject.put("money", player.getMoney());
-        aPlayerJsonObject.put("placeSequenceNumber", player.getSteps().get(player.getSteps().size() - 1)
-                .getFinishPlace().getPlaceSequenceNumber());
-
-        JSONArray ownedBuildingsJsonArray = new JSONArray();
-        for (BuildingPlace buildingPlace : player.getBuildings())
-        {
-            JSONObject aOwnedBuildingJsonObject = new JSONObject();
-
-            aOwnedBuildingJsonObject.put("buildingId", buildingPlace.getBuilding().getId());
-            aOwnedBuildingJsonObject.put("buildingName", buildingPlace.getBuilding().getName());
-            aOwnedBuildingJsonObject.put("nuberOfHouse", buildingPlace.getHouseNumber());
-            aOwnedBuildingJsonObject.put("price", buildingPlace.getBuilding().getPrice());
-            aOwnedBuildingJsonObject.put("housePrice", buildingPlace.getBuilding().getHousePrice());
-            aOwnedBuildingJsonObject.put("baseNightPayment", buildingPlace.getBuilding().getBaseNightPayment());
-            aOwnedBuildingJsonObject.put("perHousePayment", buildingPlace.getBuilding().getPerHousePayment());
-            aOwnedBuildingJsonObject.put("maxHouseNumber", 5 - buildingPlace.getHouseNumber());
-            ownedBuildingsJsonArray.put(aOwnedBuildingJsonObject);
-        }
-
-        aPlayerJsonObject.put("ownedBuildings", ownedBuildingsJsonArray);
-        return aPlayerJsonObject;
-    }
-
-    private boolean isPlayerActualPlayerOfTheGame(Game game, boolean isActualPlayer, User user)
-    {
-        for (Player playerOfUser : user.getGamePlayers())
-        {
-            if (playerOfUser.getGame() == game && (playerOfUser == game.getActualPlayer()))
-            {
-                isActualPlayer = true;
-            }
-        }
-        return isActualPlayer;
     }
 
     private int getGameIdFromJson(String json) throws JSONException

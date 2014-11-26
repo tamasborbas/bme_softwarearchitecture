@@ -5,8 +5,10 @@ import hu.bme.aut.monopoly.model.BuildingPlace;
 import hu.bme.aut.monopoly.model.Game;
 import hu.bme.aut.monopoly.model.MonopolyEntityManager;
 import hu.bme.aut.monopoly.model.Place;
+import hu.bme.aut.monopoly.model.Player;
 import hu.bme.aut.monopoly.model.SimplePlace;
 import hu.bme.aut.monopoly.model.StartPlace;
+import hu.bme.aut.monopoly.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,10 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 public class Helper
@@ -104,4 +110,49 @@ public class Helper
         mem.closeDB();
         return places;
     }
+
+    public static JSONObject getAllDetailesOfPlayer(Player player) throws JSONException
+    {
+        System.out.println("PLAYER: " + player.getId());
+        JSONObject aPlayerJsonObject = new JSONObject();
+        aPlayerJsonObject.put("playerId", player.getId());
+        aPlayerJsonObject.put("name", player.getUser().getName());
+        aPlayerJsonObject.put("status", player.getPlayerStatus());
+
+        aPlayerJsonObject.put("money", player.getMoney());
+        aPlayerJsonObject.put("placeSequenceNumber", player.getSteps().get(player.getSteps().size() - 1)
+                .getFinishPlace().getPlaceSequenceNumber());
+
+        JSONArray ownedBuildingsJsonArray = new JSONArray();
+        for (BuildingPlace buildingPlace : player.getBuildings())
+        {
+            JSONObject aOwnedBuildingJsonObject = new JSONObject();
+
+            aOwnedBuildingJsonObject.put("buildingId", buildingPlace.getBuilding().getId());
+            aOwnedBuildingJsonObject.put("buildingName", buildingPlace.getBuilding().getName());
+            aOwnedBuildingJsonObject.put("nuberOfHouse", buildingPlace.getHouseNumber());
+            aOwnedBuildingJsonObject.put("price", buildingPlace.getBuilding().getPrice());
+            aOwnedBuildingJsonObject.put("housePrice", buildingPlace.getBuilding().getHousePrice());
+            aOwnedBuildingJsonObject.put("baseNightPayment", buildingPlace.getBuilding().getBaseNightPayment());
+            aOwnedBuildingJsonObject.put("perHousePayment", buildingPlace.getBuilding().getPerHousePayment());
+            aOwnedBuildingJsonObject.put("maxHouseNumber", 5 - buildingPlace.getHouseNumber());
+            ownedBuildingsJsonArray.put(aOwnedBuildingJsonObject);
+        }
+
+        aPlayerJsonObject.put("ownedBuildings", ownedBuildingsJsonArray);
+        return aPlayerJsonObject;
+    }
+
+    public static boolean isPlayerActualPlayerOfTheGame(Game game, boolean isActualPlayer, User user)
+    {
+        for (Player playerOfUser : user.getGamePlayers())
+        {
+            if (playerOfUser.getGame() == game && (playerOfUser == game.getActualPlayer()))
+            {
+                isActualPlayer = true;
+            }
+        }
+        return isActualPlayer;
+    }
+
 }
