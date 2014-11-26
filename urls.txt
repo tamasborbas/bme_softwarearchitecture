@@ -1,0 +1,8 @@
+"/Monopoly/rest/userapi/GetProfil"
+"/Monopoly/rest/gamemanagementapi/GetActiveGames"
+"/Monopoly/rest/gamemanagementapi/GetInvitations"
+"/Monopoly/rest/gamemanagementapi/AcceptInvitation"
+"/Monopoly/rest/gamemanagementapi/RefuseInvitation"
+"/Monopoly/rest/gamemanagementapi/StartGame"
+"/Monopoly/rest/gamemanagementapi/CreateGame"
+"/Monopoly/rest/gamemanagementapi/GetMyGames"
