@@ -18,6 +18,7 @@ import javax.servlet.http.HttpSession;
 
 public class Helper
 {
+    public static int initializationMoney = 2000;
     public static int throughMoney = 1000;
     public static int boardSize = 16;
 

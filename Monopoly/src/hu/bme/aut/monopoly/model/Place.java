@@ -18,7 +18,7 @@ import javax.persistence.NamedQueries;
 @NamedQueries({
 		
 	@NamedQuery(name = "Place.getPlaceById", query = "SELECT p FROM Place p WHERE p.id =:idPattern"),
-		
+//	Ez itt nem jó, mert nagyon, nagyon sok place-nek lehet ugyanaz a sequence numberje. Küldjek inkább id-t?
 	@NamedQuery(name = "Place.getPlaceByPlaceSequenceNumber", query = "SELECT p FROM Place p WHERE p.placeSequenceNumber=:placeSequenceNumberPattern") 
 })
 public class Place implements Serializable

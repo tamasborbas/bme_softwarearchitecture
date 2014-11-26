@@ -55,6 +55,15 @@ function signUp() {
 		    type: "POST",
 		    data: JSON.stringify(jsonObject),
 		    url: "/Monopoly/rest/userapi/Registration",
+		    success: function() {
+		    	var nameinput = document.getElementById("name");
+		        var passwdinput = document.getElementById("passwd");
+		        var mailinput = document.getElementById("mail");
+		        nameinput.vlue = "";
+		        passwdinput.vlue = "";
+		        mailinput.vlue = "";
+		        loginsel();
+			},
 		    complete: function() {
 				loadingDeactivate();
 			}
@@ -74,7 +83,13 @@ function remind() {
 		$.ajax({
 			type : "POST",
 			data : JSON.stringify(jsonObject),
-			url : "/Monopoly/rest/userapi/Reminder",
+			url : "/Monopoly/rest/userapi/Remind",
+			succes: function() {
+				alert("We sent you the reminder.");
+			},
+			error: function() {
+				alert("Sorry, we can not send you reminder.");
+			},
 			complete: function() {
 				loadingDeactivate();
 			}
