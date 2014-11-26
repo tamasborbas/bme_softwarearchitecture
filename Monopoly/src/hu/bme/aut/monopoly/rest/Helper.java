@@ -265,6 +265,9 @@ public class Helper
         return gamesNum;
     }
 
+    /**
+     * Modify the status of the layer
+     */
     public static Response modifyPlayerStatus(String json, HttpServletRequest request, PlayerStatus playerStatus)
     {
         JSONObject responseJsonObject = new JSONObject();
@@ -392,6 +395,9 @@ public class Helper
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
+    /**
+     * Put the players in order
+     */
     public static List<Player> sortRealPlayer(Game game)
     {
         List<Player> realPlayers = new ArrayList<Player>();
