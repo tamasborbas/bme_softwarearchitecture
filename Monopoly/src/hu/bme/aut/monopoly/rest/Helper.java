@@ -66,7 +66,7 @@ public class Helper
             places.add(startPlace);
             for (int i = 1; i < boardSize; i++)
             {
-                if (i % 2 == 0)
+                if (i + 1 % 2 == 0)
                 {
                     BuildingPlace buildingPlace = new BuildingPlace();
                     buildingPlace.setGame(game);
@@ -74,7 +74,7 @@ public class Helper
 
                     // Itt le kéne kérdezni az (i/2)-es id-val rendelkezõ buildinget az adatbázisból, és azt
                     // beállítani
-                    Building building = mem.getBuildingById(i / 2);
+                    Building building = mem.getBuildingById((i + 1) / 2);
                     buildingPlace.setBuilding(building);
 
                     // Building building = new Building();
@@ -190,6 +190,22 @@ public class Helper
     }
 
     /**
+     * Get email from JSON
+     */
+    public static String getEmailFromJson(String json) throws JSONException
+    {
+        JSONObject jsonObject;
+        System.out.println("JSON: " + json);
+        String email = "";
+
+        jsonObject = new JSONObject(json);
+        email = jsonObject.getString("email");
+        System.out.println("GAMEID: " + email);
+
+        return email;
+    }
+
+    /**
      * Gets the properties of the game
      */
     public static JSONObject getGameDetailes(Game game) throws JSONException
@@ -268,12 +284,13 @@ public class Helper
     /**
      * Modify the status of the layer
      */
-    public static Response modifyPlayerStatus(String json, HttpServletRequest request, PlayerStatus playerStatus)
+    public static Response modifyPlayerStatus(String json, HttpServletRequest request, PlayerStatus playerStatus,
+            String userEmail)
     {
         JSONObject responseJsonObject = new JSONObject();
         System.out.println("GetInvitations");
 
-        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
+        // String loggedInUseremail = Helper.getLoggedInUserEmail(request);
 
         int gameId;
         try
@@ -287,7 +304,7 @@ public class Helper
 
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
-        User user = mem.getUserByEmail(loggedInUseremail);
+        User user = mem.getUserByEmail(userEmail);
         Game game = mem.getGameById(gameId);
 
         List<Player> gamePlayers = user.getGamePlayers();

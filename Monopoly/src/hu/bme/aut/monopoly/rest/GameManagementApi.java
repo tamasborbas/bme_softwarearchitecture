@@ -168,7 +168,29 @@ public class GameManagementApi
     public Response acceptInvitation(String json, @Context
     HttpServletRequest request)
     {
-        return Helper.modifyPlayerStatus(json, request, PlayerStatus.accepted);
+        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
+        return Helper.modifyPlayerStatus(json, request, PlayerStatus.accepted, loggedInUseremail);
+    }
+
+    /**
+     * Accept a invitation from email
+     */
+    @Path("/AcceptInvitationFromEmail")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response acceptInvitationFromEmail(String json, @Context
+    HttpServletRequest request)
+    {
+        String userEmail = "";
+        try
+        {
+            userEmail = Helper.getEmailFromJson(json);
+        } catch (JSONException e)
+        {
+            e.printStackTrace();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
+        }
+        return Helper.modifyPlayerStatus(json, request, PlayerStatus.accepted, userEmail);
     }
 
     /**
@@ -180,7 +202,21 @@ public class GameManagementApi
     public Response refuseInvitation(String json, @Context
     HttpServletRequest request)
     {
-        return Helper.modifyPlayerStatus(json, request, PlayerStatus.refused);
+        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
+        return Helper.modifyPlayerStatus(json, request, PlayerStatus.refused, loggedInUseremail);
+    }
+
+    /**
+     * Refuse a invitation
+     */
+    @Path("/RefuseInvitationFromEmail")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response refuseInvitationFromEmail(String json, @Context
+    HttpServletRequest request)
+    {
+        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
+        return Helper.modifyPlayerStatus(json, request, PlayerStatus.refused, loggedInUseremail);
     }
 
     /**
