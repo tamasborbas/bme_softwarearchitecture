@@ -31,10 +31,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
+/**
+ * Class for the game specific rest requests
+ */
 @Path("/gameapi")
 public class GameApi
 {
-
+    /**
+     * Gives the details of the game (players, places, )
+     */
     @Path("/OpenGame")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -48,27 +53,25 @@ public class GameApi
         {
             JSONArray jsonTomb;
             jsonTomb = new JSONArray(json);
-            if (jsonTomb.getJSONObject(0).getString("email") != "")
-            {
-                notLoggedInUseremail = jsonTomb.getJSONObject(0).getString("email");
-            }
+
+            notLoggedInUseremail = jsonTomb.getJSONObject(0).getString("email");
             gameId = jsonTomb.getJSONObject(0).getInt("gameId");
+
             System.out.println("GAMEID: " + gameId);
         } catch (JSONException e1)
         {
             e1.printStackTrace();
             return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON: " + json).build();
         }
+
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
 
         Game game = mem.getGameById(gameId);
         boolean isActualPlayer = false;
-        Player actualPlayer = null;
 
         // ha nem regisztralt a felhasznalo, akkor itt inditunk neki sessiont
-        if (((notLoggedInUseremail != null) || !(notLoggedInUseremail.equals("")))
-                && ((loggedInUseremail == null) || (loggedInUseremail.equals(""))))
+        if (loggedInUseremail == null)
         {
             HttpSession session = request.getSession(true);
             session.setAttribute("notLoggedInUser", notLoggedInUseremail);
@@ -82,6 +85,7 @@ public class GameApi
             User loggedInUser = mem.getUserByEmail(loggedInUseremail);
             isActualPlayer = Helper.isPlayerActualPlayerOfTheGame(game, isActualPlayer, loggedInUser);
         }
+
         JSONObject gameDetailesJsonObject = new JSONObject();
         try
         {
@@ -137,20 +141,21 @@ public class GameApi
                 // minden placehez egy lista, h melyik players all rajta ID-NAME
                 JSONArray playersOnPlaceJsonArray = new JSONArray();
 
-                for (Player player : Helper.sortRealPlayer(game))
+                List<Player> realPlayers = Helper.sortRealPlayer(game);
+                for (Player player : realPlayers)
                 {
                     if ((player.getSteps().get(player.getSteps().size() - 1).getFinishPlace() == place))
                     {
                         JSONObject aPlayerOnPlaceJsonObject = new JSONObject();
                         aPlayerOnPlaceJsonObject.put("playerId", player.getId());
                         aPlayerOnPlaceJsonObject.put("userName", player.getUser().getName());
+                        aPlayerOnPlaceJsonObject.put("playerSequence", realPlayers.indexOf(player));
                         playersOnPlaceJsonArray.put(aPlayerOnPlaceJsonObject);
                     }
                 }
                 aPlace.put("playersOnPlace", playersOnPlaceJsonArray);
                 placesJsonArray.put(aPlace);
             }
-
             gameDetailesJsonObject.put("places", placesJsonArray);
         } catch (JSONException e)
         {
@@ -163,14 +168,15 @@ public class GameApi
         return Response.ok(gameDetailesJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
+    /**
+     * Gives the properties of a building
+     */
     @Path("/GetBuilding")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBuilding(String json, @Context
     HttpServletRequest request)
     {
-        // TODO minek ez?
-        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
         JSONArray jsonTomb;
         int placeId = 0;
 
@@ -181,7 +187,6 @@ public class GameApi
             System.out.println("BuildigPlaceId: " + placeId);
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -201,7 +206,6 @@ public class GameApi
                     Helper.getBuildingPlaceDetailes(buildingPlace, buildingPlaceJsonObject);
                 } catch (JSONException e)
                 {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -211,15 +215,20 @@ public class GameApi
         return Response.ok(buildingPlaceJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
+    /**
+     * Gives the properties of a place
+     */
     @Path("/GetPlaceData")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPlaceData(String json, @Context
     HttpServletRequest request)
     {
+        // placeid kinyerese jsonbol
         System.out.println(json);
         JSONArray jsonTomb;
         int placeId = 0;
+
         try
         {
             jsonTomb = new JSONArray(json);
@@ -236,10 +245,10 @@ public class GameApi
         mem.initDB();
         JSONObject placeJsonObject = new JSONObject();
         boolean isBuilding = false;
-
         Place place = mem.getPlaceById(placeId);
         try
         {
+            // ha egy start mezorol van szo, akkor at kell adni a kor teljesitesekor jara osszeget
             if (place instanceof StartPlace)
             {
                 StartPlace startPlace = mem.getPlaceById(placeId);
@@ -247,8 +256,10 @@ public class GameApi
                 placeJsonObject.put("placeId", startPlace.getId());
                 placeJsonObject.put("placeSequenceNumber", startPlace.getPlaceSequenceNumber());
                 placeJsonObject.put("throughMoney", startPlace.getThroughMoney());
-
-            } else if (place instanceof BuildingPlace)
+                placeJsonObject.put("name", "Start");
+            }
+            // ha building place, akkor kuldjuk az epuletek adatait is
+            else if (place instanceof BuildingPlace)
             {
                 BuildingPlace buildingPlace = mem.getBuildingPlaceById(placeId);
 
@@ -256,6 +267,7 @@ public class GameApi
                 placeJsonObject.put("placeId", buildingPlace.getId());
                 placeJsonObject.put("placeSequenceNumber", buildingPlace.getPlaceSequenceNumber());
                 placeJsonObject.put("houseNumber", buildingPlace.getHouseNumber());
+
                 if (buildingPlace.getOwnerPlayer() != null)
                 {
                     placeJsonObject.put("ownerPlayerId", buildingPlace.getOwnerPlayer().getId());
@@ -263,34 +275,37 @@ public class GameApi
                 {
                     placeJsonObject.put("ownerPlayerId", "");
                 }
+
                 if (buildingPlace.getBuilding() != null)
                 {
                     placeJsonObject.put("buildingId", buildingPlace.getBuilding().getId());
-                    placeJsonObject.put("buildingName", buildingPlace.getBuilding().getName());
+                    placeJsonObject.put("name", buildingPlace.getBuilding().getName());
                     placeJsonObject.put("buildingPrice", buildingPlace.getBuilding().getPrice());
                     placeJsonObject.put("buildingHousePrice", buildingPlace.getBuilding().getHousePrice());
                     placeJsonObject
                             .put("buildingBaseNightPayment", buildingPlace.getBuilding().getBaseNightPayment());
                     placeJsonObject.put("buildingPerHousePayment", buildingPlace.getBuilding().getPerHousePayment());
-
-                } else
-                {
-                    placeJsonObject.put("buildingId", "");
-                    placeJsonObject.put("buildingName", "");
-                    placeJsonObject.put("buildingPrice", "");
-                    placeJsonObject.put("buildingHousePrice", "");
-                    placeJsonObject.put("buildingBaseNightPayment", "");
-                    placeJsonObject.put("buildingPerHousePaymentss", "");
                 }
 
-                isBuilding = true;
+                // else
+                // {
+                // placeJsonObject.put("buildingId", "");
+                // placeJsonObject.put("buildingName", "");
+                // placeJsonObject.put("buildingPrice", "");
+                // placeJsonObject.put("buildingHousePrice", "");
+                // placeJsonObject.put("buildingBaseNightPayment", "");
+                // placeJsonObject.put("buildingPerHousePaymentss", "");
+                // }
 
-            } else
+                isBuilding = true;
+            }
+            // ha sima mezorol van szo
+            else
             {
                 placeJsonObject.put("gameId", place.getGame().getId());
                 placeJsonObject.put("placeSequenceNumber", place.getPlaceSequenceNumber());
                 placeJsonObject.put("placeId", place.getId());
-
+                placeJsonObject.put("name", "");
             }
             System.out.println(placeJsonObject);
 
@@ -299,17 +314,18 @@ public class GameApi
 
         } catch (JSONException e)
         {
+            mem.closeDB();
             e.printStackTrace();
             return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
-        } finally
-        {
-            mem.closeDB();
-
         }
+        mem.closeDB();
 
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
+    /**
+     * Gives the players property
+     */
     @Path("/GetPlayerData")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -370,17 +386,17 @@ public class GameApi
         return Response.ok(playerJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
+    /**
+     * Make a step
+     */
     @Path("/MakeStep")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response makeStep(String json, @Context
     HttpServletRequest request)
     {
-        int errorCode = 0;
-
-        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
-
         JSONArray jsonTomb;
+        int errorCode = 0;
         int playerId = 0;
         int placeSequenceNumber = 0;
         int roll = 0;
@@ -409,21 +425,21 @@ public class GameApi
             return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
         }
 
-        // playerId = 1;
-        // placeSequenceNumber = 3;
-        // roll = 2;
-
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
+
         Player player = mem.getPlayerById(playerId);
 
+        // dobas, illetve lepes helyessegenek ellenorzese
         if (roll < 1
                 || roll > 6
                 || ((player.getSteps().get(player.getSteps().size() - 1).getFinishPlace().getPlaceSequenceNumber() + roll) % 16 != placeSequenceNumber))
         {
             errorCode = 2;
             System.out.println("CSALAS");
-        } else
+        }
+        // ha nem tortenik csalas, akkor leptetunk
+        else
         {
             Step step = new Step();
             Player ownerOfBuildingPlace = null;
@@ -457,13 +473,11 @@ public class GameApi
                         // mem.commit(step);
                         player.addBuilding(buildingPlace);
                         // mem.commit(player);
-
                     }
 
                     // fizetett a telek gazdájának megfelelõ összeget
                     else if (isPayed)
                     {
-
                         int amount;
                         amount = buildingPlace.getBuilding().getBaseNightPayment() + buildingPlace.getHouseNumber()
                                 * buildingPlace.getBuilding().getPerHousePayment();
@@ -499,9 +513,7 @@ public class GameApi
                             soldBuildingPlaces.add(soldBuildingPlace);
                             step.addSoldBuilding(soldBuildingPlace);
                         }
-
                         // mem.commit(step);
-
                     }
                 }
 
@@ -513,7 +525,7 @@ public class GameApi
                     buildingId = boughtHouseNumberForBuildings.getJSONObject(i).getInt("buildingId");
                     number = boughtHouseNumberForBuildings.getJSONObject(i).getInt("number");
 
-                    // LEELLENORIZNI H VAN_E ILYEN ID BUILDING
+                    // ellenorizzuk, hogy van-e ilyen id-ju building place
                     if (mem.getBuildingPlaceById(buildingId) != null)
                     {
                         BuildingPlace boughtBuildingPlace = mem.getBuildingPlaceById(buildingId);
@@ -586,7 +598,6 @@ public class GameApi
                     player.setPlayerStatus(PlayerStatus.win);
                     player.getGame().setGameStatus(GameStatus.finished);
                 }
-
             } catch (Exception e)
             {
                 e.printStackTrace();
@@ -655,9 +666,9 @@ public class GameApi
 
         // ha nem volt hiba es nem regisztralt felhasznaloval van dolgunk, akkor
         // lezarjuk a hozza tartozo sessiont
-        if (errorCode == 0)
+        HttpSession session = request.getSession(true);
+        if ((errorCode == 0) && (session.getAttribute("notLoggedInUser") != null))
         {
-            HttpSession session = request.getSession(true);
             String notLoggedInUseremail = (String) session.getAttribute("notLoggedInUser");
             if ((notLoggedInUseremail != null) && !(notLoggedInUseremail.equals("")))
             {

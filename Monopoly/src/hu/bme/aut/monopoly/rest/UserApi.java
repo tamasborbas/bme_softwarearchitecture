@@ -14,7 +14,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -27,17 +26,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
+/**
+ * Class for the user specific rest requests
+ */
 @Path("/userapi")
 public class UserApi
 {
-    @Path("/x")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String sayPlainTextHello()
-    {
-        return "Hello Jersey";
-    }
-
+    /**
+     * Checks the user name and the password, and create a session for the user
+     */
     @Path("/Login")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -62,7 +59,6 @@ public class UserApi
                 response.sendError(403, "Invalid JSON");
             } catch (IOException e)
             {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             e1.printStackTrace();
@@ -78,7 +74,6 @@ public class UserApi
         if (mem.getUserIsRegistered(userName, password))
         {
             session.setAttribute("loggedInUser", mem.getUserByName(userName).getEmail());
-
             System.out.println("Login okay");
         } else
         {
@@ -89,7 +84,6 @@ public class UserApi
                 response.sendError(401, "The user is not registered");
             } catch (IOException e)
             {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -98,6 +92,9 @@ public class UserApi
         return response;
     }
 
+    /**
+     * Invalidate the session of the user
+     */
     @Path("/Logout")
     @POST
     public HttpServletResponse logout(@Context
@@ -112,6 +109,9 @@ public class UserApi
         return response;
     }
 
+    /**
+     * Checks the given parameters uniqueness, and than register the user to the database
+     */
     @Path("/Registration")
     @POST
     public Response addUser(String json, @Context
@@ -162,19 +162,11 @@ public class UserApi
 
             } catch (Exception e)
             {
-
                 e.printStackTrace();
                 return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Database error").build();
             }
             mem = new MonopolyEntityManager();
             mem.initDB();
-
-            // meg ne jelentkeztessuk be, abban maradtunk
-            // if (mem.getUserIsRegistered(email, password))
-            // {
-            // session.setAttribute("loggedInUser", email);
-            // }
-            // mem.closeDB();
         }
 
         JSONObject responseJsonObject = new JSONObject();
@@ -183,6 +175,9 @@ public class UserApi
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
+    /**
+     * Sends a reminder email for registered users
+     */
     @Path("/Remind")
     @POST
     public Response remind(String json) throws JSONException
@@ -203,7 +198,15 @@ public class UserApi
 
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
-        User user = mem.getUserByEmail(email);
+        User user;
+        if (mem.isUserEmailRegistered(email))
+        {
+            user = mem.getUserByEmail(email);
+        } else
+        {
+            return Response.status(Response.Status.NOT_FOUND).entity("The given email address not found in database")
+                    .build();
+        }
         mem.closeDB();
 
         success = EmailManager.sendReminderEmail(email, user.getName(), user.getPassword());
@@ -217,10 +220,12 @@ public class UserApi
             return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
         }
 
-        // TODO
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
+    /**
+     * Returns the personal details of the user
+     */
     @Path("/GetProfil")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -234,8 +239,8 @@ public class UserApi
         mem.initDB();
         User user = mem.getUserByEmail(loggedInUseremail);
 
-        int wonGamesNum = Helper.getNumberOfGameInAStatus(user, PlayerStatus.win);
-        int invitationsNum = Helper.getNumberOfGameInAStatus(user, PlayerStatus.notAcceptedYet);
+        int wonGamesNum = Helper.getNumberOfPlayerInAStatus(user, PlayerStatus.win);
+        int invitationsNum = Helper.getNumberOfPlayerInAStatus(user, PlayerStatus.notAcceptedYet);
 
         int activeGamesNum = 0;
         List<Game> ownedGames = mem.getOwnedGamesByUser(user);

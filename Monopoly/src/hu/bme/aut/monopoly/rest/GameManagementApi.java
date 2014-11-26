@@ -29,9 +29,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
+/**
+ * Class for the game management specific rest requests
+ */
 @Path("/gamemanagementapi")
 public class GameManagementApi
 {
+    /**
+     * Gives the active games with properties
+     */
     @Path("/GetActiveGames")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -44,9 +50,10 @@ public class GameManagementApi
         MonopolyEntityManager mem = new MonopolyEntityManager();
         mem.initDB();
 
-        List<Game> activeGamesByEmail = mem.getActiveGamesByEmail(loggedInUseremail);
-
         JSONArray activeGamesJsonArray = new JSONArray();
+
+        List<Game> activeGamesByEmail = mem.getActiveGamesByEmail(loggedInUseremail);
+        // vegig megyunk az aktiv jatekokon
         for (Game game : activeGamesByEmail)
         {
             System.out.println("JATEK NEV: " + game.getName());
@@ -61,6 +68,7 @@ public class GameManagementApi
                 System.out.println("AKTIV JATEK: " + aActiveGame);
                 JSONArray acceptedPlayersJsonArray = new JSONArray();
 
+                // a jatekhoz tartozo accepted, nem actual playerek osszegyujtese
                 for (Player player : game.getPlayers())
                 {
                     System.out.println("JATEKOS NEV: " + player.getId() + " - " + player.getUser().getName());
@@ -74,8 +82,6 @@ public class GameManagementApi
                 aActiveGame.put("players", acceptedPlayersJsonArray);
 
                 System.out.println("A GAME OBJECT: " + aActiveGame);
-                // activeGamesJsonArray.put(aActiveGame);
-
             } catch (JSONException e)
             {
                 e.printStackTrace();
@@ -100,6 +106,9 @@ public class GameManagementApi
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
+    /**
+     * Gets the invitations of the user
+     */
     @Path("/GetInvitations")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -118,6 +127,7 @@ public class GameManagementApi
         List<Player> gamePlayers = user.getGamePlayers();
         JSONArray notAcceptedYetGamesJsonArray = new JSONArray();
 
+        // a userhez tartozo notAcceptedYet statuszu jatekosok lekerdezese
         for (Player player : gamePlayers)
         {
             if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
@@ -149,6 +159,9 @@ public class GameManagementApi
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
+    /**
+     * Accept a invitation
+     */
     @Path("/AcceptInvitation")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -158,6 +171,9 @@ public class GameManagementApi
         return Helper.modifyPlayerStatus(json, request, PlayerStatus.accepted);
     }
 
+    /**
+     * Refuse a invitation
+     */
     @Path("/RefuseInvitation")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -167,6 +183,9 @@ public class GameManagementApi
         return Helper.modifyPlayerStatus(json, request, PlayerStatus.refused);
     }
 
+    /**
+     * Start a game
+     */
     @Path("/StartGame")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -183,8 +202,6 @@ public class GameManagementApi
             mem.initDB();
             jsonTomb = new JSONArray(json);
             gameId = jsonTomb.getJSONObject(0).getInt("gameId");
-
-            String loggedInUserEmail = Helper.getLoggedInUserEmail(request);
 
             Game game = mem.getGameById(gameId);
 
@@ -254,7 +271,6 @@ public class GameManagementApi
             }
         } catch (Exception e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             success = false;
         } finally
@@ -266,19 +282,20 @@ public class GameManagementApi
             responseJsonObject.put("success", success);
         } catch (JSONException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
+    /**
+     * Create a game
+     */
     @Path("/CreateGame")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response createGame(String json, @Context
     HttpServletRequest request)
     {
-        boolean success = true;
         List<User> validUsers = new ArrayList<User>();
         List<User> inviteUsers = new ArrayList<User>();
         System.out.println(json);
@@ -298,6 +315,7 @@ public class GameManagementApi
             jsonTomb = new JSONArray(json);
             gameName = jsonTomb.getJSONObject(0).getString("gameName");
             JSONArray playersJsonArray = jsonTomb.getJSONObject(0).getJSONArray("players");
+
             for (int i = 0; i < playersJsonArray.length(); i++)
             {
                 System.out.println(playersJsonArray.getJSONObject(i).getString("player"));
@@ -308,11 +326,6 @@ public class GameManagementApi
                 {
                     validUsers.add(mem.getUserByName(playerEmailOrName));
                     System.out.println("DB-USerName: " + mem.getUserByName(playerEmailOrName).getName());
-                    // Player player = new Player();
-                    // player.setUser(mem.getUserByName(playerEmailOrName));
-                    // player.setMoney(1000);
-                    // mem.commit(player);
-                    // gamePlayers.add(player);
                 }
                 // valami jott, de az a usernamek kozott nincs az adatbazisban
                 else
@@ -348,9 +361,7 @@ public class GameManagementApi
                     {
                         if (playerEmailOrName.contains("@"))
                         {
-                            // ujemail, mi legyen?-->vegyuk fel a user tablaba
-                            // mint nem regisztralt felhasznalo
-                            // uj user a listahoz adni
+                            // uj email eltarolasa a tablaban nem regisztralt felhasznalokent
                             User user = new User();
                             user.setEmail(playerEmailOrName);
                             user.setUserType(UserType.notRegistered);
@@ -468,6 +479,9 @@ public class GameManagementApi
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
+    /**
+     * Gives the owned (not started, and not totally refused) games of the user
+     */
     @Path("/GetMyGames")
     @POST
     @Produces(MediaType.APPLICATION_JSON)

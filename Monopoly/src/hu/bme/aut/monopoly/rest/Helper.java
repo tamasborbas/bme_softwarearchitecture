@@ -34,6 +34,9 @@ public class Helper
     public static int throughMoney = 1000;
     public static int boardSize = 16;
 
+    /**
+     * Gets the user email rom the session
+     */
     public static String getLoggedInUserEmail(HttpServletRequest request)
     {
         HttpSession session = request.getSession(true);
@@ -42,6 +45,9 @@ public class Helper
         return loggedInUseremail;
     }
 
+    /**
+     * Create the board
+     */
     public static List<? extends Place> makeBoard(int gameId)
     {
         MonopolyEntityManager mem = new MonopolyEntityManager();
@@ -117,6 +123,9 @@ public class Helper
         return places;
     }
 
+    /**
+     * Gives the properties of the player
+     */
     public static JSONObject getAllDetailesOfPlayer(Player player) throws JSONException
     {
         System.out.println("PLAYER: " + player.getId());
@@ -149,6 +158,9 @@ public class Helper
         return aPlayerJsonObject;
     }
 
+    /**
+     * Checks the given user is active player in the game
+     */
     public static boolean isPlayerActualPlayerOfTheGame(Game game, boolean isActualPlayer, User user)
     {
         for (Player playerOfUser : user.getGamePlayers())
@@ -161,6 +173,9 @@ public class Helper
         return isActualPlayer;
     }
 
+    /**
+     * Gets the game id from the JSON
+     */
     public static int getGameIdFromJson(String json) throws JSONException
     {
         JSONObject jsonObject;
@@ -174,6 +189,9 @@ public class Helper
         return gameId;
     }
 
+    /**
+     * Gets the properties of the game
+     */
     public static JSONObject getGameDetailes(Game game) throws JSONException
     {
         System.out.println(game.getName());
@@ -213,6 +231,9 @@ public class Helper
         return aGameJsonObject;
     }
 
+    /**
+     * Gets the properties of the game
+     */
     public static JSONObject getBuildingPlaceDetailes(BuildingPlace buildingPlace, JSONObject buildingPlaceJsonObject)
             throws JSONException
     {
@@ -228,7 +249,10 @@ public class Helper
         return buildingPlaceJsonObject;
     }
 
-    public static int getNumberOfGameInAStatus(User user, PlayerStatus ps)
+    /**
+     * Gets the number of players of the user in a status
+     */
+    public static int getNumberOfPlayerInAStatus(User user, PlayerStatus ps)
     {
         int gamesNum = 0;
         for (Player player : user.getGamePlayers())
