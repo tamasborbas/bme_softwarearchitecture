@@ -85,7 +85,7 @@ function createGameBoard() {
 		// basic place data
 		var lblpname = document.createElement('label');
 		lblpname.className = "placedata placedata-name";
-		lblpname.textContent = place.name;
+		lblpname.textContent = place.placeName;
 		basesec.appendChild(lblpname);
 
 		var lblpid = document.createElement('label');
@@ -123,9 +123,7 @@ function createGameBoard() {
 			if (place.playersOnPlace.length > 0) {
 				for (var playeri in place.playersOnPlace) {
 					var player = place.playersOnPlace[playeri];
-					//alert(player + "\n id:" + player.id + "\n name:" + player.name);
-					//alert(i + " " + (i == player.id));
-					//console.log("Playerid:" + player.id + " | Playername:" + player.name);
+					
 					if (player.playerId == i) {
 						//console.log("OK"+i);
 						td1.className = ("token playercolor"+i);

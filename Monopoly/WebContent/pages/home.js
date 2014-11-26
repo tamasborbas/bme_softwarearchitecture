@@ -1,9 +1,8 @@
-﻿var profil = '{"ownGamesNum":0,"activeGamesNum":0,"invitationsNum":0,"email":"borbastomi@gmail.com","name":"borbastomi","wonGamesNum":0,"participatedGamesNum":0}';
-function getProfil() {
+﻿function getProfil() {
 	$.ajax({
 		type : "POST",
 		dataType : "json",
-		url : "/Monopoly/rest/gameapi/GetProfil"
+		url : "/Monopoly/rest/userapi/GetProfil"
 	}).success(function(data) {
 		console.log(data);
 		var profilData = JSON.parse(data);
@@ -33,7 +32,7 @@ function createGame() {
 		$.ajax({
 			type: "POST",
 			data : jsonString,
-			url : "/Monopoly/rest/gameapi/CreateGame"
+			url : "/Monopoly/rest/gamemanagementapi/CreateGame"
 		}).success(function(data) {
 			var responseObject = JSON.parse(data);
 			loadingDeactivate();
@@ -71,7 +70,7 @@ function getActiveGames() {
 	$.ajax({
 		type : "POST",
 		dataType : "json",
-		url : "/Monopoly/rest/gameapi/GetActiveGames"
+		url : "/Monopoly/rest/gamemanagementapi/GetActiveGames"
 	}).success(function(data) {
 		var responseObject = JSON.parse(data);
 		for(var agi in responseObject.activeGames) {
@@ -117,7 +116,7 @@ function getMyGames() {
 	$.ajax({
 		type : "POST",
 		dataType : "json",
-		url : "/Monopoly/rest/gameapi/GetMyGames"
+		url : "/Monopoly/rest/gamemanagementapi/GetMyGames"
 	}).success(function(data) {
 		var jsonobject = JSON.parse(data);
 		for (var gi in jsonobject.myGames) {
@@ -160,7 +159,7 @@ function getInvitations() {
 	$.ajax({
 		type : "POST",
 		dataType : "json",
-		url : "/Monopoly/rest/gameapi/GetInvitations"
+		url : "/Monopoly/rest/gamemanagementapi/GetInvitations"
 	}).success(function(data) {
 		var jsonobject = JSON.parse(data);
 		for (var gi in jsonobject.nayGames) {
@@ -228,7 +227,7 @@ function startGame(id) {
 		$.ajax({
 			type: "POST",
 			data: JSON.stringify(jsonObject),
-			url: "/Monopoly/rest/gameapi/StartGame"
+			url: "/Monopoly/rest/gamemanagementapi/StartGame"
 		}).success(function(data) {
 			var responseObject = JSON.parse(data);
 			loadingDeactivate();
@@ -246,7 +245,7 @@ function refuseInvitation(id) {
 		type : "POST",
 		data : '{"gameId":'+id+"}",
 		dataType : "json",
-		url : "/Monopoly/rest/gameapi/RefuseInvitation"
+		url : "/Monopoly/rest/gamemanagementapi/RefuseInvitation"
 	}).success(function(data) {
 		var responseObject = JSON.parse(data);
 		if(responseObject.success) {
@@ -264,7 +263,7 @@ function acceptInvitation(id) {
 		type : "POST",
 		data : '{"gameId":'+id+"}",
 		dataType : "json",
-		url : "/Monopoly/rest/gameapi/AcceptInvitation"
+		url : "/Monopoly/rest/gamemanagementapi/AcceptInvitation"
 	}).success(function(data) {
 		var responseObject = JSON.parse(data);
 		if(responseObject.success) {
