@@ -41,6 +41,7 @@ function loadGameDatas() {
 				rgh.className = "steph1-collapsed";
 			}
 			sessionStorage.happygames_game_name = gameData.name;
+			sessionStorage.happygames_game_money = gameData.actualPlayer.money;
 			sessionStorage.happygames_game_id = gameData.id;
 			sessionStorage.happygames_game_ownerOfGame = gameData.ownerOfGame;
 			sessionStorage.happygames_game_actualPlayer = JSON.stringify(gameData.actualPlayer);
@@ -51,6 +52,7 @@ function loadGameDatas() {
 			
 			// TODO folyt
 			createGameBoard();
+			createMiniPlayers();
 			loadingDeactivate();
 			
 			sessionStorage.happygames_game_roll = 0;
@@ -62,8 +64,6 @@ function loadGameDatas() {
 			sessionStorage.happygames_game_boughtHouseNumberForBuildings = [];
 		}
 	});
-//	createMiniPlayers();
-//	createGameBoard();
 }
 
 /******************************* Game Board *******************************/
@@ -124,11 +124,11 @@ function createGameBoard() {
 				for (var playeri in place.playersOnPlace) {
 					var player = place.playersOnPlace[playeri];
 					
-					if (player.playerId == i) {
+					if (player.playerSequence == i) {
 						//console.log("OK"+i);
 						td1.className = ("token playercolor"+i);
 						td1.title = player.userName;
-					} else if (player.playerId == (i + 4)) {
+					} else if (player.playerSequence == (i + 4)) {
 						//console.log("OK"+(i+4));
 						td2.className = ("token playercolor"+(i+4));
 						td2.title = player.userName;
@@ -159,8 +159,15 @@ function rollDice(number, sides) {
 function roll() {
 	var rollresult = rollDice(1, 6);
 	sessionStorage.happygames_game_roll = rollresult;
-	var sn = (JSON.parse(sessionStorage.happygames_game_activePlayers)).placeSequenceNumber+rollresult;
-	sessionStorage.happygames_game_placeSN = (sn%16)+1;
+	var player = JSON.parse(sessionStorage.happygames_game_actualPlayer);
+	var psn = (JSON.parse(sessionStorage.happygames_game_activePlayers)).placeSequenceNumber;
+	var sn = ((psn+rollresult)%16)+1;
+	sessionStorage.happygames_game_placeSN = sn;
+	var oldplace = document.getElementById("place" + psn + "player" + player.playerSequence);
+	oldplace.className = "transparentcolor";
+	var newplace = document.getElementById("place" + sn + "player" + player.playerSequence);
+	newplace.className = ("token playercolor"+ player.playerSequence);
+	
 	var rgh = document.getElementById("gohomesection");
 	rgh.className = "steph1-collapsed";
 	var rb = document.getElementById("rollsection");
@@ -169,12 +176,29 @@ function roll() {
 	rr.className = "steph1";
 	var rt = document.getElementById("roll_text");
 	rt.value = rt.value.concat(" " + rollresult);
-	if (Math.random() > 0.0) {
-		var ps = document.getElementById("paysection");
-		ps.className = "steph1 steph1-withbutton";
+	
+	var places = JSON.parse(sessionStorage.happygames_game_places);
+	var place = null;
+	for(var pi in places) {
+		var p = places[pi];
+		if(p.placeSequenceNumber==sn) {
+			place = p;
+		}
+	}
+	if (place.type == "BuildingPlace") {
+		if(place.owner==0) {
+			var bs = document.getElementById("buysection");
+			bs.className = "steph1 steph1-withbutton";
+		} else if (place.owner==player.playerId){
+			var bhs = document.getElementById("buyhousesection");
+			bhs.className = "steph1 steph1-withbutton";
+		} else {
+			var ps = document.getElementById("paysection");
+			ps.className = "steph1 steph1-withbutton";
+		}
 	} else {
-		var bs = document.getElementById("buysection");
-		bs.className = "steph1 steph1-withbutton";
+		var bhs2 = document.getElementById("buyhousesection");
+		bhs2.className = "steph1 steph1-withbutton";
 	}
 }
 function getSellableBuildings() {
@@ -209,8 +233,10 @@ function getSellableBuildings() {
 function pay() {
 	var rb = document.getElementById("paysection");
 	rb.className = "steph1-collapsed";
+	var payment = 0;
+	sessionStorage.happygames_game_money = sessionStorage.happygames_game_money-payment;
 	sessionStorage.happygames_game_isPayed = true;
-	if (Math.random() > 0.0) {
+	if (sessionStorage.happygames_game_money<0) {
 		var ps = document.getElementById("sellbuildingsection");
 		ps.className = "steph1 steph1-withbutton";
 		getSellableBuildings();
@@ -358,7 +384,7 @@ function finish() {
 				+',"isBuildingBought":'+sessionStorage.happygames_game_isBuildingBought
 				+',"isPayed":'+sessionStorage.happygames_game_isPayed
 				+',"isSold":'+sessionStorage.happygames_game_isSold
-				+',"soldBuildingsIds":'+happygames_game_actualPlayer_soldbuildings
+				+',"soldBuildingsIds":'+sessionStorage.happygames_game_actualPlayer_soldbuildings
 				+',"boughtHouseNumberForBuildings":'+sessionStorage.happygames_game_boughtHouseNumberForBuildings
 				+'}]';
 	$.ajax({
@@ -383,7 +409,6 @@ function finish() {
 }
 
 /******************************* Playerboard *******************************/
-var playersboardData = '{"actualPlayer":[{"playerId":1,"name":"Valaki Neve","placeSequenceNumber":15,"money":800},{"id":2,"name":"Valaki Más Neve","place":10,"money":700}],"losers":[{"id":3,"name":"Nagyon-nagyon Senki Neve"}]}';
 function getPlayerData(id) {
 	alert(id);
 }

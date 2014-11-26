@@ -126,16 +126,21 @@ public class GameApi
                 aPlace.put("placeId", place.getId());
                 aPlace.put("placeSequenceNumber", place.getPlaceSequenceNumber());
                 aPlace.put("type", place.getClass().getSimpleName());
+                int owner = 0;
 
                 String placeName = "";
                 if (place instanceof BuildingPlace)
                 {
                     BuildingPlace buildingPlace = mem.getBuildingPlaceById(place.getId());
                     placeName = buildingPlace.getBuilding().getName();
+                    if(buildingPlace.getOwnerPlayer()!=null) {
+                    	owner = buildingPlace.getOwnerPlayer().getId();
+                    }
                 } else if (place instanceof StartPlace)
                 {
                     placeName = "Start";
                 }
+                aPlace.put("owner", owner);
                 aPlace.put("placeName", placeName);
 
                 // minden placehez egy lista, h melyik players all rajta ID-NAME
