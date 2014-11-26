@@ -3,11 +3,15 @@ package hu.bme.aut.monopoly.rest;
 import hu.bme.aut.monopoly.model.Building;
 import hu.bme.aut.monopoly.model.BuildingPlace;
 import hu.bme.aut.monopoly.model.Game;
+import hu.bme.aut.monopoly.model.GameStatus;
 import hu.bme.aut.monopoly.model.MonopolyEntityManager;
 import hu.bme.aut.monopoly.model.Place;
 import hu.bme.aut.monopoly.model.Player;
+import hu.bme.aut.monopoly.model.PlayerComparator;
+import hu.bme.aut.monopoly.model.PlayerStatus;
 import hu.bme.aut.monopoly.model.SimplePlace;
 import hu.bme.aut.monopoly.model.StartPlace;
+import hu.bme.aut.monopoly.model.Step;
 import hu.bme.aut.monopoly.model.User;
 
 import java.util.ArrayList;
@@ -16,6 +20,8 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -155,4 +161,225 @@ public class Helper
         return isActualPlayer;
     }
 
+    public static int getGameIdFromJson(String json) throws JSONException
+    {
+        JSONObject jsonObject;
+        System.out.println("JSON: " + json);
+        int gameId = 0;
+
+        jsonObject = new JSONObject(json);
+        gameId = jsonObject.getInt("gameId");
+        System.out.println("GAMEID: " + gameId);
+
+        return gameId;
+    }
+
+    public static JSONObject getGameDetailes(Game game) throws JSONException
+    {
+        System.out.println(game.getName());
+        JSONObject aGameJsonObject = new JSONObject();
+
+        aGameJsonObject.put("id", game.getId());
+        aGameJsonObject.put("name", game.getName());
+        JSONArray acceptedPlayersJsonArray = new JSONArray();
+        JSONArray notAcceptedYetPlayersJsonArray = new JSONArray();
+        JSONArray refusedPlayersJsonArray = new JSONArray();
+        for (Player player : game.getPlayers())
+        {
+            JSONObject aPlayer = new JSONObject();
+            aPlayer.put("playerId", player.getId());
+            aPlayer.put("name", player.getUser().getName());
+            aPlayer.put("status", player.getPlayerStatus());
+            // aPlayer.put("placeId",
+            // player.getSteps().get(player.getSteps().size() -
+            // 1).getFinishPlace().getId());
+
+            if (player.getPlayerStatus() == PlayerStatus.accepted)
+            {
+                acceptedPlayersJsonArray.put(aPlayer);
+            } else if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
+            {
+                notAcceptedYetPlayersJsonArray.put(aPlayer);
+            } else if (player.getPlayerStatus() == PlayerStatus.refused)
+            {
+                refusedPlayersJsonArray.put(aPlayer);
+            }
+        }
+
+        aGameJsonObject.put("acceptedPlayers", acceptedPlayersJsonArray);
+        aGameJsonObject.put("notAcceptedYetPlayers", notAcceptedYetPlayersJsonArray);
+        aGameJsonObject.put("refusedPlayers", refusedPlayersJsonArray);
+
+        return aGameJsonObject;
+    }
+
+    public static JSONObject getBuildingPlaceDetailes(BuildingPlace buildingPlace, JSONObject buildingPlaceJsonObject)
+            throws JSONException
+    {
+        buildingPlaceJsonObject.put("houseNumber", buildingPlace.getHouseNumber());
+        buildingPlaceJsonObject.put("name", buildingPlace.getBuilding().getName());
+        buildingPlaceJsonObject.put("price", buildingPlace.getBuilding().getPrice());
+        buildingPlaceJsonObject.put("housePrice", buildingPlace.getBuilding().getHousePrice());
+        buildingPlaceJsonObject.put("baseNightPayment", buildingPlace.getBuilding().getBaseNightPayment());
+        buildingPlaceJsonObject.put("perHousePayment", buildingPlace.getBuilding().getPerHousePayment());
+        buildingPlaceJsonObject.put("placeSequenceNumber", buildingPlace.getPlaceSequenceNumber());
+        buildingPlaceJsonObject.put("placeId", buildingPlace.getId());
+
+        return buildingPlaceJsonObject;
+    }
+
+    public static int getNumberOfGameInAStatus(User user, PlayerStatus ps)
+    {
+        int gamesNum = 0;
+        for (Player player : user.getGamePlayers())
+        {
+            if (player.getPlayerStatus() == ps)
+            {
+                gamesNum++;
+            }
+        }
+        return gamesNum;
+    }
+
+    public static Response modifyPlayerStatus(String json, HttpServletRequest request, PlayerStatus playerStatus)
+    {
+        JSONObject responseJsonObject = new JSONObject();
+        System.out.println("GetInvitations");
+
+        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
+
+        int gameId;
+        try
+        {
+            gameId = Helper.getGameIdFromJson(json);
+        } catch (JSONException e2)
+        {
+            e2.printStackTrace();
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
+        }
+
+        MonopolyEntityManager mem = new MonopolyEntityManager();
+        mem.initDB();
+        User user = mem.getUserByEmail(loggedInUseremail);
+        Game game = mem.getGameById(gameId);
+
+        List<Player> gamePlayers = user.getGamePlayers();
+        JSONArray notAcceptedYetGamesJsonArray = new JSONArray();
+
+        try
+        {
+            for (Player player : gamePlayers)
+            {
+                System.out.println("PLAYERID: " + player.getId() + " - " + player.getPlayerStatus());
+                if ((player.getGame() == game) && (player.getPlayerStatus() != playerStatus)
+                        && (player.getPlayerStatus() != PlayerStatus.refused))
+                {
+
+                    try
+                    {
+                        player.setPlayerStatus(playerStatus);
+                        mem.commit(player);
+                        responseJsonObject.put("success", true);
+
+                    } catch (Exception e)
+                    {
+                        e.printStackTrace();
+                        responseJsonObject.put("success", false);
+                    }
+
+                    System.out.println(player.getGame().getName() + " - " + player.getId());
+                } else
+                {
+                    responseJsonObject.put("success", false);
+                }
+
+            }
+        } catch (JSONException e1)
+        {
+            e1.printStackTrace();
+            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
+        }
+        System.out.println(notAcceptedYetGamesJsonArray);
+
+        boolean isThereNotAcceptedYet = false;
+        int acceptanceNumber = 0;
+        for (Player player : game.getPlayers())
+        {
+            if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
+            {
+                isThereNotAcceptedYet = true;
+            } else if (player.getPlayerStatus() == PlayerStatus.accepted)
+            {
+                acceptanceNumber++;
+            }
+        }
+
+        try
+        {
+            if (!isThereNotAcceptedYet && acceptanceNumber >= 2)
+            {
+                // kezdojatekos belallitasa
+                List<Player> realPlayers = sortRealPlayer(game);
+                game.setActualPlayer(realPlayers.get(0));
+
+                game.setGameStatus(GameStatus.inProgress);
+                mem.commit(game);
+
+                // Tabla elkeszitese
+                Helper.makeBoard(gameId);
+
+                // Kezdomezo kivalasztasa
+                StartPlace startPlace = null;
+                for (Place place : game.getPlaces())
+                {
+                    if (place instanceof StartPlace)
+                    {
+                        startPlace = mem.getStartPlaceById(place.getId());
+                        System.out.println("START PLACE: " + startPlace.getId());
+                    }
+                }
+
+                // jatekosok kezdomezore allitasa
+                if (startPlace != null)
+                {
+                    for (Player player : realPlayers)
+                    {
+                        System.out.println("REAL PLAYER: " + player.getId());
+                        Step step = new Step();
+                        step.setFinishPlace(startPlace);
+                        player.addStep(step);
+                        mem.commit(step);
+                        mem.commit(player);
+                    }
+                }
+            } else if (!isThereNotAcceptedYet)
+            {
+                game.setGameStatus(GameStatus.finished);
+                mem.commit(game);
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Database error").build();
+        }
+        mem.closeDB();
+        System.out.println(responseJsonObject);
+
+        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
+    }
+
+    public static List<Player> sortRealPlayer(Game game)
+    {
+        List<Player> realPlayers = new ArrayList<Player>();
+        for (Player player : game.getPlayers())
+        {
+            if (player.getPlayerStatus() == PlayerStatus.accepted)
+            {
+                realPlayers.add(player);
+            }
+        }
+
+        java.util.Collections.sort(realPlayers, new PlayerComparator());
+        return realPlayers;
+    }
 }

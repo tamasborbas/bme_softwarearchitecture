@@ -250,21 +250,21 @@ public class MonopolyEntityManager
         }
     }
 
-    public StartPlace getStartPlaceByPlaceSequenceNumber(int placeSequenceNumber)
-    {
-
-        Query q = em.createNamedQuery("StartPlace.getStartPlaceByPlaceSequenceNumber");
-        q.setParameter("placeSequenceNumber", placeSequenceNumber);
-
-        List<StartPlace> result = q.getResultList();
-        if (result.size() == 0)
-        {
-            return null;
-        } else
-        {
-            return result.get(0);
-        }
-    }
+    // public StartPlace getStartPlaceByPlaceSequenceNumber(int placeSequenceNumber)
+    // {
+    //
+    // Query q = em.createNamedQuery("StartPlace.getStartPlaceByPlaceSequenceNumber");
+    // q.setParameter("placeSequenceNumber", placeSequenceNumber);
+    //
+    // List<StartPlace> result = q.getResultList();
+    // if (result.size() == 0)
+    // {
+    // return null;
+    // } else
+    // {
+    // return result.get(0);
+    // }
+    // }
 
     public Building getBuildingById(int id)
     {

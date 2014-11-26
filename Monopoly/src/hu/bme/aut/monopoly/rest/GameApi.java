@@ -8,7 +8,6 @@ import hu.bme.aut.monopoly.model.HouseBuying;
 import hu.bme.aut.monopoly.model.MonopolyEntityManager;
 import hu.bme.aut.monopoly.model.Place;
 import hu.bme.aut.monopoly.model.Player;
-import hu.bme.aut.monopoly.model.PlayerComparator;
 import hu.bme.aut.monopoly.model.PlayerStatus;
 import hu.bme.aut.monopoly.model.StartPlace;
 import hu.bme.aut.monopoly.model.Step;
@@ -36,127 +35,6 @@ import org.json.JSONObject;
 @Path("/gameapi")
 public class GameApi
 {
-
-    // @Path("/NewGame")
-    // @POST
-    // public void startNewGame(String json)
-    // {
-    //
-    // List<Player> players = new ArrayList<Player>();
-    // JSONArray jsonTomb;
-    // String nameOfGame = null;
-    //
-    // try
-    // {
-    // jsonTomb = new JSONArray(json);
-    // nameOfGame = jsonTomb.getJSONObject(0).getString("nameOfGame");
-    //
-    // MonopolyEntityManager mem = new MonopolyEntityManager();
-    // mem.initDB();
-    //
-    // for (int i = 1; i < jsonTomb.length(); i++)
-    // {
-    // User user =
-    // mem.getUserByEmail(jsonTomb.getJSONObject(i).getString("email"));
-    // Player player = new Player();
-    // // TODO erteket kitalalni
-    // player.setMoney(10000);
-    // player.setPlayerStatus(PlayerStatus.accepted);
-    // // TODO USERID
-    // players.add(player);
-    // mem.commit(player);
-    // user.addGamePlayer(player);
-    // mem.commit(user);
-    //
-    // }
-    //
-    // Game game = new Game();
-    // game.setName(nameOfGame);
-    // game.setPlayers(players);
-    // game.setGameStatus(GameStatus.init);
-    //
-    // mem.commit(game);
-    //
-    // mem.closeDB();
-    // } catch (JSONException e1)
-    // {
-    // // TODO Auto-generated catch block
-    // e1.printStackTrace();
-    // } catch (Exception e)
-    // {
-    // // TODO Auto-generated catch block
-    // e.printStackTrace();
-    // }
-    //
-    // }
-
-    @Path("/GetActiveGames")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getActiveGames(@Context
-    HttpServletRequest request)
-    {
-        System.out.println("GetActiveGames");
-        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
-
-        MonopolyEntityManager mem = new MonopolyEntityManager();
-        mem.initDB();
-
-        List<Game> activeGamesByEmail = mem.getActiveGamesByEmail(loggedInUseremail);
-
-        JSONArray activeGamesJsonArray = new JSONArray();
-        for (Game game : activeGamesByEmail)
-        {
-            System.out.println("JATEK NEV: " + game.getName());
-
-            JSONObject aActiveGame = new JSONObject();
-            try
-            {
-                aActiveGame.put("id", game.getId());
-                aActiveGame.put("name", game.getName());
-                aActiveGame.put("actualPlayer", game.getActualPlayer().getUser().getName());
-
-                System.out.println("AKTIV JATEK: " + aActiveGame);
-                JSONArray acceptedPlayersJsonArray = new JSONArray();
-
-                for (Player player : game.getPlayers())
-                {
-                    System.out.println("JATEKOS NEV: " + player.getId() + " - " + player.getUser().getName());
-                    if ((player.getPlayerStatus() == PlayerStatus.accepted) && !(player != game.getActualPlayer()))
-                    {
-                        JSONObject aAcceptedPlayer = new JSONObject();
-                        aAcceptedPlayer.put("name", player.getUser().getName());
-                        acceptedPlayersJsonArray.put(aAcceptedPlayer);
-                    }
-                }
-                aActiveGame.put("players", acceptedPlayersJsonArray);
-
-                System.out.println("A GAME OBJECT: " + aActiveGame);
-                // activeGamesJsonArray.put(aActiveGame);
-
-            } catch (JSONException e)
-            {
-                e.printStackTrace();
-                return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
-            }
-            activeGamesJsonArray.put(aActiveGame);
-        }
-        mem.closeDB();
-
-        JSONObject responseJsonObject = new JSONObject();
-        try
-        {
-            responseJsonObject.put("activeGames", activeGamesJsonArray);
-        } catch (JSONException e)
-        {
-
-            e.printStackTrace();
-            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
-        }
-
-        System.out.println("ELKULDOTT: " + responseJsonObject);
-        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
-    }
 
     @Path("/OpenGame")
     @POST
@@ -246,10 +124,21 @@ public class GameApi
                 aPlace.put("placeSequenceNumber", place.getPlaceSequenceNumber());
                 aPlace.put("type", place.getClass().getSimpleName());
 
+                String placeName = "";
+                if (place instanceof BuildingPlace)
+                {
+                    BuildingPlace buildingPlace = mem.getBuildingPlaceById(place.getId());
+                    placeName = buildingPlace.getBuilding().getName();
+                } else if (place instanceof StartPlace)
+                {
+                    placeName = "Start";
+                }
+                aPlace.put("placeName", placeName);
+
                 // minden placehez egy lista, h melyik players all rajta ID-NAME
                 JSONArray playersOnPlaceJsonArray = new JSONArray();
 
-                for (Player player : sortRealPlayer(game))
+                for (Player player : Helper.sortRealPlayer(game))
                 {
                     if ((player.getSteps().get(player.getSteps().size() - 1).getFinishPlace() == place))
                     {
@@ -275,19 +164,6 @@ public class GameApi
         return Response.ok(gameDetailesJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
-    private int getGameIdFromJson(String json) throws JSONException
-    {
-        JSONObject jsonObject;
-        System.out.println("JSON: " + json);
-        int gameId = 0;
-
-        jsonObject = new JSONObject(json);
-        gameId = jsonObject.getInt("gameId");
-        System.out.println("GAMEID: " + gameId);
-
-        return gameId;
-    }
-
     @Path("/GetMyGames")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -309,7 +185,7 @@ public class GameApi
             System.out.println(game.getName());
             try
             {
-                ownedGamesJsonArray.put(getGameDetailes(game));
+                ownedGamesJsonArray.put(Helper.getGameDetailes(game));
             } catch (JSONException e)
             {
                 e.printStackTrace();
@@ -328,45 +204,6 @@ public class GameApi
         }
         System.out.println(responseJsonObject);
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
-    }
-
-    private JSONObject getGameDetailes(Game game) throws JSONException
-    {
-        System.out.println(game.getName());
-        JSONObject aGameJsonObject = new JSONObject();
-
-        aGameJsonObject.put("id", game.getId());
-        aGameJsonObject.put("name", game.getName());
-        JSONArray acceptedPlayersJsonArray = new JSONArray();
-        JSONArray notAcceptedYetPlayersJsonArray = new JSONArray();
-        JSONArray refusedPlayersJsonArray = new JSONArray();
-        for (Player player : game.getPlayers())
-        {
-            JSONObject aPlayer = new JSONObject();
-            aPlayer.put("playerId", player.getId());
-            aPlayer.put("name", player.getUser().getName());
-            aPlayer.put("status", player.getPlayerStatus());
-            // aPlayer.put("placeId",
-            // player.getSteps().get(player.getSteps().size() -
-            // 1).getFinishPlace().getId());
-
-            if (player.getPlayerStatus() == PlayerStatus.accepted)
-            {
-                acceptedPlayersJsonArray.put(aPlayer);
-            } else if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
-            {
-                notAcceptedYetPlayersJsonArray.put(aPlayer);
-            } else if (player.getPlayerStatus() == PlayerStatus.refused)
-            {
-                refusedPlayersJsonArray.put(aPlayer);
-            }
-        }
-
-        aGameJsonObject.put("acceptedPlayers", acceptedPlayersJsonArray);
-        aGameJsonObject.put("notAcceptedYetPlayers", notAcceptedYetPlayersJsonArray);
-        aGameJsonObject.put("refusedPlayers", refusedPlayersJsonArray);
-
-        return aGameJsonObject;
     }
 
     @Path("/GetBuilding")
@@ -404,7 +241,7 @@ public class GameApi
                 try
                 {
                     buildingPlaceJsonObject.put("ownerUserName", buildingPlace.getOwnerPlayer().getUser().getName());
-                    getBuildingPlaceDetailes(buildingPlace, buildingPlaceJsonObject);
+                    Helper.getBuildingPlaceDetailes(buildingPlace, buildingPlaceJsonObject);
                 } catch (JSONException e)
                 {
                     // TODO Auto-generated catch block
@@ -415,21 +252,6 @@ public class GameApi
         mem.closeDB();
         System.out.println(buildingPlaceJsonObject);
         return Response.ok(buildingPlaceJsonObject.toString(), MediaType.APPLICATION_JSON).build();
-    }
-
-    private JSONObject getBuildingPlaceDetailes(BuildingPlace buildingPlace, JSONObject buildingPlaceJsonObject)
-            throws JSONException
-    {
-        buildingPlaceJsonObject.put("houseNumber", buildingPlace.getHouseNumber());
-        buildingPlaceJsonObject.put("name", buildingPlace.getBuilding().getName());
-        buildingPlaceJsonObject.put("price", buildingPlace.getBuilding().getPrice());
-        buildingPlaceJsonObject.put("housePrice", buildingPlace.getBuilding().getHousePrice());
-        buildingPlaceJsonObject.put("baseNightPayment", buildingPlace.getBuilding().getBaseNightPayment());
-        buildingPlaceJsonObject.put("perHousePayment", buildingPlace.getBuilding().getPerHousePayment());
-        buildingPlaceJsonObject.put("placeSequenceNumber", buildingPlace.getPlaceSequenceNumber());
-        buildingPlaceJsonObject.put("placeId", buildingPlace.getId());
-
-        return buildingPlaceJsonObject;
     }
 
     @Path("/StartGame")
@@ -479,7 +301,7 @@ public class GameApi
             }
 
             // kezdojatekos belallitasa
-            List<Player> realPlayers = sortRealPlayer(game);
+            List<Player> realPlayers = Helper.sortRealPlayer(game);
             game.setActualPlayer(realPlayers.get(0));
 
             game.setGameStatus(GameStatus.inProgress);
@@ -535,88 +357,6 @@ public class GameApi
             e.printStackTrace();
         }
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
-    }
-
-    private List<Player> sortRealPlayer(Game game)
-    {
-        List<Player> realPlayers = new ArrayList<Player>();
-        for (Player player : game.getPlayers())
-        {
-            if (player.getPlayerStatus() == PlayerStatus.accepted)
-            {
-                realPlayers.add(player);
-            }
-        }
-
-        java.util.Collections.sort(realPlayers, new PlayerComparator());
-        return realPlayers;
-    }
-
-    @Path("/GetInvitations")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getInvitations(@Context
-    HttpServletRequest request)
-    {
-        System.out.println("GetInvitations");
-
-        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
-
-        MonopolyEntityManager mem = new MonopolyEntityManager();
-        mem.initDB();
-        User user = mem.getUserByEmail(loggedInUseremail);
-        mem.closeDB();
-
-        List<Player> gamePlayers = user.getGamePlayers();
-        JSONArray notAcceptedYetGamesJsonArray = new JSONArray();
-
-        for (Player player : gamePlayers)
-        {
-            if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
-            {
-                try
-                {
-                    notAcceptedYetGamesJsonArray.put(getGameDetailes(player.getGame()));
-                    System.out.println(player.getGame().getName());
-                } catch (JSONException e)
-                {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                    return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
-                }
-            }
-        }
-
-        JSONObject responseJsonObject = new JSONObject();
-        try
-        {
-            responseJsonObject.put("nayGames", notAcceptedYetGamesJsonArray);
-        } catch (JSONException e)
-        {
-            e.printStackTrace();
-            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
-        }
-
-        System.out.println(responseJsonObject);
-        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
-    }
-
-    @Path("/AcceptInvitation")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response acceptInvitation(String json, @Context
-    HttpServletRequest request)
-    {
-        return modifyPlayerStatus(json, request, PlayerStatus.accepted);
-    }
-
-    @Path("/RefuseInvitation")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response refuseInvitation(String json, @Context
-    HttpServletRequest request)
-    {
-        return modifyPlayerStatus(json, request, PlayerStatus.refused);
     }
 
     @Path("/CreateGame")
@@ -815,51 +555,6 @@ public class GameApi
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
-    @Path("/GetProfil")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getProfil(@Context
-    HttpServletRequest request)
-    {
-        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
-        JSONObject responseJsonObject = new JSONObject();
-
-        MonopolyEntityManager mem = new MonopolyEntityManager();
-        mem.initDB();
-        User user = mem.getUserByEmail(loggedInUseremail);
-
-        int wonGamesNum = getNumberOfGameInAStatus(user, PlayerStatus.win);
-        int invitationsNum = getNumberOfGameInAStatus(user, PlayerStatus.notAcceptedYet);
-
-        int activeGamesNum = 0;
-        List<Game> ownedGames = mem.getOwnedGamesByUser(user);
-        for (Game game : ownedGames)
-        {
-            if (game.getGameStatus() == GameStatus.inProgress)
-            {
-                activeGamesNum++;
-            }
-        }
-        try
-        {
-            responseJsonObject.put("name", user.getName());
-            responseJsonObject.put("email", user.getEmail());
-            responseJsonObject.put("participatedGamesNum", user.getGamePlayers().size());
-            responseJsonObject.put("ownGamesNum", ownedGames.size());
-            responseJsonObject.put("wonGamesNum", wonGamesNum);
-            responseJsonObject.put("activeGamesNum", activeGamesNum);
-            responseJsonObject.put("invitationsNum", invitationsNum);
-        } catch (JSONException e)
-        {
-            e.printStackTrace();
-            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
-        }
-        mem.closeDB();
-
-        System.out.println(responseJsonObject);
-        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
-    }
-
     @Path("/GetPlaceData")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -1001,7 +696,7 @@ public class GameApi
             {
                 JSONObject buildingPlaceJsonObject = new JSONObject();
                 System.out.println(buildingPlace);
-                ownedBuildingsJsonArray.put(getBuildingPlaceDetailes(buildingPlace, buildingPlaceJsonObject));
+                ownedBuildingsJsonArray.put(Helper.getBuildingPlaceDetailes(buildingPlace, buildingPlaceJsonObject));
             }
 
             playerJsonObject.put("ownedBuildingPlaces", ownedBuildingsJsonArray);
@@ -1270,7 +965,7 @@ public class GameApi
                 entityManager.persist(step);
 
                 // kovetkezo jatekos beallitasa
-                List<Player> realPlayers = sortRealPlayer(player.getGame());
+                List<Player> realPlayers = Helper.sortRealPlayer(player.getGame());
                 int nextActualPlayerIndex = (realPlayers.indexOf(player) + 1) % realPlayers.size();
                 Game game = player.getGame();
                 game.setActualPlayer(realPlayers.get(nextActualPlayerIndex));
@@ -1313,146 +1008,6 @@ public class GameApi
                 session.invalidate();
             }
         }
-
-        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
-    }
-
-    private int getNumberOfGameInAStatus(User user, PlayerStatus ps)
-    {
-        int gamesNum = 0;
-        for (Player player : user.getGamePlayers())
-        {
-            if (player.getPlayerStatus() == ps)
-            {
-                gamesNum++;
-            }
-        }
-        return gamesNum;
-    }
-
-    private Response modifyPlayerStatus(String json, HttpServletRequest request, PlayerStatus playerStatus)
-    {
-        JSONObject responseJsonObject = new JSONObject();
-        System.out.println("GetInvitations");
-
-        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
-
-        int gameId;
-        try
-        {
-            gameId = getGameIdFromJson(json);
-        } catch (JSONException e2)
-        {
-            e2.printStackTrace();
-            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).entity("Invalid JSON").build();
-        }
-
-        MonopolyEntityManager mem = new MonopolyEntityManager();
-        mem.initDB();
-        User user = mem.getUserByEmail(loggedInUseremail);
-        Game game = mem.getGameById(gameId);
-
-        List<Player> gamePlayers = user.getGamePlayers();
-        JSONArray notAcceptedYetGamesJsonArray = new JSONArray();
-
-        try
-        {
-            for (Player player : gamePlayers)
-            {
-                System.out.println("PLAYERID: " + player.getId() + " - " + player.getPlayerStatus());
-                if ((player.getGame() == game) && (player.getPlayerStatus() != playerStatus)
-                        && (player.getPlayerStatus() != PlayerStatus.refused))
-                {
-
-                    try
-                    {
-                        player.setPlayerStatus(playerStatus);
-                        mem.commit(player);
-                        responseJsonObject.put("success", true);
-
-                    } catch (Exception e)
-                    {
-                        e.printStackTrace();
-                        responseJsonObject.put("success", false);
-                    }
-
-                    System.out.println(player.getGame().getName() + " - " + player.getId());
-                } else
-                {
-                    responseJsonObject.put("success", false);
-                }
-
-            }
-        } catch (JSONException e1)
-        {
-            e1.printStackTrace();
-            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
-        }
-        System.out.println(notAcceptedYetGamesJsonArray);
-
-        boolean isThereNotAcceptedYet = false;
-        int acceptanceNumber = 0;
-        for (Player player : game.getPlayers())
-        {
-            if (player.getPlayerStatus() == PlayerStatus.notAcceptedYet)
-            {
-                isThereNotAcceptedYet = true;
-            } else if (player.getPlayerStatus() == PlayerStatus.accepted)
-            {
-                acceptanceNumber++;
-            }
-        }
-
-        try
-        {
-            if (!isThereNotAcceptedYet && acceptanceNumber >= 2)
-            {
-                // kezdojatekos belallitasa
-                List<Player> realPlayers = sortRealPlayer(game);
-                game.setActualPlayer(realPlayers.get(0));
-
-                game.setGameStatus(GameStatus.inProgress);
-                mem.commit(game);
-
-                // Tabla elkeszitese
-                Helper.makeBoard(gameId);
-
-                // Kezdomezo kivalasztasa
-                StartPlace startPlace = null;
-                for (Place place : game.getPlaces())
-                {
-                    if (place instanceof StartPlace)
-                    {
-                        startPlace = mem.getStartPlaceById(place.getId());
-                        System.out.println("START PLACE: " + startPlace.getId());
-                    }
-                }
-
-                // jatekosok kezdomezore allitasa
-                if (startPlace != null)
-                {
-                    for (Player player : realPlayers)
-                    {
-                        System.out.println("REAL PLAYER: " + player.getId());
-                        Step step = new Step();
-                        step.setFinishPlace(startPlace);
-                        player.addStep(step);
-                        mem.commit(step);
-                        mem.commit(player);
-                    }
-                }
-            } else if (!isThereNotAcceptedYet)
-            {
-                game.setGameStatus(GameStatus.finished);
-                mem.commit(game);
-            }
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Database error").build();
-        }
-        mem.closeDB();
-        System.out.println(responseJsonObject);
 
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }

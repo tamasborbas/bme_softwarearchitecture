@@ -1,11 +1,15 @@
 package hu.bme.aut.monopoly.rest;
 
 import hu.bme.aut.monopoly.email.EmailManager;
+import hu.bme.aut.monopoly.model.Game;
+import hu.bme.aut.monopoly.model.GameStatus;
 import hu.bme.aut.monopoly.model.MonopolyEntityManager;
+import hu.bme.aut.monopoly.model.PlayerStatus;
 import hu.bme.aut.monopoly.model.User;
 import hu.bme.aut.monopoly.model.UserType;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -214,6 +218,51 @@ public class UserApi
         }
 
         // TODO
+        return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
+    }
+
+    @Path("/GetProfil")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getProfil(@Context
+    HttpServletRequest request)
+    {
+        String loggedInUseremail = Helper.getLoggedInUserEmail(request);
+        JSONObject responseJsonObject = new JSONObject();
+
+        MonopolyEntityManager mem = new MonopolyEntityManager();
+        mem.initDB();
+        User user = mem.getUserByEmail(loggedInUseremail);
+
+        int wonGamesNum = Helper.getNumberOfGameInAStatus(user, PlayerStatus.win);
+        int invitationsNum = Helper.getNumberOfGameInAStatus(user, PlayerStatus.notAcceptedYet);
+
+        int activeGamesNum = 0;
+        List<Game> ownedGames = mem.getOwnedGamesByUser(user);
+        for (Game game : ownedGames)
+        {
+            if (game.getGameStatus() == GameStatus.inProgress)
+            {
+                activeGamesNum++;
+            }
+        }
+        try
+        {
+            responseJsonObject.put("name", user.getName());
+            responseJsonObject.put("email", user.getEmail());
+            responseJsonObject.put("participatedGamesNum", user.getGamePlayers().size());
+            responseJsonObject.put("ownGamesNum", ownedGames.size());
+            responseJsonObject.put("wonGamesNum", wonGamesNum);
+            responseJsonObject.put("activeGamesNum", activeGamesNum);
+            responseJsonObject.put("invitationsNum", invitationsNum);
+        } catch (JSONException e)
+        {
+            e.printStackTrace();
+            return Response.status(Response.Status.NO_CONTENT).entity("Can not create JSON.").build();
+        }
+        mem.closeDB();
+
+        System.out.println(responseJsonObject);
         return Response.ok(responseJsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
 
