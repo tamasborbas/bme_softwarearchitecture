@@ -74,7 +74,7 @@ public class Helper
 
                     // Itt le kéne kérdezni az (i/2)-es id-val rendelkezõ buildinget az adatbázisból, és azt
                     // beállítani
-                    Building building = mem.getBuildingById(i / 2);
+                    Building building = mem.getBuildingById((i + 1) / 2);
                     buildingPlace.setBuilding(building);
 
                     // Building building = new Building();
