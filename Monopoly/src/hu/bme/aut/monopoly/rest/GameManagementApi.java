@@ -72,7 +72,7 @@ public class GameManagementApi
                 for (Player player : game.getPlayers())
                 {
                     System.out.println("JATEKOS NEV: " + player.getId() + " - " + player.getUser().getName());
-                    if ((player.getPlayerStatus() == PlayerStatus.accepted) && !(player != game.getActualPlayer()))
+                    if ((player.getPlayerStatus() == PlayerStatus.accepted) && (player != game.getActualPlayer()))
                     {
                         JSONObject aAcceptedPlayer = new JSONObject();
                         aAcceptedPlayer.put("name", player.getUser().getName());

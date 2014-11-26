@@ -66,7 +66,7 @@ public class Helper
             places.add(startPlace);
             for (int i = 1; i < boardSize; i++)
             {
-                if (i + 1 % 2 == 0)
+                if ((i + 1) % 2 == 0)
                 {
                     BuildingPlace buildingPlace = new BuildingPlace();
                     buildingPlace.setGame(game);

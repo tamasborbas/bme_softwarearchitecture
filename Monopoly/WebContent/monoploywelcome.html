@@ -55,7 +55,7 @@
 	function getGames() {
 		$.ajax({
 			    type: "POST",
-			    url: "/Monopoly/rest/gameapi/GetActiveGames",
+			    url: "/Monopoly/rest/gamemanagementapi/GetActiveGames",
 			    success: function (data) {
 	                $('#elements').html(data.msg);
 	            }
