@@ -16,21 +16,14 @@ function signIn() {
 		    data: JSON.stringify(jsonObject),
 		    url: "/Monopoly/rest/userapi/Login",
 		    success: function(data,textStatus,jqXHR) {
-		    	console.log("***************success***************");
-	//			console.log(data);
-	//			console.log(textStatus);
-	//			console.log(jqXHR);
-	//			console.log(nameinput.value);
 				sessionStorage.happygames_basic_username = nameinput.value;
 				window.location.href = "https://localhost:8443/Monopoly/pages/home.html";
 			},
 			error: function(jqXHR,textStatus,errorThrown ) {
-		    	console.log("***************error***************");
 				console.log(jqXHR);
 				sessionStorage.errorcode = jqXHR;
 				console.log(textStatus);
 				console.log(errorThrown);
-	//			window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
 		    	loadingDeactivate();
 			}
 		});
