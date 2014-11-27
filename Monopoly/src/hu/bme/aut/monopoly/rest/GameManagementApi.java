@@ -487,7 +487,7 @@ public class GameManagementApi
                     for (User user : inviteUsers)
                     {
                         System.out.println("Invitation kuldese: " + user.getEmail());
-                        EmailManager.sendInvitationEmail(user.getEmail());
+                        EmailManager.sendInvitationEmail(user.getEmail(), game);
                     }
 
                 } catch (Exception e)

@@ -66,11 +66,13 @@ public class EmailManager
 
     }
 
-    public static boolean sendInvitationEmail(String recipicientEmail)
+    public static boolean sendInvitationEmail(String recipicientEmail, Game game)
     {
         String emailContent = "Dear Monopoly User" + "," + "\n\nYou got a new invitation. Check the following link: ";
+        String link = "https://localhost:8443/Monopoly/pages/game.html?email=" + recipicientEmail + "&gameid="
+                + game.getId();
         String emailSubject = "Monopoly invitation";
-        return sendEmail(recipicientEmail, emailContent, emailSubject);
+        return sendEmail(recipicientEmail, emailContent + link, emailSubject);
     }
 
     public static boolean sendStepSummaryEmail(String recipicientEmail, Game game)
@@ -81,12 +83,13 @@ public class EmailManager
         String steps = "";
         for (Player player : game.getPlayers())
         {
-            steps.concat("Player: " + player.getUser().getEmail() + "\n");
-            steps.concat("Place number: " + player.getSteps().get(player.getSteps().size() - 1).getFinishPlace()
-                    + "\n");
-            steps.concat("Money: " + player.getMoney() + "\n\n");
+            steps = steps.concat("Player: " + player.getUser().getEmail() + "\n");
+            steps = steps.concat("Place number: "
+                    + player.getSteps().get(player.getSteps().size() - 1).getFinishPlace() + "\n");
+            steps = steps.concat("Money: " + player.getMoney() + "\n\n");
 
         }
+        System.out.println(steps);
 
         String emailContent = "Dear Monopoly User" + "," + "\n\nThis happened, since your last turn:\n" + steps
                 + "\nIf you are ready for your next step, check the following link: " + link;

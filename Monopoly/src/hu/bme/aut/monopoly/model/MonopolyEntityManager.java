@@ -53,9 +53,9 @@ public class MonopolyEntityManager
         }
     }
 
+    @SuppressWarnings("unchecked")
     public boolean getUserIsRegistered(String name, String hash)
     {
-
         Query q = em.createNamedQuery("User.getUserByNameAndPass");
         q.setParameter("namePattern", name);
         q.setParameter("passHashPattern", hash);
@@ -69,6 +69,7 @@ public class MonopolyEntityManager
         }
     }
 
+    @SuppressWarnings("unchecked")
     public User getUserByEmail(String email)
     {
 
@@ -97,6 +98,7 @@ public class MonopolyEntityManager
         commit(u);
     }
 
+    @SuppressWarnings("unchecked")
     public List<Game> getActiveGamesByEmail(String email)
     {
         User user = getUserByEmail(email);
@@ -109,6 +111,7 @@ public class MonopolyEntityManager
 
     }
 
+    @SuppressWarnings("unchecked")
     public List<Game> getOwnedInitGamesByEmail(String email)
     {
         User user = getUserByEmail(email);
@@ -121,6 +124,7 @@ public class MonopolyEntityManager
 
     }
 
+    @SuppressWarnings("unchecked")
     public boolean isUserNameRegistered(String name)
     {
         Query q = em.createNamedQuery("User.getUserByName");
@@ -136,6 +140,7 @@ public class MonopolyEntityManager
         }
     }
 
+    @SuppressWarnings("unchecked")
     public User getUserByName(String name)
     {
         Query q = em.createNamedQuery("User.getUserByName");
@@ -151,6 +156,7 @@ public class MonopolyEntityManager
         }
     }
 
+    @SuppressWarnings("unchecked")
     public List<Game> getOwnedGamesByUser(User user)
     {
         Query q = em.createNamedQuery("Game.getOwnedGamesByUser");
@@ -160,6 +166,7 @@ public class MonopolyEntityManager
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     public boolean isUserEmailRegistered(String email)
     {
         Query q = em.createNamedQuery("User.getUserByEmail");
@@ -175,6 +182,7 @@ public class MonopolyEntityManager
         }
     }
 
+    @SuppressWarnings("unchecked")
     public Game getGameById(int id)
     {
 
@@ -191,6 +199,7 @@ public class MonopolyEntityManager
         }
     }
 
+    @SuppressWarnings("unchecked")
     public List<? extends Place> getPlacesByGameId(int id)
     {
 
@@ -202,6 +211,7 @@ public class MonopolyEntityManager
 
     }
 
+    @SuppressWarnings("unchecked")
     public BuildingPlace getBuildingPlaceById(int id)
     {
 
@@ -218,22 +228,7 @@ public class MonopolyEntityManager
         }
     }
 
-    // public BuildingPlace getBuildingPlaceByPlaceSequenceNumber(int placeSequenceNumber)
-    // {
-    //
-    // Query q = em.createNamedQuery("BuildigPlace.getBuildingPlaceByPlaceSequenceNumber");
-    // q.setParameter("placeSequenceNumberPattern", placeSequenceNumber);
-    //
-    // List<BuildingPlace> result = q.getResultList();
-    // if (result.size() == 0)
-    // {
-    // return null;
-    // } else
-    // {
-    // return result.get(0);
-    // }
-    // }
-
+    @SuppressWarnings("unchecked")
     public StartPlace getStartPlaceById(int id)
     {
 
@@ -266,6 +261,7 @@ public class MonopolyEntityManager
     // }
     // }
 
+    @SuppressWarnings("unchecked")
     public Building getBuildingById(int id)
     {
 
@@ -282,6 +278,7 @@ public class MonopolyEntityManager
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends Place> T getPlaceById(int id)
     {
 
@@ -298,22 +295,24 @@ public class MonopolyEntityManager
         }
     }
 
-    public <T extends Place> T getPlaceByPlaceSequenceNumber(int placeSequenceNumber)
-    {
+    // @SuppressWarnings("unchecked")
+    // public <T extends Place> T getPlaceByPlaceSequenceNumber(int placeSequenceNumber)
+    // {
+    //
+    // Query q = em.createNamedQuery("Place.getPlaceByPlaceSequenceNumber");
+    // q.setParameter("placeSequenceNumberPattern", placeSequenceNumber);
+    //
+    // List<T> result = q.getResultList();
+    // if (result.size() == 0)
+    // {
+    // return null;
+    // } else
+    // {
+    // return result.get(0);
+    // }
+    // }
 
-        Query q = em.createNamedQuery("Place.getPlaceByPlaceSequenceNumber");
-        q.setParameter("placeSequenceNumberPattern", placeSequenceNumber);
-
-        List<T> result = q.getResultList();
-        if (result.size() == 0)
-        {
-            return null;
-        } else
-        {
-            return result.get(0);
-        }
-    }
-
+    @SuppressWarnings("unchecked")
     public Player getPlayerById(int id)
     {
 
@@ -329,58 +328,4 @@ public class MonopolyEntityManager
             return result.get(0);
         }
     }
-
-    // TESTS
-    public void listAndCreatePlayerTest()
-    {
-
-        Query q2 = em.createQuery("select p from Player p");
-        List<Player> playerList = q2.getResultList();
-        for (Player p : playerList)
-        {
-            System.out.println(p);
-        }
-        System.out.println("Size: " + playerList.size());
-
-        // create new Player
-        em.getTransaction().begin();
-        Player p = new Player();
-
-        p.setMoney(12);
-        em.persist(p);
-        em.getTransaction().commit();
-
-    }
-
-    public void addNewPlayerTest()
-    {
-
-        User user = getUserByEmail("admin@gmail.com");
-        // System.out.println(user.getEmail() + " - " + user.getName());
-
-        Player player = new Player();
-        // TODO erteket kitalalni
-        player.setMoney(10000);
-
-        try
-        {
-            commit(player);
-        } catch (Exception e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        user.addGamePlayer(player);
-        try
-        {
-            commit(user);
-        } catch (Exception e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-    }
-
 }
