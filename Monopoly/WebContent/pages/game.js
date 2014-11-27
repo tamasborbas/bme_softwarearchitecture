@@ -252,7 +252,7 @@ function roll() {
 		if(newPlace.owner==0 && parseInt(sessionStorage.happygames_game_money)>newPlace.price) {
 			var bs = document.getElementById("buysection");
 			bs.className = "steph1 steph1-withbutton";
-		} else if (newPlace.owner!=player.playerId){
+		} else if (newPlace.owner!=player.playerId && newPlace.owner!=0){
 			var ps = document.getElementById("paysection");
 			ps.className = "steph1 steph1-withbutton";
 		} else {
@@ -353,15 +353,14 @@ function nbuyb() {
 function getBuildingPBuyBId(bid) {
 	var array = JSON.parse(sessionStorage.happygames_game_actualPlayer_sellableBuildings);
 	for(var b in array) {
-		if(b.buildingId==bid) {
-			return b;
+		if((array[b].buildingId)==bid) {
+			return (array[b]);
 		}
 	}
 	return null;
 }
 function decreaseNumOfH(id) {
 	var building = getBuildingPBuyBId(id);
-	
 	var textNum = document.getElementById(("boughtNumOfH" + id));
 	var num = parseInt(textNum.value);
 	if (num > 0) {
@@ -374,9 +373,13 @@ function decreaseNumOfH(id) {
 }
 function inreaseNumOfH(id, max) {
 	var building = getBuildingPBuyBId(id);
+	console.log(building);
 	
 	var textNum = document.getElementById(("boughtNumOfH" + id));
 	var num = parseInt(textNum.value);
+	console.log(building.housePrice);
+	console.log(max);
+	console.log(id);
 	if (num < max && parseInt(sessionStorage.happygames_game_money)>building.housePrice) {
 		sessionStorage.happygames_game_money = (parseInt(sessionStorage.happygames_game_money) - building.housePrice);
 

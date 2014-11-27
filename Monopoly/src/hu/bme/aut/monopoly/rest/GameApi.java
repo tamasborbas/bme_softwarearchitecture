@@ -612,7 +612,7 @@ public class GameApi
                     player.setPlayerStatus(PlayerStatus.lost);
                 }
 
-                mem.commit(step);
+                //mem.commit(step);
 
                 // Ha kell gyoztesnek allitjuk
                 int numberOfAcceptedPlayer = 0;
@@ -650,7 +650,7 @@ public class GameApi
                 {
                     for (BuildingPlace aSoldBuildingPlace : soldBuildingPlaces)
                     {
-                        mem.commit(aSoldBuildingPlace);
+                        entityManager.persist(aSoldBuildingPlace);
                     }
                 }
 
