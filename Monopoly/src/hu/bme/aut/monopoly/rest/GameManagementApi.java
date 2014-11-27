@@ -408,6 +408,7 @@ public class GameManagementApi
                             // uj email eltarolasa a tablaban nem regisztralt felhasznalokent
                             User user = new User();
                             user.setEmail(playerEmailOrName);
+                            user.setName((playerEmailOrName.replace("@", "")));
                             user.setUserType(UserType.notRegistered);
 
                             try
