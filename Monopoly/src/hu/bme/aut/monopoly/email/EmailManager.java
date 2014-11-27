@@ -1,7 +1,9 @@
 package hu.bme.aut.monopoly.email;
 
 import hu.bme.aut.monopoly.model.Game;
+import hu.bme.aut.monopoly.model.HouseBuying;
 import hu.bme.aut.monopoly.model.Player;
+import hu.bme.aut.monopoly.model.Step;
 
 import java.util.Properties;
 
@@ -80,18 +82,35 @@ public class EmailManager
         String link = "https://localhost:8443/Monopoly/pages/game.html?email=" + recipicientEmail + "&gameid="
                 + game.getId();
 
-        String steps = "";
+        String stepProerty = "";
         for (Player player : game.getPlayers())
         {
-            steps = steps.concat("Player: " + player.getUser().getEmail() + "\n");
-            steps = steps.concat("Place number: "
-                    + player.getSteps().get(player.getSteps().size() - 1).getFinishPlace() + "\n");
-            steps = steps.concat("Money: " + player.getMoney() + "\n\n");
+            stepProerty = stepProerty.concat("Player: " + player.getUser().getEmail() + "\n");
+            Step step = player.getSteps().get(player.getSteps().size() - 1);
+            stepProerty = stepProerty
+                    .concat("Place number: " + step.getFinishPlace().getPlaceSequenceNumber() + "\n");
+            if (step.getHouseBuyings().size() != 0)
+            {
+                stepProerty = stepProerty.concat("The player bought " + step.getHouseBuyings().size()
+                        + " building(s).");
+                int numOfBuying = 1;
+                for (HouseBuying aHouseBuying : step.getHouseBuyings())
+                {
+                    stepProerty = stepProerty.concat("\t" + numOfBuying + ".");
+                    stepProerty = stepProerty.concat("\tName of bought house: "
+                            + aHouseBuying.getForBuilding().getBuilding().getName());
+                    stepProerty = stepProerty.concat("\tNumber of bought houses: "
+                            + aHouseBuying.getBuyedHouseNumber());
+                    numOfBuying++;
+                }
+            }
+
+            stepProerty = stepProerty.concat("Money: " + player.getMoney() + "\n\n");
 
         }
-        System.out.println(steps);
+        System.out.println("STEP" + stepProerty);
 
-        String emailContent = "Dear Monopoly User" + "," + "\n\nThis happened, since your last turn:\n" + steps
+        String emailContent = "Dear Monopoly User" + "," + "\n\nThis happened, since your last turn:\n" + stepProerty
                 + "\nIf you are ready for your next step, check the following link: " + link;
         String emailSubject = "Monopoly step summary";
         return sendEmail(recipicientEmail, emailContent, emailSubject);
