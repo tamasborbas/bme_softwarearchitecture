@@ -146,7 +146,7 @@ public class Helper
             {
                 JSONObject aOwnedBuildingJsonObject = new JSONObject();
 
-                aOwnedBuildingJsonObject.put("buildingId", buildingPlace.getBuilding().getId());
+                aOwnedBuildingJsonObject.put("buildingId", buildingPlace.getId());
                 aOwnedBuildingJsonObject.put("buildingName", buildingPlace.getBuilding().getName());
                 aOwnedBuildingJsonObject.put("nuberOfHouse", buildingPlace.getHouseNumber());
                 aOwnedBuildingJsonObject.put("price", buildingPlace.getBuilding().getPrice());

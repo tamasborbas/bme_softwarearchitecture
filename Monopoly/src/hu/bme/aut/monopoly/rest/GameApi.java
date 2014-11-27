@@ -73,7 +73,7 @@ public class GameApi
         PlayerStatus playerStatus = PlayerStatus.notAcceptedYet;
 
         // ha nem regisztralt a felhasznalo, akkor itt inditunk neki sessiont
-        if (notLoggedInUseremail != null)
+        if (loggedInUseremail == null)
         {
             HttpSession session = request.getSession(true);
             session.setAttribute("notLoggedInUser", notLoggedInUseremail);
@@ -461,7 +461,7 @@ public class GameApi
         Step oldStep = player.getSteps().get(player.getSteps().size() - 1);
         // dobas, illetve lepes helyessegenek ellenorzese
         if (roll < 1 || roll > 6
-                || (oldStep.getFinishPlace().getPlaceSequenceNumber() + roll) % 16 != placeSequenceNumber)
+                || ((oldStep.getFinishPlace().getPlaceSequenceNumber() + roll-1) % 16)+1 != placeSequenceNumber)
         {
             errorCode = 2;
             System.out.println("CSALAS");
@@ -471,6 +471,9 @@ public class GameApi
         {
             Step step = new Step();
             Player ownerOfBuildingPlace = null;
+            Player maybeWinner = null;
+            BuildingPlace boughtBuildingPlace = null;
+            int numberOfAcceptedPlayer = 0;
             List<BuildingPlace> soldBuildingPlaces = new ArrayList<BuildingPlace>();
             List<HouseBuying> houseBuyings = new ArrayList<HouseBuying>();
 
@@ -484,36 +487,34 @@ public class GameApi
             try
             {
                 // mem.commit(step);
-                // StartPlacere leptunk
-                if (newPlace instanceof StartPlace)
-                {
-                    System.out.println("START MEZO");
-                    player.setMoney(player.getMoney() + Helper.throughMoney);
+                // Ha megtett egy kört, akkor kap pénzt
+            	if(oldStep.getFinishPlace().getPlaceSequenceNumber()>newPlace.getPlaceSequenceNumber()) {
+                	player.setMoney(player.getMoney()+Helper.throughMoney);
                 }
                 // buildingPlacere leptunk
                 else if (newPlace instanceof BuildingPlace)
                 {
                     System.out.println("EPITESI MEZO ");
-                    BuildingPlace buildingPlace = mem.getPlaceById(newPlace.getId());
+                    boughtBuildingPlace = mem.getPlaceById(newPlace.getId());
 
                     // megvásárolta az adott telket
                     if (isBuildingBought)
                     {
-                        player.setMoney(player.getMoney() - buildingPlace.getBuilding().getPrice());
-                        step.setBuyedBuilding(buildingPlace);
+                        player.setMoney(player.getMoney() - boughtBuildingPlace.getBuilding().getPrice());
+                        step.setBuyedBuilding(boughtBuildingPlace);
                         // mem.commit(step);
-                        player.addBuilding(buildingPlace);
+                        player.addBuilding(boughtBuildingPlace);
+                        boughtBuildingPlace.setOwnerPlayer(player);
                         // mem.commit(player);
                     }
 
                     // fizetett a telek gazdájának megfelelõ összeget
                     else if (isPayed)
                     {
-                        int amount;
-                        amount = buildingPlace.getBuilding().getBaseNightPayment() + buildingPlace.getHouseNumber()
-                                * buildingPlace.getBuilding().getPerHousePayment();
+                        int amount = boughtBuildingPlace.getBuilding().getBaseNightPayment() + boughtBuildingPlace.getHouseNumber()
+                                * boughtBuildingPlace.getBuilding().getPerHousePayment();
 
-                        ownerOfBuildingPlace = buildingPlace.getOwnerPlayer();
+                        ownerOfBuildingPlace = boughtBuildingPlace.getOwnerPlayer();
                         ownerOfBuildingPlace.setMoney(ownerOfBuildingPlace.getMoney() + amount);
                         // mem.commit(ownerOfBuildingPlace);
 
@@ -530,7 +531,7 @@ public class GameApi
                         for (int i = 0; i < soldBuildingsIds.length(); i++)
 
                         {
-                            soldBuildingPlaceId = soldBuildingsIds.getJSONObject(i).getInt("placeID");
+                            soldBuildingPlaceId = soldBuildingsIds.getInt(i);//.getJSONObject(i).getInt("placeID");
                             BuildingPlace soldBuildingPlace = mem.getBuildingPlaceById(soldBuildingPlaceId);
 
                             player.setMoney(player.getMoney()
@@ -556,42 +557,43 @@ public class GameApi
                     buildingId = boughtHouseNumberForBuildings.getJSONObject(i).getInt("buildingId");
                     number = boughtHouseNumberForBuildings.getJSONObject(i).getInt("number");
 
-                    // ellenorizzuk, hogy van-e ilyen id-ju building place
-                    if (mem.getBuildingPlaceById(buildingId) != null)
-                    {
-                        BuildingPlace boughtBuildingPlace = mem.getBuildingPlaceById(buildingId);
-
-                        HouseBuying houseBuying = new HouseBuying();
-                        houseBuying.setBuyedHouseNumber(number);
-                        houseBuying.setForBuilding(boughtBuildingPlace);
-                        // mem.commit(houseBuying);
-                        houseBuyings.add(houseBuying);
-
-                        // Ez kimaradt, növelni kell a házak számát az adott
-                        // telken
-                        int newSumHouseNumber = boughtBuildingPlace.getHouseNumber() + number;
-                        if (newSumHouseNumber > 5)
-                        {
-                            // csalt, nem érvényes a lépés
-                            // ilyenkor hogyan vonod vissza az eddig
-                            // felkommitolt dolgokat az adatbázisból?
-                            errorCode = 2;
-                            throw new IllegalArgumentException("Too much house bought for: "
-                                    + boughtBuildingPlace.getId());
-                        }
-                        boughtBuildingPlace.setHouseNumber(newSumHouseNumber);
-
-                        step.setBuyedBuilding(boughtBuildingPlace);
-                        // mem.commit(step);
-
-                        player.setMoney(player.getMoney() - boughtBuildingPlace.getBuilding().getPrice()
-                                * boughtBuildingPlace.getHouseNumber());
-                        // mem.commit(player);
-                    } else
-                    {
-                        // nincsen ilyen id a buildingPlace között
-                        errorCode = 2;
-                        throw new IllegalArgumentException("No BuildingPlace with id : " + buildingId);
+                    if(number>0) {
+	                    // ellenorizzuk, hogy van-e ilyen id-ju building place
+	                    if (mem.getBuildingPlaceById(buildingId) != null)
+	                    {
+	                        BuildingPlace boughtHouseForBuildingPlace = mem.getBuildingPlaceById(buildingId);
+	
+	                        HouseBuying houseBuying = new HouseBuying();
+	                        houseBuying.setBuyedHouseNumber(number);
+	                        houseBuying.setForBuilding(boughtHouseForBuildingPlace);
+	                        // mem.commit(houseBuying);
+	                        houseBuyings.add(houseBuying);
+	
+	                        // Ez kimaradt, növelni kell a házak számát az adott
+	                        // telken
+	                        int newSumHouseNumber = boughtHouseForBuildingPlace.getHouseNumber() + number;
+	                        if (newSumHouseNumber > 5)
+	                        {
+	                            // csalt, nem érvényes a lépés
+	                            // ilyenkor hogyan vonod vissza az eddig
+	                            // felkommitolt dolgokat az adatbázisból?
+	                            errorCode = 2;
+	                            throw new IllegalArgumentException("Too much house bought for: "
+	                                    + boughtHouseForBuildingPlace.getId());
+	                        }
+	                        boughtHouseForBuildingPlace.setHouseNumber(newSumHouseNumber);
+	
+	                        step.setBuyedBuilding(boughtHouseForBuildingPlace);
+	                        // mem.commit(step);
+	
+	                        player.setMoney(player.getMoney() - boughtHouseForBuildingPlace.getBuilding().getHousePrice() * number);
+	                        // mem.commit(player);
+	                    } else
+	                    {
+	                        // nincsen ilyen id a buildingPlace között
+	                        errorCode = 2;
+	                        throw new IllegalArgumentException("No BuildingPlace with id : " + buildingId);
+	                    }
                     }
 
                 }
@@ -603,8 +605,9 @@ public class GameApi
 
                 if (player.getMoney() < 0)
                 {
-                    for (BuildingPlace buildingPlace : player.getBuildings())
+                    while(player.getBuildings().size()>0)
                     {
+                    	BuildingPlace buildingPlace = player.getBuildings().get(0);
                         buildingPlace.setHouseNumber(0);
                         buildingPlace.setOwnerPlayer(null);
                         player.removeBuilding(buildingPlace);
@@ -615,18 +618,18 @@ public class GameApi
                 //mem.commit(step);
 
                 // Ha kell gyoztesnek allitjuk
-                int numberOfAcceptedPlayer = 0;
                 for (Player aPlayer : player.getGame().getPlayers())
                 {
                     if (aPlayer.getPlayerStatus() == PlayerStatus.accepted)
                     {
+                    	maybeWinner = aPlayer;
                         numberOfAcceptedPlayer++;
                     }
                 }
 
                 if (numberOfAcceptedPlayer == 1)
                 {
-                    player.setPlayerStatus(PlayerStatus.win);
+                	maybeWinner.setPlayerStatus(PlayerStatus.win);
                     player.getGame().setGameStatus(GameStatus.finished);
                 }
             } catch (Exception e)
@@ -659,20 +662,28 @@ public class GameApi
                     entityManager.persist(houseBuying);
                 }
 
+                Game game = player.getGame();
+                List<Player> realPlayers = null;
+                int nextActualPlayerIndex = 0;
                 entityManager.persist(player);
+                if(numberOfAcceptedPlayer==1 && maybeWinner!=null) {
+                	entityManager.persist(maybeWinner);
+                } else {
+                	realPlayers = Helper.sortRealPlayer(player.getGame());
+                	nextActualPlayerIndex = (realPlayers.indexOf(player) + 1) % realPlayers.size();
+                	game.setActualPlayer(realPlayers.get(nextActualPlayerIndex));
+                }
                 entityManager.persist(step);
 
                 // kovetkezo jatekos beallitasa
-                List<Player> realPlayers = Helper.sortRealPlayer(player.getGame());
-                int nextActualPlayerIndex = (realPlayers.indexOf(player) + 1) % realPlayers.size();
-                Game game = player.getGame();
-                game.setActualPlayer(realPlayers.get(nextActualPlayerIndex));
                 entityManager.persist(game);
 
                 entityManager.getTransaction().commit();
 
                 // osszefoglalo kikuldese
-                EmailManager.sendStepSummaryEmail(realPlayers.get(nextActualPlayerIndex).getUser().getEmail(), game);
+                if(realPlayers!=null) {
+                	EmailManager.sendStepSummaryEmail(realPlayers.get(nextActualPlayerIndex).getUser().getEmail(), game);
+                }
             } catch (Exception e)
             {
                 entityManager.getTransaction().rollback();
@@ -701,6 +712,7 @@ public class GameApi
         if ((errorCode == 0) && (session.getAttribute("notLoggedInUser") != null))
         {
             String notLoggedInUseremail = (String) session.getAttribute("notLoggedInUser");
+            System.out.println(notLoggedInUseremail);
             if ((notLoggedInUseremail != null) && !(notLoggedInUseremail.equals("")))
             {
                 session.invalidate();

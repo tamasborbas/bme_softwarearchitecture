@@ -96,7 +96,7 @@ public class EmailManager
                 int numOfBuying = 1;
                 for (HouseBuying aHouseBuying : step.getHouseBuyings())
                 {
-                    stepProerty = stepProerty.concat("\t" + numOfBuying + ".");
+                    stepProerty = stepProerty.concat("\n\t" + numOfBuying + ".");
                     stepProerty = stepProerty.concat("\tName of bought house: "
                             + aHouseBuying.getForBuilding().getBuilding().getName());
                     stepProerty = stepProerty.concat("\tNumber of bought houses: "
@@ -105,7 +105,7 @@ public class EmailManager
                 }
             }
 
-            stepProerty = stepProerty.concat("Money: " + player.getMoney() + "\n\n");
+            stepProerty = stepProerty.concat("\nMoney: " + player.getMoney() + "\n\n");
 
         }
         System.out.println("STEP" + stepProerty);

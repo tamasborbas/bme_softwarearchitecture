@@ -272,6 +272,10 @@ function pay() {
 	var building = getPlaceBySN(parseInt(sessionStorage.happygames_game_placeSN));
 	var payment = building.totalPriceForNight;
 	sessionStorage.happygames_game_money = (parseInt(sessionStorage.happygames_game_money)-payment);
+
+	var amt = document.getElementById("actmoney_text");
+	amt.value = "Your money: "+ sessionStorage.happygames_game_money;
+	
 	sessionStorage.happygames_game_isPayed = true;
 	if (parseInt(sessionStorage.happygames_game_money)<0) {
 		var ps = document.getElementById("sellbuildingsection");
@@ -280,6 +284,7 @@ function pay() {
 		var soldbuildings = [];
 		sessionStorage.setItem("happygames_game_actualPlayer_soldbuildings", JSON.stringify(soldbuildings));
 	} else {
+		createBuyHouseTable();
 		var bs = document.getElementById("buyhousesection");
 		bs.className = "steph1 steph1-withbutton";
 	}
@@ -380,7 +385,7 @@ function inreaseNumOfH(id, max) {
 	console.log(building.housePrice);
 	console.log(max);
 	console.log(id);
-	if (num < max && parseInt(sessionStorage.happygames_game_money)>building.housePrice) {
+	if (num < max && parseInt(sessionStorage.happygames_game_money)>=building.housePrice) {
 		sessionStorage.happygames_game_money = (parseInt(sessionStorage.happygames_game_money) - building.housePrice);
 
 		var amt = document.getElementById("actmoney_text");
