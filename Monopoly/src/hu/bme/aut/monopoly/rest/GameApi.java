@@ -1,6 +1,7 @@
 package hu.bme.aut.monopoly.rest;
 
 import hu.bme.aut.monopoly.email.EmailManager;
+import hu.bme.aut.monopoly.model.Building;
 import hu.bme.aut.monopoly.model.BuildingPlace;
 import hu.bme.aut.monopoly.model.Game;
 import hu.bme.aut.monopoly.model.GameStatus;
@@ -126,22 +127,30 @@ public class GameApi
                 aPlace.put("placeId", place.getId());
                 aPlace.put("placeSequenceNumber", place.getPlaceSequenceNumber());
                 aPlace.put("type", place.getClass().getSimpleName());
+                
                 int owner = 0;
-
                 String placeName = "";
+                int totalPriceForNight = 0;
+                int price = 0;
                 if (place instanceof BuildingPlace)
                 {
                     BuildingPlace buildingPlace = mem.getBuildingPlaceById(place.getId());
-                    placeName = buildingPlace.getBuilding().getName();
+                    Building building = buildingPlace.getBuilding();
+					placeName = building.getName();
                     if(buildingPlace.getOwnerPlayer()!=null) {
                     	owner = buildingPlace.getOwnerPlayer().getId();
                     }
+                    price = building.getPrice();
+                    totalPriceForNight = building.getBaseNightPayment()
+                    		+ (building.getPerHousePayment()*buildingPlace.getHouseNumber());
                 } else if (place instanceof StartPlace)
                 {
                     placeName = "Start";
                 }
                 aPlace.put("owner", owner);
                 aPlace.put("placeName", placeName);
+                aPlace.put("price", price);
+                aPlace.put("totalPriceForNight", totalPriceForNight);
 
                 // minden placehez egy lista, h melyik players all rajta ID-NAME
                 JSONArray playersOnPlaceJsonArray = new JSONArray();

@@ -133,7 +133,8 @@ public class Helper
         aPlayerJsonObject.put("playerId", player.getId());
         aPlayerJsonObject.put("name", player.getUser().getName());
         aPlayerJsonObject.put("status", player.getPlayerStatus());
-
+        aPlayerJsonObject.put("playerSequence", Helper.sortRealPlayer(player.getGame()).indexOf(player));
+        
         aPlayerJsonObject.put("money", player.getMoney());
         aPlayerJsonObject.put("placeSequenceNumber", player.getSteps().get(player.getSteps().size() - 1)
                 .getFinishPlace().getPlaceSequenceNumber());
