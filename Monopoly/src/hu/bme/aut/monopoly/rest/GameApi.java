@@ -70,105 +70,116 @@ public class GameApi
 
         Game game = mem.getGameById(gameId);
         boolean isActualPlayer = false;
+        PlayerStatus playerStatus = PlayerStatus.notAcceptedYet;
 
         // ha nem regisztralt a felhasznalo, akkor itt inditunk neki sessiont
-        if (loggedInUseremail == null)
+        if (notLoggedInUseremail != null)
         {
             HttpSession session = request.getSession(true);
             session.setAttribute("notLoggedInUser", notLoggedInUseremail);
             User notLoggedInUser = mem.getUserByEmail(notLoggedInUseremail);
+            System.out.println("not logged in: "+notLoggedInUseremail);
+            System.out.println("not logged in: "+notLoggedInUser.getEmail());
             // ellenorizzuk, hogy o az aktualis jatekos-e
             isActualPlayer = Helper.isPlayerActualPlayerOfTheGame(game, isActualPlayer, notLoggedInUser);
+            playerStatus = Helper.playerStatusOfTheGame(game, notLoggedInUser);
         }
         // bejelentkezett felhasznalo eseten is ellenorizzuk az aktualitast
         else
         {
             User loggedInUser = mem.getUserByEmail(loggedInUseremail);
             isActualPlayer = Helper.isPlayerActualPlayerOfTheGame(game, isActualPlayer, loggedInUser);
+            playerStatus = Helper.playerStatusOfTheGame(game, loggedInUser);
         }
 
         JSONObject gameDetailesJsonObject = new JSONObject();
         try
         {
+        	JSONObject actPlayer = Helper.getAllDetailesOfPlayer(game.getActualPlayer());
             System.out.println("GAME: " + game.getName());
             gameDetailesJsonObject.put("id", game.getId());
             gameDetailesJsonObject.put("gameStatus", game.getGameStatus());
             gameDetailesJsonObject.put("name", game.getName());
             gameDetailesJsonObject.put("nameOfGameOwner", game.getOwnerOfGame().getName());
-            gameDetailesJsonObject.put("actualPlayer", Helper.getAllDetailesOfPlayer(game.getActualPlayer()));
+            gameDetailesJsonObject.put("actualPlayer", actPlayer);
             gameDetailesJsonObject.put("isActualPlayer", isActualPlayer);
+            gameDetailesJsonObject.put("playerStatus", playerStatus);
 
             JSONArray acceptedPlayersJsonArray = new JSONArray();
             JSONArray loserPlayersJsonArray = new JSONArray();
-
-            for (Player player : game.getPlayers())
-            {
-                if (player.getPlayerStatus() == PlayerStatus.accepted)
-                {
-                    JSONObject aPlayerJsonObject = Helper.getAllDetailesOfPlayer(player);
-                    acceptedPlayersJsonArray.put(aPlayerJsonObject);
-                } else if (player.getPlayerStatus() == PlayerStatus.lost)
-                {
-                    JSONObject aPlayerJsonObject = new JSONObject();
-                    aPlayerJsonObject.put("playerId", player.getId());
-                    aPlayerJsonObject.put("name", player.getUser().getName());
-
-                    loserPlayersJsonArray.put(aPlayerJsonObject);
-                }
+            
+            if(actPlayer!=null) {
+	            for (Player player : game.getPlayers())
+	            {
+	                if (player.getPlayerStatus() == PlayerStatus.accepted)
+	                {
+	                    JSONObject aPlayerJsonObject = Helper.getAllDetailesOfPlayer(player);
+	                    acceptedPlayersJsonArray.put(aPlayerJsonObject);
+	                } else if (player.getPlayerStatus() == PlayerStatus.lost)
+	                {
+	                    JSONObject aPlayerJsonObject = new JSONObject();
+	                    aPlayerJsonObject.put("playerId", player.getId());
+	                    aPlayerJsonObject.put("name", player.getUser().getName());
+	
+	                    loserPlayersJsonArray.put(aPlayerJsonObject);
+	                }
+	            }
             }
             gameDetailesJsonObject.put("acceptedPlayers", acceptedPlayersJsonArray);
             gameDetailesJsonObject.put("loserPlayers", loserPlayersJsonArray);
 
             JSONArray placesJsonArray = new JSONArray();
-            for (Place place : game.getPlaces())
-            {
-
-                JSONObject aPlace = new JSONObject();
-                aPlace.put("placeId", place.getId());
-                aPlace.put("placeSequenceNumber", place.getPlaceSequenceNumber());
-                aPlace.put("type", place.getClass().getSimpleName());
-                
-                int owner = 0;
-                String placeName = "";
-                int totalPriceForNight = 0;
-                int price = 0;
-                if (place instanceof BuildingPlace)
-                {
-                    BuildingPlace buildingPlace = mem.getBuildingPlaceById(place.getId());
-                    Building building = buildingPlace.getBuilding();
-					placeName = building.getName();
-                    if(buildingPlace.getOwnerPlayer()!=null) {
-                    	owner = buildingPlace.getOwnerPlayer().getId();
-                    }
-                    price = building.getPrice();
-                    totalPriceForNight = building.getBaseNightPayment()
-                    		+ (building.getPerHousePayment()*buildingPlace.getHouseNumber());
-                } else if (place instanceof StartPlace)
-                {
-                    placeName = "Start";
-                }
-                aPlace.put("owner", owner);
-                aPlace.put("placeName", placeName);
-                aPlace.put("price", price);
-                aPlace.put("totalPriceForNight", totalPriceForNight);
-
-                // minden placehez egy lista, h melyik players all rajta ID-NAME
-                JSONArray playersOnPlaceJsonArray = new JSONArray();
-
-                List<Player> realPlayers = Helper.sortRealPlayer(game);
-                for (Player player : realPlayers)
-                {
-                    if ((player.getSteps().get(player.getSteps().size() - 1).getFinishPlace() == place))
-                    {
-                        JSONObject aPlayerOnPlaceJsonObject = new JSONObject();
-                        aPlayerOnPlaceJsonObject.put("playerId", player.getId());
-                        aPlayerOnPlaceJsonObject.put("userName", player.getUser().getName());
-                        aPlayerOnPlaceJsonObject.put("playerSequence", realPlayers.indexOf(player));
-                        playersOnPlaceJsonArray.put(aPlayerOnPlaceJsonObject);
-                    }
-                }
-                aPlace.put("playersOnPlace", playersOnPlaceJsonArray);
-                placesJsonArray.put(aPlace);
+            if(actPlayer!=null) {
+	            for (Place place : game.getPlaces())
+	            {
+	
+	                JSONObject aPlace = new JSONObject();
+	                aPlace.put("placeId", place.getId());
+	                aPlace.put("placeSequenceNumber", place.getPlaceSequenceNumber());
+	                aPlace.put("type", place.getClass().getSimpleName());
+	                
+	                int owner = 0;
+	                String placeName = "";
+	                int totalPriceForNight = 0;
+	                int price = 0;
+	                if (place instanceof BuildingPlace)
+	                {
+	                    BuildingPlace buildingPlace = mem.getBuildingPlaceById(place.getId());
+	                    Building building = buildingPlace.getBuilding();
+						placeName = building.getName();
+	                    if(buildingPlace.getOwnerPlayer()!=null) {
+	                    	owner = buildingPlace.getOwnerPlayer().getId();
+	                    }
+	                    price = building.getPrice();
+	                    totalPriceForNight = building.getBaseNightPayment()
+	                    		+ (building.getPerHousePayment()*buildingPlace.getHouseNumber());
+	                } else if (place instanceof StartPlace)
+	                {
+	                    placeName = "Start";
+	                }
+	                aPlace.put("owner", owner);
+	                aPlace.put("placeName", placeName);
+	                aPlace.put("price", price);
+	                aPlace.put("totalPriceForNight", totalPriceForNight);
+	
+	                // minden placehez egy lista, h melyik players all rajta ID-NAME
+	                JSONArray playersOnPlaceJsonArray = new JSONArray();
+	
+	                List<Player> realPlayers = Helper.sortRealPlayer(game);
+	                for (Player player : realPlayers)
+	                {
+	                    if ((player.getSteps().get(player.getSteps().size() - 1).getFinishPlace() == place))
+	                    {
+	                        JSONObject aPlayerOnPlaceJsonObject = new JSONObject();
+	                        aPlayerOnPlaceJsonObject.put("playerId", player.getId());
+	                        aPlayerOnPlaceJsonObject.put("userName", player.getUser().getName());
+	                        aPlayerOnPlaceJsonObject.put("playerSequence", realPlayers.indexOf(player));
+	                        playersOnPlaceJsonArray.put(aPlayerOnPlaceJsonObject);
+	                    }
+	                }
+	                aPlace.put("playersOnPlace", playersOnPlaceJsonArray);
+	                placesJsonArray.put(aPlace);
+	            }
             }
             gameDetailesJsonObject.put("places", placesJsonArray);
         } catch (JSONException e)

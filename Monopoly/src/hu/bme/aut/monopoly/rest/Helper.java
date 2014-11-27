@@ -128,35 +128,38 @@ public class Helper
      */
     public static JSONObject getAllDetailesOfPlayer(Player player) throws JSONException
     {
-        System.out.println("PLAYER: " + player.getId());
-        JSONObject aPlayerJsonObject = new JSONObject();
-        aPlayerJsonObject.put("playerId", player.getId());
-        aPlayerJsonObject.put("name", player.getUser().getName());
-        aPlayerJsonObject.put("status", player.getPlayerStatus());
-        aPlayerJsonObject.put("playerSequence", Helper.sortRealPlayer(player.getGame()).indexOf(player));
-        
-        aPlayerJsonObject.put("money", player.getMoney());
-        aPlayerJsonObject.put("placeSequenceNumber", player.getSteps().get(player.getSteps().size() - 1)
-                .getFinishPlace().getPlaceSequenceNumber());
-
-        JSONArray ownedBuildingsJsonArray = new JSONArray();
-        for (BuildingPlace buildingPlace : player.getBuildings())
-        {
-            JSONObject aOwnedBuildingJsonObject = new JSONObject();
-
-            aOwnedBuildingJsonObject.put("buildingId", buildingPlace.getBuilding().getId());
-            aOwnedBuildingJsonObject.put("buildingName", buildingPlace.getBuilding().getName());
-            aOwnedBuildingJsonObject.put("nuberOfHouse", buildingPlace.getHouseNumber());
-            aOwnedBuildingJsonObject.put("price", buildingPlace.getBuilding().getPrice());
-            aOwnedBuildingJsonObject.put("housePrice", buildingPlace.getBuilding().getHousePrice());
-            aOwnedBuildingJsonObject.put("baseNightPayment", buildingPlace.getBuilding().getBaseNightPayment());
-            aOwnedBuildingJsonObject.put("perHousePayment", buildingPlace.getBuilding().getPerHousePayment());
-            aOwnedBuildingJsonObject.put("maxHouseNumber", 5 - buildingPlace.getHouseNumber());
-            ownedBuildingsJsonArray.put(aOwnedBuildingJsonObject);
-        }
-
-        aPlayerJsonObject.put("ownedBuildings", ownedBuildingsJsonArray);
-        return aPlayerJsonObject;
+    	if(player!=null) {
+	        System.out.println("PLAYER: " + player.getId());
+	        JSONObject aPlayerJsonObject = new JSONObject();
+	        aPlayerJsonObject.put("playerId", player.getId());
+	        aPlayerJsonObject.put("name", player.getUser().getName());
+	        aPlayerJsonObject.put("status", player.getPlayerStatus());
+	        aPlayerJsonObject.put("playerSequence", Helper.sortRealPlayer(player.getGame()).indexOf(player));
+	        
+	        aPlayerJsonObject.put("money", player.getMoney());
+	        aPlayerJsonObject.put("placeSequenceNumber", player.getSteps().get(player.getSteps().size() - 1)
+	                .getFinishPlace().getPlaceSequenceNumber());
+	
+	        JSONArray ownedBuildingsJsonArray = new JSONArray();
+	        for (BuildingPlace buildingPlace : player.getBuildings())
+	        {
+	            JSONObject aOwnedBuildingJsonObject = new JSONObject();
+	
+	            aOwnedBuildingJsonObject.put("buildingId", buildingPlace.getBuilding().getId());
+	            aOwnedBuildingJsonObject.put("buildingName", buildingPlace.getBuilding().getName());
+	            aOwnedBuildingJsonObject.put("nuberOfHouse", buildingPlace.getHouseNumber());
+	            aOwnedBuildingJsonObject.put("price", buildingPlace.getBuilding().getPrice());
+	            aOwnedBuildingJsonObject.put("housePrice", buildingPlace.getBuilding().getHousePrice());
+	            aOwnedBuildingJsonObject.put("baseNightPayment", buildingPlace.getBuilding().getBaseNightPayment());
+	            aOwnedBuildingJsonObject.put("perHousePayment", buildingPlace.getBuilding().getPerHousePayment());
+	            aOwnedBuildingJsonObject.put("maxHouseNumber", 5 - buildingPlace.getHouseNumber());
+	            ownedBuildingsJsonArray.put(aOwnedBuildingJsonObject);
+	        }
+	
+	        aPlayerJsonObject.put("ownedBuildings", ownedBuildingsJsonArray);
+	        return aPlayerJsonObject;
+    	}
+    	return null;
     }
 
     /**
@@ -172,6 +175,25 @@ public class Helper
             }
         }
         return isActualPlayer;
+    }
+
+    /**
+     * Checks the given user status in the game
+     */
+    public static PlayerStatus playerStatusOfTheGame(Game game, User user)
+    {
+        for (Player playerOfUser : user.getGamePlayers())
+        {
+            if (playerOfUser.getGame() == game)
+            {
+            	System.out.println("****************");
+            	System.out.println(user.getEmail());
+            	System.out.println(playerOfUser.getId());
+            	System.out.println(playerOfUser.getGame());
+                return playerOfUser.getPlayerStatus();
+            }
+        }
+        return null;
     }
 
     /**

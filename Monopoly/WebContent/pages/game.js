@@ -24,7 +24,39 @@ function loadGameDatas() {
 	}).success(function(data) {
 		console.log(data);
 		var gameData = JSON.parse(data);
-		if(gameData.gameStatus=="init") {
+		if(gameData.playerStatus=="notAcceptedYet") {
+			var baseGD="Game name: "+gameData.name+"\nOwner of the game: "+gameData.nameOfGameOwner;
+			
+			if(confirm(("Do you want to accept the invitation for this game?\n"+baseGD))) {
+				var nrPlayerMail = getQueryVariable("email");
+				var gameId = getQueryVariable("gameid");
+				$.ajax({
+					type : "POST",
+					data: '{"email":"'+nrPlayerMail+'","gameId":'+gameId+'}',
+					dataType : "json",
+					url : "/Monopoly/rest/gamemanagementapi/AcceptInvitationFromEmail"
+				}).success(function() {
+					removeGameSessionData();
+					alert("You accept the invitation.");
+					location.reload();
+				}).error(function() {
+					window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
+				});
+			} else {
+				var nrPlayerMail = getQueryVariable("email");
+				var gameId = getQueryVariable("gameid");
+				$.ajax({
+					type : "POST",
+					data: '{"email":"'+nrPlayerMail+'","gameId":'+gameId+'}',
+					dataType : "json",
+					url : "/Monopoly/rest/gamemanagementapi/RefuseInvitationFromEmail"
+				}).success(function() {
+					alert("You refused the invitation.");
+				}).complete(function() {
+					window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
+				});
+			}
+		} else if(gameData.gameStatus=="init") {
 			alert("Sorry, this game is under initialization.");
 			window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
 		} else if(gameData.gameStatus=="finished") {
@@ -35,7 +67,7 @@ function loadGameDatas() {
 			sessionStorage.happygames_game_name = gameData.name;
 			sessionStorage.happygames_game_money = gameData.actualPlayer.money;
 			sessionStorage.happygames_game_id = gameData.id;
-			sessionStorage.happygames_game_ownerOfGame = gameData.ownerOfGame;
+			sessionStorage.happygames_game_ownerOfGame = gameData.nameOfGameOwner;
 			sessionStorage.happygames_game_actualPlayer = JSON.stringify(gameData.actualPlayer);
 			sessionStorage.happygames_game_actualPlayer_sellableBuildings = JSON.stringify(gameData.actualPlayer.ownedBuildings);
 			sessionStorage.happygames_game_places = JSON.stringify(gameData.places);
