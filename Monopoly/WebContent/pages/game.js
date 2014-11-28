@@ -22,14 +22,14 @@ function loadGameDatas() {
 		dataType : "json",
 		url : "/Monopoly/rest/gameapi/OpenGame"
 	}).success(function(data) {
-		console.log(data);
+//		console.log(data);
 		var gameData = JSON.parse(data);
+		var nrPlayerMail = getQueryVariable("email");
+		var gameId = getQueryVariable("gameid");
 		if(gameData.playerStatus=="notAcceptedYet") {
 			var baseGD="Game name: "+gameData.name+"\nOwner of the game: "+gameData.nameOfGameOwner;
 			
 			if(confirm(("Do you want to accept the invitation for this game?\n"+baseGD))) {
-				var nrPlayerMail = getQueryVariable("email");
-				var gameId = getQueryVariable("gameid");
 				$.ajax({
 					type : "POST",
 					data: '{"email":"'+nrPlayerMail+'","gameId":'+gameId+'}',
@@ -43,8 +43,6 @@ function loadGameDatas() {
 					window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
 				});
 			} else {
-				var nrPlayerMail = getQueryVariable("email");
-				var gameId = getQueryVariable("gameid");
 				$.ajax({
 					type : "POST",
 					data: '{"email":"'+nrPlayerMail+'","gameId":'+gameId+'}',
@@ -64,25 +62,32 @@ function loadGameDatas() {
 			window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
 		} else {
 			// store data
-			sessionStorage.happygames_game_name = gameData.name;
-			sessionStorage.happygames_game_money = gameData.actualPlayer.money;
-			sessionStorage.happygames_game_id = gameData.id;
-			sessionStorage.happygames_game_ownerOfGame = gameData.nameOfGameOwner;
-			sessionStorage.happygames_game_actualPlayer = JSON.stringify(gameData.actualPlayer);
-			sessionStorage.happygames_game_actualPlayer_sellableBuildings = JSON.stringify(gameData.actualPlayer.ownedBuildings);
-			sessionStorage.happygames_game_places = JSON.stringify(gameData.places);
-			sessionStorage.happygames_game_activePlayers = JSON.stringify(gameData.acceptedPlayers);
-			sessionStorage.happygames_game_losersPlayers = JSON.stringify(gameData.loserPlayers);
+			void(sessionStorage.happygames_game_name = gameData.name);
+			void(sessionStorage.happygames_game_money = gameData.actualPlayer.money);
+			void(sessionStorage.happygames_game_id = gameData.id);
+			void(sessionStorage.happygames_game_ownerOfGame = gameData.nameOfGameOwner);
+			void(sessionStorage.happygames_game_actualPlayer = JSON.stringify(gameData.actualPlayer));
+			void(sessionStorage.happygames_game_actualPlayer_sellableBuildings = JSON.stringify(gameData.actualPlayer.ownedBuildings));
+			void(sessionStorage.happygames_game_places = JSON.stringify(gameData.places));
+			void(sessionStorage.happygames_game_activePlayers = JSON.stringify(gameData.acceptedPlayers));
+			void(sessionStorage.happygames_game_losersPlayers = JSON.stringify(gameData.loserPlayers));
 			// default data
-			sessionStorage.happygames_game_roll = 0;
-			sessionStorage.happygames_game_placeSN = 0;
-			sessionStorage.happygames_game_isBuildingBought = false;
-			sessionStorage.happygames_game_isPayed = false;
-			sessionStorage.happygames_game_isSold = false;
-			sessionStorage.happygames_game_actualPlayer_soldbuildings = "[]";
-			sessionStorage.happygames_game_boughtHouseNumberForBuildings = "[]";
+			void(sessionStorage.happygames_game_roll = 0);
+			void(sessionStorage.happygames_game_placeSN = 0);
+			void(sessionStorage.happygames_game_isBuildingBought = false);
+			void(sessionStorage.happygames_game_isPayed = false);
+			void(sessionStorage.happygames_game_isSold = false);
+			void(sessionStorage.happygames_game_actualPlayer_soldbuildings = "[]");
+			void(sessionStorage.happygames_game_boughtHouseNumberForBuildings = "[]");
+
+			var gamenameheader = document.getElementById("gamename");
+			void(gamenameheader.textContent = gameData.name);
+			var ownerspan = document.getElementById("gd-owner");
+			void(ownerspan.textContent = gameData.nameOfGameOwner);
+			var youspan = document.getElementById("gd-you");
+			void(youspan.textContent = (gameData.isActualPlayer?gameData.actualPlayer.name:nrPlayerMail));
 			
-			console.log((parseInt(sessionStorage.happygames_game_money)+parseInt(sessionStorage.happygames_game_money)));
+//			console.log((parseInt(sessionStorage.happygames_game_money)+parseInt(sessionStorage.happygames_game_money)));
 			var amt = document.getElementById("actmoney_text");
 			amt.value = "Your money: "+ sessionStorage.happygames_game_money;
 			
@@ -104,18 +109,37 @@ function loadGameDatas() {
 
 /******************************* Game Board *******************************/
 function getPlaceData(id) {
-	alert(id);
+	var gd= document.getElementById("gamedataspec");
+	gd.className = "dataspec dataspec-unvisible";
+	var pd= document.getElementById("playerdataspec");
+	pd.className = "dataspec dataspec-unvisible";
+	var jsonarray = JSON.parse(sessionStorage.happygames_game_places);
+	for (var pi in jsonarray) {
+		var place = jsonarray[pi];
+		if(place.placeId==id) {
+			void(document.getElementById("buildingname").innerHTML=place.placeName);
+			void(document.getElementById("bd-bprice").innerHTML=place.price);
+			void(document.getElementById("bd-hprice").innerHTML=place.hprice);
+			void(document.getElementById("bd-bsprice").innerHTML=place.baseSleepPrice);
+			void(document.getElementById("bd-hsprice").innerHTML=place.houseSleepPrice);
+			void(document.getElementById("bd-owner").innerHTML=place.ownerName);
+			void(document.getElementById("bd-houses").innerHTML=place.houseNumber);
+			void(document.getElementById("bd-aprice").innerHTML=place.totalPriceForNight);
+		}
+	}
+	var base= document.getElementById("buildingdataspec");
+	base.className = "dataspec";
 }
 function createGameBoard() {
 	var jsonarray = JSON.parse(sessionStorage.happygames_game_places);
 	for (var pi in jsonarray) {
 		var place = jsonarray[pi];
-		console.log(jsonarray);
-		console.log(jsonarray[pi]);
-		console.log(place.placeSequenceNumber);
+//		console.log(jsonarray);
+//		console.log(jsonarray[pi]);
+//		console.log(place.placeSequenceNumber);
 		var basesec = document.getElementById(("place" + (place.placeSequenceNumber-1)));
 		if (place.type == "BuildingPlace") {
-			basesec.onclick = getPlaceData.bind(this, place.id); // TODO nem build.id kéne?
+			basesec.onclick = getPlaceData.bind(this, place.placeId); // TODO nem build.id kéne?
 		}
 
 		// basic place data
@@ -156,11 +180,11 @@ function createGameBoard() {
 			td2.id = "place" + place.placeSequenceNumber + "player" + (i+4);
 			td2.className = "transparentcolor";
 			tr2.appendChild(td2);
-			console.log(place.placeSequenceNumber +" playersnum: "+place.playersOnPlace.length);
+//			console.log(place.placeSequenceNumber +" playersnum: "+place.playersOnPlace.length);
 			if (place.playersOnPlace.length > 0) {
 				for (var playeri in place.playersOnPlace) {
 					var player = place.playersOnPlace[playeri];
-					console.log(JSON.stringify(player));
+//					console.log(JSON.stringify(player));
 					
 					if (player.playerSequence == i) {
 						//console.log("OK"+i);
@@ -231,8 +255,14 @@ function roll() {
 	var oldPlaceSequenceNumber = player.placeSequenceNumber;
 	var newPlaceSequenceNumber = ((oldPlaceSequenceNumber+rollresult-1)%16)+1;
 	// TODO ha átment a starton akkor adjunk neki pénzt
-	console.log("old: "+oldPlaceSequenceNumber);
-	console.log("new: "+newPlaceSequenceNumber);
+//	console.log("old: "+oldPlaceSequenceNumber);
+//	console.log("new: "+newPlaceSequenceNumber);
+	if(oldPlaceSequenceNumber>newPlaceSequenceNumber) {
+		sessionStorage.happygames_game_money = (parseInt(sessionStorage.happygames_game_money)+1000);
+
+		var amt = document.getElementById("actmoney_text");
+		amt.value = "Your money: "+ sessionStorage.happygames_game_money;
+	}
 	sessionStorage.happygames_game_placeSN = newPlaceSequenceNumber;
 	var oldplace = document.getElementById("place" + oldPlaceSequenceNumber + "player" + player.playerSequence);
 	oldplace.className = "transparentcolor";
@@ -318,8 +348,8 @@ function sellb() {
 		
 		var rr = document.getElementById("boughtsection");
 		rr.className = "steph1";
-		var bb = document.getElementById("buildingbuy_text");
-		bb.value = "Sold building(s): "+soldBuildingsName;
+		var bbt = document.getElementById("buildingbuy_text");
+		bbt.value = "Sold building(s): "+soldBuildingsName;
 		var bs = document.getElementById("buyhousesection");
 		bs.className = "steph1 steph1-withbutton";
 	} else {
@@ -333,17 +363,16 @@ function buyb() {
 	
 	var building = getPlaceBySN(parseInt(sessionStorage.happygames_game_placeSN));
 	sessionStorage.happygames_game_isBuildingBought=true;
-	console.log(sessionStorage.happygames_game_money);
+//	console.log(sessionStorage.happygames_game_money);
 	sessionStorage.happygames_game_money = (parseInt(sessionStorage.happygames_game_money) - building.price);
-	console.log(sessionStorage.happygames_game_money);
+//	console.log(sessionStorage.happygames_game_money);
 	
 	createBuyHouseTable();
 	
 	var amt = document.getElementById("actmoney_text");
 	amt.value = "Your money: "+ sessionStorage.happygames_game_money;
 	var bbt = document.getElementById("buildingbuy_text");
-	console.log(JSON.stringify(building));
-	bbt.value = "You bought this building: "+building.placeName;
+	void(bbt.value = "You bought this building: "+building.placeName);
 	var rr = document.getElementById("boughtsection");
 	rr.className = "steph1";
 	var bs = document.getElementById("buyhousesection");
@@ -378,13 +407,13 @@ function decreaseNumOfH(id) {
 }
 function inreaseNumOfH(id, max) {
 	var building = getBuildingPBuyBId(id);
-	console.log(building);
+	//console.log(building);
 	
 	var textNum = document.getElementById(("boughtNumOfH" + id));
 	var num = parseInt(textNum.value);
-	console.log(building.housePrice);
-	console.log(max);
-	console.log(id);
+//	console.log(building.housePrice);
+//	console.log(max);
+//	console.log(id);
 	if (num < max && parseInt(sessionStorage.happygames_game_money)>=building.housePrice) {
 		sessionStorage.happygames_game_money = (parseInt(sessionStorage.happygames_game_money) - building.housePrice);
 
@@ -431,7 +460,7 @@ function finish() {
 				+',"soldBuildingsIds":'+sessionStorage.happygames_game_actualPlayer_soldbuildings
 				+',"boughtHouseNumberForBuildings":'+sessionStorage.happygames_game_boughtHouseNumberForBuildings
 				+'}]';
-	console.log(dataForServer);
+//	console.log(dataForServer);
 	$.ajax({
 		type : "POST",
 		data: dataForServer,
@@ -452,7 +481,7 @@ function finish() {
 		}
 	}).error(function(e) {
 		alert("Sorry, our server has problems.");
-		console.log(e);
+//		console.log(e);
 	});
 }
 // UI
@@ -536,8 +565,16 @@ function createBuyHouseTable() {
 }
 
 /******************************* Playerboard *******************************/
+function basicGameData() {
+	var base= document.getElementById("buildingdataspec");
+	base.className = "dataspec dataspec-unvisible";
+	var base= document.getElementById("playerdataspec");
+	base.className = "dataspec dataspec-unvisible";
+	var base= document.getElementById("gamedataspec");
+	base.className = "dataspec";
+}
 function getPlayerData(id) {
-	alert(id);
+	//alert(id);
 }
 function createMiniPlayers() {
 	var basesec = document.getElementById("playersboardcontainer");

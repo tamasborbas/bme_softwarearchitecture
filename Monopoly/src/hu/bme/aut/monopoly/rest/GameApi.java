@@ -141,9 +141,14 @@ public class GameApi
                     aPlace.put("type", place.getClass().getSimpleName());
 
                     int owner = 0;
+                    String ownerName = "-";
                     String placeName = "";
                     int totalPriceForNight = 0;
                     int price = 0;
+                    int hprice = 0;
+                    int baseSleepPrice = 0;
+                    int houseSleepPrice = 0;
+                    int houseNumber = 0;
                     if (place instanceof BuildingPlace)
                     {
                         BuildingPlace buildingPlace = mem.getBuildingPlaceById(place.getId());
@@ -152,8 +157,13 @@ public class GameApi
                         if (buildingPlace.getOwnerPlayer() != null)
                         {
                             owner = buildingPlace.getOwnerPlayer().getId();
+                            ownerName = buildingPlace.getOwnerPlayer().getUser().getName();
                         }
                         price = building.getPrice();
+                        hprice = building.getHousePrice();
+                        baseSleepPrice = building.getBaseNightPayment();
+                        houseSleepPrice = building.getPerHousePayment();
+                        houseNumber = buildingPlace.getHouseNumber();
                         totalPriceForNight = building.getBaseNightPayment()
                                 + (building.getPerHousePayment() * buildingPlace.getHouseNumber());
                     } else if (place instanceof StartPlace)
@@ -161,8 +171,13 @@ public class GameApi
                         placeName = "Start";
                     }
                     aPlace.put("owner", owner);
+                    aPlace.put("ownerName", ownerName);
                     aPlace.put("placeName", placeName);
                     aPlace.put("price", price);
+                    aPlace.put("hprice", hprice);
+                    aPlace.put("baseSleepPrice", baseSleepPrice);
+                    aPlace.put("houseSleepPrice", houseSleepPrice);
+                    aPlace.put("houseNumber", houseNumber);
                     aPlace.put("totalPriceForNight", totalPriceForNight);
 
                     // minden placehez egy lista, h melyik players all rajta ID-NAME

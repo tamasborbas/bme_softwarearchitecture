@@ -4,7 +4,7 @@
 		dataType : "json",
 		url : "/Monopoly/rest/userapi/GetProfil"
 	}).success(function(data) {
-		console.log(data);
+		//console.log(data);
 		var profilData = JSON.parse(data);
 		var userMail = document.getElementById("mail");
 		userMail.value = profilData.email;

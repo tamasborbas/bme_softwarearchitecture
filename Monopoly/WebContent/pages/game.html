@@ -29,12 +29,13 @@
 					<section class="place" id="place5"></section>
 				</section>
 				<section class="dataviewer">
-					<section class="dataspec dataspec-unvisible" id="gamedataspec">
+					<section class="dataspec" id="gamedataspec">
 						<h2 id="gamename">Game Name</h2>
 						<hr class="datasep" />
-						<div>Owner: <span class="span-data" id="gd-owner">Owner Name</span></div>
+						<div>Owner: <span class="span-data" id="gd-owner"></span></div>
+						<div>You: <span class="span-data" id="gd-you"></span></div>
 					</section>
-					<section class="dataspec" id="buildingdataspec">
+					<section class="dataspec dataspec-unvisible" id="buildingdataspec">
 						<h2 id="buildingname">Building Name</h2>
 						<hr class="datasep" />
 						<div>
@@ -128,8 +129,8 @@
 					<tbody id="sellbuildingsbody">
 					</tbody>
 				</table>
-				<input id="debit_text" type="text" disabled="disabled" value="You debit: 1000" />
-				<a class="button button-third" id="sellbuilding" onclick="sellb()">Sell buildings</a>
+				<!-- <input id="debit_text" type="text" disabled="disabled" value="You debit: 1000" /> -->
+				<a class="button" id="sellbuilding" onclick="sellb()">Sell buildings</a>
 			</section>
 			<section class="steph1-collapsed" id="boughtsection">
 				<input id="buildingbuy_text" type="text" disabled="disabled" value="You bought this building: " />
@@ -146,8 +147,8 @@
 					<tbody id="buybuildingsbody">
 					</tbody>
 				</table>
-				<input id="debit_text" type="text" disabled="disabled" value="Price of houses: 1000" />
-				<a class="button button-third" id="buyhouses" onclick="buyh()">Next</a>
+				<!-- <input id="debit_text" type="text" disabled="disabled" value="Price of houses: 1000" /> -->
+				<a class="button" id="buyhouses" onclick="buyh()">Next</a>
 			</section>
 			<section class="steph1-collapsed" id="finishsection">
 				<a class="button" onclick="finish()">Finish turn</a>
@@ -155,8 +156,8 @@
 		</div>
 		</section><section class="basesec" id="playersboard">
 		<div class="container" id="playersboardcontainer">
-			<section class="minibank">
-				<label class="playerid">BANK</label>
+			<section class="minibank" onclick="basicGameData()">
+				<label class="playerid">GAME</label>
 			</section>
 
 		</div>
