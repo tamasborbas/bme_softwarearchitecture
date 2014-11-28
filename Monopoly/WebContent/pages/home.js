@@ -1,10 +1,18 @@
-﻿function getProfil() {
+﻿/**************************************************************************************************************************/
+/***************************************************** Main functions *****************************************************/
+/**************************************************************************************************************************/
+
+/**
+ * Send a post message to the server for get user profile data, and if the
+ * request is success then it will load data into the fields.
+ */
+function getProfil() {
 	$.ajax({
 		type : "POST",
 		dataType : "json",
 		url : "/Monopoly/rest/userapi/GetProfil"
 	}).success(function(data) {
-		//console.log(data);
+		// console.log(data);
 		var profilData = JSON.parse(data);
 		var userMail = document.getElementById("mail");
 		userMail.value = profilData.email;
@@ -13,58 +21,89 @@
 		userName.value = profilData.name;
 	});
 }
+
+/**
+ * Send a post request to the server to create game if all of the fields contain
+ * valid data. When there is a validation error it will return false. If there
+ * are some problem with game creation we inform the user.
+ * 
+ * @returns {Boolean}
+ */
 function createGame() {
 	loadingActivate();
 	var gname = document.getElementById("gname");
-	if(gname.checkValidity()) {
-		var jsonString = '[{"gameName":"'+gname.value+'","players":[{"player":"'+sessionStorage.happygames_basic_username+'"}';
-		for(var i=1;i<8;i++) {
-			var iname = document.getElementById("iname"+i);
-			if(iname.checkValidity()) {
-				if(iname.value!="") {
-					jsonString = jsonString+',{"player":"'+iname.value+'"}';
+	if (gname.checkValidity()) {
+		// Create JSON for post (game name and players list).
+		var jsonString = '[{"gameName":"' + gname.value
+				+ '","players":[{"player":"'+ sessionStorage.happygames_basic_username + '"}';
+		var playersNum = 0;
+		for (var i = 1; i < 8; i++) {
+			var iname = document.getElementById("iname" + i);
+			if (iname.checkValidity()) {
+				if (iname.value != "" && iname.value!=sessionStorage.happygames_basic_username
+						&& iname.value!=sessionStorage.happygames_basic_email) {
+					jsonString = jsonString + ',{"player":"' + iname.value + '"}';
+					playersNum++;
 				}
 			} else {
 				return false;
 			}
 		}
 		jsonString = jsonString + ']}]';
+		// Send post message to the server.
 		$.ajax({
-			type: "POST",
+			type : "POST",
 			data : jsonString,
 			url : "/Monopoly/rest/gamemanagementapi/CreateGame"
 		}).success(function(data) {
+			// If we get a response...
 			var responseObject = JSON.parse(data);
 			loadingDeactivate();
-			if(responseObject.code==0) {
+			if (responseObject.code == 0) {
+				// ... we show that everything is okay if there is no error...
 				alert("You successfully create the game");
 				var gname = document.getElementById("gname");
 				gname.value = "";
-				for(var i=1;i<8;i++) {
-					var iname = document.getElementById("iname"+i);
-					if(iname.value!="") {
-							iname.value="";
+				for (var i = 1; i < 8; i++) {
+					var iname = document.getElementById("iname"
+							+ i);
+					if (iname.value != "") {
+						iname.value = "";
 					}
 				}
 			} else {
+				// ... or we show the users with which we have problems.
 				var stringbuffer = "Sorry, there are some problem:\n - invalid usernames:";
-				for(var iui in responseObject.invalidUserNames) {
-					stringbuffer = stringbuffer + " "+responseObject.invalidUserNames[iui]+",";
+				for ( var iui in responseObject.invalidUserNames) {
+					stringbuffer = stringbuffer
+							+ " "
+							+ responseObject.invalidUserNames[iui]
+							+ ",";
 				}
-				stringbuffer = stringbuffer + "\n - not registered who has too much game:";
-				for(var nri in responseObject.notRegisteredUserEmails) {
-					stringbuffer = stringbuffer + " "+responseObject.notRegisteredUserEmails[nri]+",";
+				stringbuffer = stringbuffer
+						+ "\n - not registered who has too much game:";
+				for ( var nri in responseObject.notRegisteredUserEmails) {
+					stringbuffer = stringbuffer
+							+ " "
+							+ responseObject.notRegisteredUserEmails[nri]
+							+ ",";
 				}
 				alert(stringbuffer);
 			}
 		}).fail(function() {
+			// We inform user that we have server problems.
 			alert("Sorry, we have problems. Try again later.");
 			loadingDeactivate();
 		});
 	}
 }
+
+/**
+ * Send a post request to get the active games and show these to the user.
+ */
 function getActiveGames() {
 	var basesec = document.getElementById("actgamesec");
+	// But before the request we clear the section.
 	deleteAllSubNode(basesec);
 	loadingActivate();
 	$.ajax({
@@ -72,34 +111,42 @@ function getActiveGames() {
 		dataType : "json",
 		url : "/Monopoly/rest/gamemanagementapi/GetActiveGames"
 	}).success(function(data) {
+		// If the request call back successfully we create sections for the active games.
 		var responseObject = JSON.parse(data);
-		for(var agi in responseObject.activeGames) {
+		for ( var agi in responseObject.activeGames) {
+			// The section built from ...
 			var game = responseObject.activeGames[agi];
 			var sec = document.createElement('section');
 			sec.className = "actgame";
 			sec.id = game.id;
+			// (if the user click on the game section we start the game)
 			sec.onclick = openGame.bind(this, game.id);
 			basesec.appendChild(sec);
-	
+
+			// ... a header which show the game name, ...
 			var aghead = document.createElement('h3');
 			aghead.textContent = game.name;
 			sec.appendChild(aghead);
-	
+
+			// ... a separator line which separate the players from the header, ...
 			var aghr = document.createElement('hr');
 			aghr.className = "act";
 			sec.appendChild(aghr);
-	
+
+			// ... create a highlighted section for the actual player, ...
 			var spanuact = document.createElement('section');
-			spanuact.className = "user user-act";
-			spanuact.textContent = game.actualPlayer + "|";
+			spanuact.className = "accept";
+			spanuact.textContent = "Actual player: "+game.actualPlayer;
 			sec.appendChild(spanuact);
-	
-			for (var ui in game.players) {
+			sec.appendChild(document.createElement('br'));
+
+			// ... and simple sections for the others.
+			for ( var ui in game.players) {
 				var suser = game.players[ui];
 				var spanu = document.createElement('section');
 				spanu.className = "user";
-				if (ui != game.players.length - 1) {
-					spanu.textContent = suser.name + "|";
+				if (ui != 0) {
+					spanu.textContent = "|"+suser.name;
 				} else {
 					spanu.textContent = suser.name;
 				}
@@ -108,10 +155,14 @@ function getActiveGames() {
 		}
 	}).always(loadingDeactivate());
 }
+
+/**
+ * Send a post request to get the manageable games for the user.
+ */
 function getMyGames() {
 	var basesec = document.getElementById("managesec");
+	// But before the request we clear the section.
 	deleteAllSubNode(basesec);
-
 	loadingActivate();
 	$.ajax({
 		type : "POST",
@@ -119,27 +170,34 @@ function getMyGames() {
 		url : "/Monopoly/rest/gamemanagementapi/GetMyGames"
 	}).success(function(data) {
 		var jsonobject = JSON.parse(data);
-		for (var gi in jsonobject.myGames) {
+		// Create game sections which contain ...
+		for ( var gi in jsonobject.myGames) {
 			var game = jsonobject.myGames[gi];
 			var sec = document.createElement('section');
 			sec.className = "mygame";
 			sec.id = game.id;
 			basesec.appendChild(sec);
-	
+
+			// ... a header which show the game's name ...
 			var aghead = document.createElement('h3');
 			aghead.textContent = game.name;
 			sec.appendChild(aghead);
-	
+
+			// ... a separator line ...
 			var aghr = document.createElement('hr');
 			aghr.className = "act";
 			sec.appendChild(aghr);
-	
+
+			// ... players block which show separatly the users who accepted, 
+			// who not response yet and who refused the invitation for the game ...
 			createPlayersBlock(sec, game);
-	
+
+			// ... an other separator line ...
 			var downhr = document.createElement('hr');
 			downhr.className = "act";
 			sec.appendChild(downhr);
-	
+
+			// ... and a clickable element with which the owner can start the game.
 			var boxdiv = document.createElement('div');
 			sec.appendChild(boxdiv);
 			var cl = document.createElement('i');
@@ -151,10 +209,14 @@ function getMyGames() {
 		}
 	}).always(loadingDeactivate());
 }
+
+/**
+ * Send a post request to get the game invitations.
+ */
 function getInvitations() {
 	var basesec = document.getElementById("invitationsec");
+	// But before the request we clear the section.
 	deleteAllSubNode(basesec);
-
 	loadingActivate();
 	$.ajax({
 		type : "POST",
@@ -162,35 +224,40 @@ function getInvitations() {
 		url : "/Monopoly/rest/gamemanagementapi/GetInvitations"
 	}).success(function(data) {
 		var jsonobject = JSON.parse(data);
-		for (var gi in jsonobject.nayGames) {
+		// If we get the response we create game sections like in the management view...
+		for ( var gi in jsonobject.nayGames) {
 			var game = jsonobject.nayGames[gi];
 			var sec = document.createElement('section');
 			sec.className = "invgame";
 			sec.id = game.id;
 			basesec.appendChild(sec);
-	
+
 			var aghead = document.createElement('h3');
 			aghead.textContent = game.name;
 			sec.appendChild(aghead);
-	
+
 			var uphr = document.createElement('hr');
 			uphr.className = "act";
 			sec.appendChild(uphr);
-	
+
+			// ... with the same players block ...
 			createPlayersBlock(sec, game);
-	
+
 			var downhr = document.createElement('hr');
 			downhr.className = "act";
 			sec.appendChild(downhr);
-	
+
+			// ... the only difference is that we have two button ...
 			var boxdiv = document.createElement('div');
 			sec.appendChild(boxdiv);
+			// ... one to refuse the invitation ...
 			var cl = document.createElement('i');
 			cl.className = "fa fa-close";
 			cl.id = "close";
 			cl.title = "Refuse invitation.";
 			cl.onclick = refuseInvitation.bind(this, game.id);
 			boxdiv.appendChild(cl);
+			// ... and one to accept it.
 			var tick = document.createElement('i');
 			tick.className = "fa fa-check";
 			tick.id = "tick";
@@ -200,9 +267,15 @@ function getInvitations() {
 		}
 	}).always(loadingDeactivate());
 }
+
+/**
+ * Logout the user:
+ *  - send server that we want to log out
+ *  - then we clear session data and redirect user.
+ */
 function logout() {
 	$.ajax({
-		type: "POST",
+		type : "POST",
 		url : "/Monopoly/rest/userapi/Logout",
 		success : function() {
 			sessionStorage.clear();
@@ -212,43 +285,66 @@ function logout() {
 }
 
 
-/*********************** Concrete Game Actions ***********************/
 
+
+/**************************************************************************************************************************/
+/************************************************  Concrete Game Functions ************************************************/
+/**************************************************************************************************************************/
+
+/**
+ * We open the selected game.
+ * 
+ * @param id The id of the selected game.
+ */
 function openGame(id) {
-	window.location.href = "https://localhost:8443/Monopoly/pages/game.html?email="+sessionStorage.happygames_basic_email+"&gameid="+id;
+	window.location.href = "https://localhost:8443/Monopoly/pages/game.html?email="
+			+ sessionStorage.happygames_basic_email + "&gameid=" + id;
 }
+
+/**
+ * We can start manually the selected game.
+ * If there is not enough players we refuse the start request.
+ * 
+ * @param id The selected game id.
+ */
 function startGame(id) {
 	if (confirm('Do you want to start the game? Somebody does not accept the invitation yet.')) {
 		loadingActivate();
 		var jsonObject = [];
 		jsonObject.push({
-			"gameid": id
+			"gameid" : id
 		});
 		$.ajax({
-			type: "POST",
-			data: JSON.stringify(jsonObject),
-			url: "/Monopoly/rest/gamemanagementapi/StartGame"
+			type : "POST",
+			data : JSON.stringify(jsonObject),
+			url : "/Monopoly/rest/gamemanagementapi/StartGame"
 		}).success(function(data) {
 			var responseObject = JSON.parse(data);
 			loadingDeactivate();
-			if(responseObject.success) {
+			if (responseObject.success) {
 				alert("The game is started.");
 			} else {
-				alert("Sorry, something went wrong.");
+				alert("Sorry, you can not start the game.");
 			}
 			getMyGames();
 		}).fail(loadingDeactivate());
 	}
 }
+
+/**
+ * We refuse the selected game invitation.
+ * 
+ * @param id The selected game id.
+ */
 function refuseInvitation(id) {
 	$.ajax({
 		type : "POST",
-		data : '{"gameId":'+id+"}",
+		data : '{"gameId":' + id + "}",
 		dataType : "json",
 		url : "/Monopoly/rest/gamemanagementapi/RefuseInvitation"
 	}).success(function(data) {
 		var responseObject = JSON.parse(data);
-		if(responseObject.success) {
+		if (responseObject.success) {
 			alert("You refused the invitation");
 		} else {
 			alert("Sorry, something went wrong");
@@ -258,15 +354,21 @@ function refuseInvitation(id) {
 		getInvitations();
 	});
 }
+
+/**
+ * We accept the selected game invitation.
+ * 
+ * @param id The selected game id.
+ */
 function acceptInvitation(id) {
 	$.ajax({
 		type : "POST",
-		data : '{"gameId":'+id+"}",
+		data : '{"gameId":' + id + "}",
 		dataType : "json",
 		url : "/Monopoly/rest/gamemanagementapi/AcceptInvitation"
 	}).success(function(data) {
 		var responseObject = JSON.parse(data);
-		if(responseObject.success) {
+		if (responseObject.success) {
 			alert("You accepted the invitation");
 		} else {
 			alert("Sorry, something went wrong");
@@ -278,20 +380,36 @@ function acceptInvitation(id) {
 }
 
 
-/*********************** UI modifiers ***********************/
 
+
+/**************************************************************************************************************************/
+/****************************************************** UI modifiers ******************************************************/
+/**************************************************************************************************************************/
+
+/**
+ * Remove all children of the selected section.
+ * 
+ * @param basesec The selected section.
+ */
 function deleteAllSubNode(basesec) {
-	while(basesec.firstChild) {
+	while (basesec.firstChild) {
 		basesec.removeChild(basesec.firstChild);
 	}
 }
 
+/**
+ * Create players block into the selected section.
+ * 
+ * @param sec The selected section.
+ * @param game The source of the players data.
+ */
 function createPlayersBlock(sec, game) {
+	// Separatly create a block for the accepted users ...
 	var divac = document.createElement('section');
 	divac.className = "accepts";
 	sec.appendChild(divac);
 
-	for (var ui in game.acceptedPlayers) {
+	for ( var ui in game.acceptedPlayers) {
 		var suser = game.acceptedPlayers[ui];
 		var spanu = document.createElement('section');
 		spanu.className = "accept";
@@ -303,11 +421,12 @@ function createPlayersBlock(sec, game) {
 		divac.appendChild(spanu);
 	}
 
+	// ... another for who have not answer yet ...
 	var divny = document.createElement('section');
 	divny.className = "notyets";
 	sec.appendChild(divny);
 
-	for (var uiny in game.notAcceptedYetPlayers) {
+	for ( var uiny in game.notAcceptedYetPlayers) {
 		var suserny = game.notAcceptedYetPlayers[uiny];
 		var spanuny = document.createElement('section');
 		spanuny.className = "notyet";
@@ -319,11 +438,12 @@ function createPlayersBlock(sec, game) {
 		divny.appendChild(spanuny);
 	}
 
+	// ... and one for who refused the invitation.
 	var divref = document.createElement('section');
 	divref.className = "refuseds";
 	sec.appendChild(divref);
 
-	for (var uir in game.refusedPlayers) {
+	for ( var uir in game.refusedPlayers) {
 		var suserr = game.refusedPlayers[uir];
 		var spanur = document.createElement('section');
 		spanur.className = "refused";
@@ -336,34 +456,57 @@ function createPlayersBlock(sec, game) {
 	}
 }
 
+/**
+ * Activate the loading image.
+ */
 function loadingActivate() {
-	var loading=document.getElementById("loading");
+	var loading = document.getElementById("loading");
 	loading.className = "loading";
 }
+
+/**
+ * Deactivate the loading image.
+ */
 function loadingDeactivate() {
-	var loading=document.getElementById("loading");
+	var loading = document.getElementById("loading");
 	loading.className = "loading invisible";
 }
 
-function resetsecs(e) {
+/**
+ * Set all visible section to unvisible.
+ */
+function resetsecs() {
 	var visibleSecs = document.getElementsByClassName("visiblesec");
 	for (var i = 0; i < visibleSecs.length; i++) {
 		visibleSecs[i].className = "";
 	}
 }
-function reseticons(icon) {
+
+/**
+ * Set all icons to default.
+ */
+function reseticons() {
 	var selectedHeaders = document.getElementsByClassName("selectedHeader");
 	for (var i = 0; i < selectedHeaders.length; i++) {
 		selectedHeaders[i].className = "header";
 	}
-
 }
+
+/**
+ * Set the caught parameter section visible (others unvisible) and highlight the
+ * caught icon (set others to default).
+ * 
+ * @param sec The selected section
+ * @param icon The highlighted icon
+ */
 function selectSection(sec, icon) {
-	resetsecs(sec);
-	reseticons(icon);
+	resetsecs();
+	reseticons();
 	sec.className = "visiblesec";
 	icon.className = "selectedHeader";
 }
+
+// These are the selectable views' selection methods.
 function logoutSel() {
 	var e = document.getElementById("logoutsec");
 	var icon = document.getElementById("logouticonb");

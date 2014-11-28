@@ -1,4 +1,13 @@
-﻿/******************************* Load Datas *******************************/
+﻿/**************************************************************************************************************************/
+/*******************************************************  Load Data *******************************************************/
+/**************************************************************************************************************************/
+
+/**
+ * Get the variable from the URL.
+ * 
+ * @param variable The searched item.
+ * @returns The value or false if we could not find the item.
+ */
 function getQueryVariable(variable) {
 	var query = window.location.search.substring(1);
 	var vars = query.split("&");
@@ -10,6 +19,11 @@ function getQueryVariable(variable) {
 	}
 	return(false);
 }
+
+/**
+ * Send a post request to get the data for the game.
+ * If we got them we store and show them at the right places.
+ */
 function loadGameDatas() {
 	loadingActivate();
 	var playerMail = getQueryVariable("email");
@@ -22,13 +36,15 @@ function loadGameDatas() {
 		dataType : "json",
 		url : "/Monopoly/rest/gameapi/OpenGame"
 	}).success(function(data) {
-//		console.log(data);
 		var gameData = JSON.parse(data);
 		var nrPlayerMail = getQueryVariable("email");
 		var gameId = getQueryVariable("gameid");
+		// If the player has not accepted the invitation yet ...
 		if(gameData.playerStatus=="notAcceptedYet") {
 			var baseGD="Game name: "+gameData.name+"\nOwner of the game: "+gameData.nameOfGameOwner;
 			
+			// ... we show a dialog to choose that she/he want to accept or refuse it
+			// and send the right answer to the server.
 			if(confirm(("Do you want to accept the invitation for this game?\n"+baseGD))) {
 				$.ajax({
 					type : "POST",
@@ -49,19 +65,24 @@ function loadGameDatas() {
 					dataType : "json",
 					url : "/Monopoly/rest/gamemanagementapi/RefuseInvitationFromEmail"
 				}).success(function() {
-					alert("You refused the invitation.");
+					alert("You refused the invitation.\nWe will redirect you to the login page.");
 				}).complete(function() {
+					sessionStorage.clear();
 					window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
 				});
 			}
 		} else if(gameData.gameStatus=="init") {
-			alert("Sorry, this game is under initialization.");
+			// If the game is under initialization we redirect the user to the login page.
+			alert("Sorry, this game is under initialization.\nWe will redirect you to the login page.");
+			sessionStorage.clear();
 			window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
 		} else if(gameData.gameStatus=="finished") {
-			alert("Sorry, this game has been finished.");
+			// If the game is over we also redirect the user to the login page.
+			alert("Sorry, this game has been finished.\nWe will redirect you to the login page.");
+			sessionStorage.clear();
 			window.location.href = "https://localhost:8443/Monopoly/pages/login.html";
 		} else {
-			// store data
+			// If the game is in progress we store the game data.
 			void(sessionStorage.happygames_game_name = gameData.name);
 			void(sessionStorage.happygames_game_money = gameData.actualPlayer.money);
 			void(sessionStorage.happygames_game_id = gameData.id);
@@ -71,7 +92,8 @@ function loadGameDatas() {
 			void(sessionStorage.happygames_game_places = JSON.stringify(gameData.places));
 			void(sessionStorage.happygames_game_activePlayers = JSON.stringify(gameData.acceptedPlayers));
 			void(sessionStorage.happygames_game_losersPlayers = JSON.stringify(gameData.loserPlayers));
-			// default data
+			
+			// Set default values to the other necessary data.
 			void(sessionStorage.happygames_game_roll = 0);
 			void(sessionStorage.happygames_game_placeSN = 0);
 			void(sessionStorage.happygames_game_isBuildingBought = false);
@@ -80,6 +102,7 @@ function loadGameDatas() {
 			void(sessionStorage.happygames_game_actualPlayer_soldbuildings = "[]");
 			void(sessionStorage.happygames_game_boughtHouseNumberForBuildings = "[]");
 
+			// Set the profile page data.
 			var gamenameheader = document.getElementById("gamename");
 			void(gamenameheader.textContent = gameData.name);
 			var ownerspan = document.getElementById("gd-owner");
@@ -87,27 +110,42 @@ function loadGameDatas() {
 			var youspan = document.getElementById("gd-you");
 			void(youspan.textContent = (gameData.isActualPlayer?gameData.actualPlayer.name:nrPlayerMail));
 			
-//			console.log((parseInt(sessionStorage.happygames_game_money)+parseInt(sessionStorage.happygames_game_money)));
+			// Set the money value.
 			var amt = document.getElementById("actmoney_text");
 			amt.value = "Your money: "+ sessionStorage.happygames_game_money;
 			
 			if(gameData.isActualPlayer) {
+				// If the opener is the actual player we show the roll button.
 				var rb = document.getElementById("rollsection");
 				rb.className = "steph1 steph1-withbutton";
 			}
 			if(sessionStorage.getItem("happygames_basic_username")!=null && sessionStorage.getItem("happygames_basic_username")!="") {
+				// If the opener is a registered user we show the home button.
 				var rgh = document.getElementById("gohomesection");
 				rgh.className = "steph1 steph1-withbutton";
 			}
 			
+			// Initialize the game board ...
 			createGameBoard();
+			// ... and the players' section.
 			createMiniPlayers();
 			loadingDeactivate();
 		}
 	});
 }
 
-/******************************* Game Board *******************************/
+
+
+
+/**************************************************************************************************************************/
+/******************************************************* Game Board *******************************************************/
+/**************************************************************************************************************************/
+
+/**
+ * Show the selected place data at the detailed information card.
+ * 
+ * @param id The selected place's id.
+ */
 function getPlaceData(id) {
 	var gd= document.getElementById("gamedataspec");
 	gd.className = "dataspec dataspec-unvisible";
@@ -117,6 +155,7 @@ function getPlaceData(id) {
 	for (var pi in jsonarray) {
 		var place = jsonarray[pi];
 		if(place.placeId==id) {
+			// If we found the place we set all of the data.
 			void(document.getElementById("buildingname").innerHTML=place.placeName);
 			void(document.getElementById("bd-bprice").innerHTML=place.price);
 			void(document.getElementById("bd-hprice").innerHTML=place.hprice);
@@ -130,19 +169,20 @@ function getPlaceData(id) {
 	var base= document.getElementById("buildingdataspec");
 	base.className = "dataspec";
 }
+
+/**
+ * Initialize the game board places.
+ */
 function createGameBoard() {
 	var jsonarray = JSON.parse(sessionStorage.happygames_game_places);
 	for (var pi in jsonarray) {
 		var place = jsonarray[pi];
-//		console.log(jsonarray);
-//		console.log(jsonarray[pi]);
-//		console.log(place.placeSequenceNumber);
 		var basesec = document.getElementById(("place" + (place.placeSequenceNumber-1)));
 		if (place.type == "BuildingPlace") {
-			basesec.onclick = getPlaceData.bind(this, place.placeId); // TODO nem build.id kéne?
+			basesec.onclick = getPlaceData.bind(this, place.placeId);
 		}
 
-		// basic place data
+		// Set the basic place data like name and number.
 		var lblpname = document.createElement('label');
 		lblpname.className = "placedata placedata-name";
 		lblpname.textContent = place.placeName;
@@ -157,7 +197,7 @@ function createGameBoard() {
 		basesec.appendChild(brsep);
 
 
-		// table for players tokens
+		// Create a table for players tokens
 		var sec = document.createElement('section');
 		sec.className = "playertokenstable";
 		basesec.appendChild(sec);
@@ -170,8 +210,8 @@ function createGameBoard() {
 		var tr2 = document.createElement('tr');
 		table.appendChild(tr2);
 
+		// Create cells for players' tokens.
 		for (var i = 0; i < 4; i++) {
-			//console.log("Placeid:" + place.id + " | i:" + i);
 			var td1 = document.createElement('td');
 			td1.id = "place" + place.placeSequenceNumber + "player" + i;
 			td1.className = "transparentcolor";
@@ -180,18 +220,15 @@ function createGameBoard() {
 			td2.id = "place" + place.placeSequenceNumber + "player" + (i+4);
 			td2.className = "transparentcolor";
 			tr2.appendChild(td2);
-//			console.log(place.placeSequenceNumber +" playersnum: "+place.playersOnPlace.length);
 			if (place.playersOnPlace.length > 0) {
 				for (var playeri in place.playersOnPlace) {
 					var player = place.playersOnPlace[playeri];
-//					console.log(JSON.stringify(player));
 					
+					// Color the right cell if the player is here.
 					if (player.playerSequence == i) {
-						//console.log("OK"+i);
 						td1.className = ("token playercolor"+i);
 						td1.title = player.userName;
 					} else if (player.playerSequence == (i + 4)) {
-						//console.log("OK"+(i+4));
 						td2.className = ("token playercolor"+(i+4));
 						td2.title = player.userName;
 					}
@@ -201,23 +238,38 @@ function createGameBoard() {
 	}
 }
 
-/******************************* Game Steps *******************************/
+
+
+
+/**************************************************************************************************************************/
+/******************************************************* Game Steps *******************************************************/
+/**************************************************************************************************************************/
+
+/**
+ * Remove all the game data from the session.
+ */
 function removeGameSessionData() {
 	var removables = [];
+	console.log("Keys:");
 	for(var i=0; i<sessionStorage.length; i++) {
 		var key = sessionStorage.key(i);
+		console.log(" - "+key);
 		if(key.indexOf("happygames_game_")!=-1) {
 			removables.push(key);
+			console.log("   can remove");
 		}
 	}
 	for(var rkey in removables) {
 		sessionStorage.removeItem(rkey);
 	}
 }
+
 function backToHome() {
 	removeGameSessionData();
 	window.location = "/Monopoly/pages/home.html";
 }
+
+// Simulate dice.
 function rollDie(sides) {
 	if (!sides) {
 		sides = 6;
@@ -231,6 +283,7 @@ function rollDice(number, sides) {
 	}
 	return total;
 }
+
 function getPlaceBySN(sn) {
 	var places = JSON.parse(sessionStorage.happygames_game_places);
 	var newPlace = null;
@@ -242,6 +295,13 @@ function getPlaceBySN(sn) {
 	}
 	return newPlace;
 }
+
+/**
+ * The roll button's onClick event handler.
+ * We simulate a roll, set the player new place (also show on the gameboard it),
+ * give some money to him/her if necessary and calculate that he/she has to pay,
+ * can buy building or just houses.
+ */
 function roll() {
 	var rgh = document.getElementById("gohomesection");
 	rgh.className = "steph1-collapsed";
@@ -254,23 +314,23 @@ function roll() {
 	var player = JSON.parse(sessionStorage.happygames_game_actualPlayer);
 	var oldPlaceSequenceNumber = player.placeSequenceNumber;
 	var newPlaceSequenceNumber = ((oldPlaceSequenceNumber+rollresult-1)%16)+1;
-	// TODO ha átment a starton akkor adjunk neki pénzt
-//	console.log("old: "+oldPlaceSequenceNumber);
-//	console.log("new: "+newPlaceSequenceNumber);
+	// If the player go throught the start place we give some money.
 	if(oldPlaceSequenceNumber>newPlaceSequenceNumber) {
 		sessionStorage.happygames_game_money = (parseInt(sessionStorage.happygames_game_money)+1000);
 
 		var amt = document.getElementById("actmoney_text");
 		amt.value = "Your money: "+ sessionStorage.happygames_game_money;
 	}
+	// Store the new place.
 	sessionStorage.happygames_game_placeSN = newPlaceSequenceNumber;
+	// Show the new place on the gameboard.
 	var oldplace = document.getElementById("place" + oldPlaceSequenceNumber + "player" + player.playerSequence);
 	oldplace.className = "transparentcolor";
 	var newplace = document.getElementById("place" + newPlaceSequenceNumber + "player" + player.playerSequence);
 	newplace.className = ("token playercolor"+ player.playerSequence);
 	
 	var newPlace = getPlaceBySN(newPlaceSequenceNumber);
-	
+	// Show the new place in the step section also.
 	var pt = document.getElementById("place_text");
 	pt.value = pt.value.concat(" " + newPlace.placeSequenceNumber);
 	var rt = document.getElementById("roll_text");
@@ -278,24 +338,35 @@ function roll() {
 	var rr = document.getElementById("rollresults");
 	rr.className = "steph1";
 	
+	// Decide what the user should do next.
 	if (newPlace.type == "BuildingPlace") {
 		if(newPlace.owner==0 && parseInt(sessionStorage.happygames_game_money)>newPlace.price) {
+			// - can buy the finish place
 			var bs = document.getElementById("buysection");
 			bs.className = "steph1 steph1-withbutton";
 		} else if (newPlace.owner!=player.playerId && newPlace.owner!=0){
+			// - should pay
 			var ps = document.getElementById("paysection");
 			ps.className = "steph1 steph1-withbutton";
 		} else {
+			// - or just houses
 			createBuyHouseTable();
 			var bhs = document.getElementById("buyhousesection");
 			bhs.className = "steph1 steph1-withbutton";
 		}
 	} else {
+		// If he/she does not step on a building place he/she only can buy houses to him/her buildings.
 		createBuyHouseTable();
 		var bhs2 = document.getElementById("buyhousesection");
 		bhs2.className = "steph1 steph1-withbutton";
 	}
 }
+
+/**
+ * The pay button's onClick event handler.
+ * The player should pay the night tax and if he/she has not enough money we offer
+ * that sell some buildings. If he/she has enough money we show the house buying table.
+ */
 function pay() {
 	var rb = document.getElementById("paysection");
 	rb.className = "steph1-collapsed";
@@ -319,11 +390,18 @@ function pay() {
 		bs.className = "steph1 steph1-withbutton";
 	}
 }
+
+/**
+ * The sell buildings button's onClick event handler.
+ * If the player select some building to sell we take away them and give the right money to the player.
+ * If he/she has not enough money yet we only show the finish button.
+ */
 function sellb() {
 	var rb = document.getElementById("sellbuildingsection");
 	rb.className = "steph1-collapsed";
 	var jsonarraySellable = JSON.parse(sessionStorage.happygames_game_actualPlayer_sellableBuildings);
 	var soldBuildingsName = "";
+	// Set the sold buildings from the table.
 	for (var bi in jsonarraySellable) {
 		var building = jsonarraySellable[bi];
 		var tickyb = document.getElementById(("ticky" + building.buildingId));
@@ -340,10 +418,13 @@ function sellb() {
 		} 
 	}
 
+	// Show the new money value.
 	var amt = document.getElementById("actmoney_text");
 	amt.value = "Your money: "+ sessionStorage.happygames_game_money;
 	
+	// Decide what the player can do next.
 	if(parseInt(sessionStorage.happygames_game_money)>0) {
+		// If have any money than show house buying table ...
 		createBuyHouseTable();
 		
 		var rr = document.getElementById("boughtsection");
@@ -353,19 +434,24 @@ function sellb() {
 		var bs = document.getElementById("buyhousesection");
 		bs.className = "steph1 steph1-withbutton";
 	} else {
+		// ... else show finish button.
 		var bs = document.getElementById("finishsection");
 		bs.className = "steph1 steph1-withbutton";
 	}
 }
+
+/**
+ * The buy building button's onClick event handler.
+ * Store that the player want to buy the building on which he/she steps.
+ * And take the building price away from him/her money.
+ */
 function buyb() {
 	var rb = document.getElementById("buysection");
 	rb.className = "steph1-collapsed";
 	
 	var building = getPlaceBySN(parseInt(sessionStorage.happygames_game_placeSN));
 	sessionStorage.happygames_game_isBuildingBought=true;
-//	console.log(sessionStorage.happygames_game_money);
 	sessionStorage.happygames_game_money = (parseInt(sessionStorage.happygames_game_money) - building.price);
-//	console.log(sessionStorage.happygames_game_money);
 	
 	createBuyHouseTable();
 	
@@ -378,12 +464,18 @@ function buyb() {
 	var bs = document.getElementById("buyhousesection");
 	bs.className = "steph1 steph1-withbutton";
 }
+
+/**
+ * The not buy building button's onClick event handler.
+ * Show the buy houses table.
+ */
 function nbuyb() {
 	var rb = document.getElementById("buysection");
 	rb.className = "steph1-collapsed";
 	var bs = document.getElementById("buyhousesection");
 	bs.className = "steph1 steph1-withbutton";
 }
+
 function getBuildingPBuyBId(bid) {
 	var array = JSON.parse(sessionStorage.happygames_game_actualPlayer_sellableBuildings);
 	for(var b in array) {
@@ -393,6 +485,13 @@ function getBuildingPBuyBId(bid) {
 	}
 	return null;
 }
+
+/**
+ * Decrease the selected building's house number if we can: 
+ * house number cannot be lower than zero.
+ * 
+ * @param id The selected building place's id.
+ */
 function decreaseNumOfH(id) {
 	var building = getBuildingPBuyBId(id);
 	var textNum = document.getElementById(("boughtNumOfH" + id));
@@ -405,15 +504,18 @@ function decreaseNumOfH(id) {
 		textNum.value = (num - 1);
 	}
 }
+
+/**
+ * Increase the selected building's house number if the player
+ * has enough money and can be more house on the building place.
+ * 
+ * @param id The selected building place's id.
+ */
 function inreaseNumOfH(id, max) {
 	var building = getBuildingPBuyBId(id);
-	//console.log(building);
 	
 	var textNum = document.getElementById(("boughtNumOfH" + id));
 	var num = parseInt(textNum.value);
-//	console.log(building.housePrice);
-//	console.log(max);
-//	console.log(id);
 	if (num < max && parseInt(sessionStorage.happygames_game_money)>=building.housePrice) {
 		sessionStorage.happygames_game_money = (parseInt(sessionStorage.happygames_game_money) - building.housePrice);
 
@@ -422,6 +524,11 @@ function inreaseNumOfH(id, max) {
 		textNum.value = (num + 1);
 	}
 }
+
+/**
+ * The buy houses button's onClick event handler.
+ * Store all the buyed houses' number which was set by the player.
+ */
 function buyh() {
 	var rb = document.getElementById("buyhousesection");
 	rb.className = "steph1-collapsed";
@@ -449,6 +556,11 @@ function buyh() {
 	var bs = document.getElementById("finishsection");
 	bs.className = "steph1 steph1-withbutton";
 }
+
+/**
+ * The finish button's onClick event handler. Post the step to the server.
+ * Send all of step data to the server and show
+ */
 function finish() {
 	loadingActivate();
 	var dataForServer = '[{"playerId":'+(JSON.parse(sessionStorage.happygames_game_actualPlayer)).playerId
@@ -460,7 +572,6 @@ function finish() {
 				+',"soldBuildingsIds":'+sessionStorage.happygames_game_actualPlayer_soldbuildings
 				+',"boughtHouseNumberForBuildings":'+sessionStorage.happygames_game_boughtHouseNumberForBuildings
 				+'}]';
-//	console.log(dataForServer);
 	$.ajax({
 		type : "POST",
 		data: dataForServer,
@@ -470,21 +581,23 @@ function finish() {
 		var resp = JSON.parse(data);
 		removeGameSessionData();
 		if(resp.errorCode==0) {
-			alert("You made your step.");
+			alert("You made your step.\nWe will redirect you to the login page.");
+			sessionStorage.clear();
 			window.location.href = "https://localhost:8443/Monopoly/pages/home.html";
 		} else if(resp.errorCode==1) {
-			alert("Sorry, you lose.");
+			alert("Sorry, you lose.\nWe will redirect you to the login page.");
+			sessionStorage.clear();
 			window.location.href = "https://localhost:8443/Monopoly/pages/home.html";
 		} else if(resp.errorCode==2) {
-			alert("Do not cheat! :)");
+			alert("Do not cheat! :)\nWe will reload the page and you can try again the step.");
 			window.location.reload();
 		}
 	}).error(function(e) {
 		alert("Sorry, our server has problems.");
-//		console.log(e);
 	});
 }
-// UI
+
+// Table creators
 function createSellBuildingsTable() {
 	var tbody = document.getElementById("sellbuildingsbody");
 	
@@ -564,7 +677,16 @@ function createBuyHouseTable() {
 	}
 }
 
-/******************************* Playerboard *******************************/
+
+
+
+/**************************************************************************************************************************/
+/******************************************************  Playerboard ******************************************************/
+/**************************************************************************************************************************/
+
+/**
+ * Show basic game data.
+ */
 function basicGameData() {
 	var base= document.getElementById("buildingdataspec");
 	base.className = "dataspec dataspec-unvisible";
@@ -573,15 +695,26 @@ function basicGameData() {
 	var base= document.getElementById("gamedataspec");
 	base.className = "dataspec";
 }
-function getPlayerData(id) {
-	//alert(id);
-}
+
+/**
+ * Show the selected player's data which get from the server.
+ * Not implemented yet.
+ * 
+ * @param id The selected player's id.
+ */
+function getPlayerData(id) { }
+
+/**
+ * Create mini player cards at the players' section.
+ */
 function createMiniPlayers() {
 	var basesec = document.getElementById("playersboardcontainer");
 	var jsonarray = JSON.parse(sessionStorage.happygames_game_activePlayers);
+	// Cards with data for the players who have not lost.
 	for (var pi in jsonarray) {
 		var player = jsonarray[pi];
 		var sec = document.createElement('section');
+		// set the border color for the player color.
 		sec.className = "miniplayer bordercolor"+player.playerSequence;
 		sec.id = player.playerId;
 		sec.onclick = getPlayerData.bind(this, player.playerId);
@@ -617,13 +750,14 @@ function createMiniPlayers() {
 		lblpplace.textContent = "Place: " + player.placeSequenceNumber;
 		secpdata.appendChild(lblpplace);
 	}
+	
+	// Cards with name and loser stamp (in css) for the losers.
 	var jsonarrayLosers = JSON.parse(sessionStorage.happygames_game_losersPlayers);
 	for (var pli in jsonarrayLosers) {
 		var loser = jsonarrayLosers[pli];
 		var secl = document.createElement('section');
 		secl.className = "miniplayer out";
 		secl.id = loser.playerId;
-		//secl.onclick = function () { getPlayerData(loser.playerId); };
 		basesec.appendChild(secl);
 
 
@@ -658,7 +792,13 @@ function createMiniPlayers() {
 	}
 }
 
-/********************************************* Loading *********************************************/
+
+
+
+/**************************************************************************************************************************/
+/********************************************************  Loading ********************************************************/
+/**************************************************************************************************************************/
+
 function loadingActivate() {
 	var loading=document.getElementById("loading");
 	loading.className = "loading";

@@ -1,4 +1,6 @@
-﻿/********************* Event handler functions *********************/
+﻿/**************************************************************************************************************************/
+/************************************************  Event handler functions ************************************************/
+/**************************************************************************************************************************/
 
 function signIn() {
     var nameinput = document.getElementById("lname");
@@ -90,7 +92,10 @@ function remind() {
 	 }
 }
 
-/********************* UI modification functions *********************/
+/**************************************************************************************************************************/
+/***********************************************  UI modification functions ***********************************************/
+/**************************************************************************************************************************/
+
 function loadingActivate() {
 	var loading=document.getElementById("loading");
 	loading.className = "loading";
@@ -100,6 +105,11 @@ function loadingDeactivate() {
 	loading.className = "loading invisible";
 }
 
+/**
+ * Reset the other sections.
+ * 
+ * @param e
+ */
 function resetsecs(e) {
     var l = document.getElementById("loginsec");
     if (l != e) {
@@ -117,6 +127,12 @@ function resetsecs(e) {
         rem.style.display = 'none';
     }
 }
+
+/**
+ * Reset the other icons.
+ * 
+ * @param icon
+ */
 function reseticons(icon) {
     var iconb1 = document.getElementById("loginiconb");
     if (iconb1 != icon) {
@@ -131,17 +147,31 @@ function reseticons(icon) {
         iconb3.className = "header";
     }
 }
+
+/**
+ * Set the box height to the content.
+ * 
+ * @param height
+ */
 function boxheight(height) {
     var box = document.getElementById("loginbox");
     box.style.transitionDuration = '0.6s';
     box.style.height = height;
 }
+
+/**
+ * Set the section visible.
+ * 
+ * @param e
+ */
 function secvisible(e) {
     if (e.style.display != 'block') {
         e.style.display = 'block';
         e.className = "visiblesec";
     }
 }
+
+// Set the selected section to active.
 function selectSection(sec, icon) {
     resetsecs(sec);
     reseticons(icon);
